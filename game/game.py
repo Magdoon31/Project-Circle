@@ -6,11 +6,11 @@ from game.combat import Combat
 class Game:
 
     def __init__(self):
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.combat = Combat(self.screen, "easy")
+
         self.state = GameState.COMBAT
         self.running = True
-
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.clock = pygame.time.Clock()
 
     def run(self):

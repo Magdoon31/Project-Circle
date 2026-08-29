@@ -68,7 +68,6 @@ while running:
                         difficulty = "hard"
                         game_state = 3
 
-        current_boss = boss(900, 800, difficulty)
         timer = pygame.time.get_ticks()
 
     elif game_state == GameState.COMBAT:

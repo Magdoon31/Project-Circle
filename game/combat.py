@@ -38,10 +38,6 @@ class Combat:
                     new_projectile = self.player.shoot("basic")
                     if new_projectile is not None:
                         self.player_projectiles.append(new_projectile)
-                elif event.button == 3:
-                    new_projectiles = self.player.shoot("shotgun")
-                    if new_projectiles is not None:
-                        self.player_projectiles.extend(new_projectiles)
 
     def update(self):
 
@@ -61,7 +57,7 @@ class Combat:
 
             if Projectile.deal_damage(projectile, self.boss):
                 self.player_projectiles.remove(projectile)
-                if self.boss.hp <= 0:
+                if self.boss.health <= 0:
                     self.win = True
                     self.finished = True
 
