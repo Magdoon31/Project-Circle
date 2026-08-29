@@ -10,10 +10,10 @@ class Boss:
         self.type = "boss"
         self.speed = 1.5
         self.diff_mult = 1 if difficulty == "medium" else 1.5 if difficulty == "hard" else 0.6
-        self.attacks = {"basic" : {"damage": 30, "cooldown": 2000//self.diff_mult, "last_used": 2000//self.diff_mult, "width": 30, "speed": 9}, 
-                        "spinner" : {"damage": 20, "cooldown": 3200//self.diff_mult, "last_used": 3200//self.diff_mult, "width": 24, "speed": 6},
-                        "spinner_small" : {"damage": 10, "cooldown": 2800//self.diff_mult, "last_used": 2800//self.diff_mult, "width": 15, "speed": 7},
-                        "minigun": {"damage": 10,"cooldown": 2500//self.diff_mult,"last_used": 2500//self.diff_mult,"width": 5,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500//self.diff_mult,"is_bursting": False}}
+        self.attacks = {"basic" : {"damage": 30, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9}, 
+                        "spinner" : {"damage": 20, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6},
+                        "spinner_small" : {"damage": 10, "cooldown": 2800, "last_used": 2800, "width": 15, "speed": 7},
+                        "minigun": {"damage": 10,"cooldown": 2500,"last_used": 2500,"width": 5,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500//self.diff_mult,"is_bursting": False}}
                         
     def draw(self, screen):
         pygame.draw.circle(screen, (200, 100, 100), (self.x, self.y), self.width)

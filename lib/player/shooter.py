@@ -49,7 +49,7 @@ class Shooter :
         if type == "basic":
             if pygame.time.get_ticks() - self.last_shot_time >= self.rate_of_fire * 1000:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                projectile = prjt(self.x, self.y, mouse_x, mouse_y, 15, self.damage, "player",10)
+                projectile = prjt(self.x, self.y, mouse_x, mouse_y, 20, self.damage, "player",10)
                 self.last_shot_time = pygame.time.get_ticks()
                 return projectile
         elif type == "shotgun":

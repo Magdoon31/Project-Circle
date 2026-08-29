@@ -1,16 +1,16 @@
 import pygame
 
-from lib.player.shooter import Shooter
 from lib.player.projectile import projectile as Projectile
 from lib.boss.boss import Boss
+from lib.sfx_manager import sfx_manager as sfx
 
 
 class Combat:
 
-    def __init__(self, screen, difficulty="easy"):
+    def __init__(self, screen, player, difficulty="easy"):
         self.screen = screen
         self.difficulty = difficulty
-        self.player = Shooter(400, 300)
+        self.player = player
         self.boss = Boss(900, 800, difficulty)
         self.player_projectiles = []
         self.boss_projectiles = []
@@ -18,6 +18,12 @@ class Combat:
         self.timer = pygame.time.get_ticks()
         self.win = False
         self.finished = False
+
+        self.sfx = sfx()
+        
+        self.sfx.load_sfx("shoot", "assets/sfx/player_shoot.mp3")
+        self.sfx.load_sfx("explosion", "assets/sfx/explosion.mp3")
+        self.sfx.load_sfx("hit", "assets/sfx/player_hit.mp3")
 
         if difficulty == "easy":
             self.player.hp = 150
@@ -35,8 +41,9 @@ class Combat:
                     self.finished = True
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    new_projectile = self.player.shoot("basic")
+                    new_projectile = self.player.shoot("basic")      
                     if new_projectile is not None:
+                        self.sfx.play_sfx("shoot")
                         self.player_projectiles.append(new_projectile)
 
     def update(self):
@@ -57,6 +64,7 @@ class Combat:
 
             if Projectile.deal_damage(projectile, self.boss):
                 self.player_projectiles.remove(projectile)
+                self.sfx.play_sfx("hit")
                 if self.boss.health <= 0:
                     self.win = True
                     self.finished = True
@@ -66,7 +74,7 @@ class Combat:
             Projectile.update(projectile)
             if Projectile.deal_damage(projectile, self.player):
                 self.boss_projectiles.remove(projectile)
-
+                self.sfx.play_sfx("hit")
                 if self.player.hp <= 0:
                     self.win = False
                     self.finished = True

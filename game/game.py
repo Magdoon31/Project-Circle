@@ -1,17 +1,22 @@
 import pygame
 from game.states import GameState
 from game.combat import Combat
+from lib.player.shooter import Shooter
+from lib.sfx_manager import sfx_manager as sfx
 
 
 class Game:
 
     def __init__(self):
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        self.combat = Combat(self.screen, "easy")
-
+        self.font = pygame.font.SysFont(None, 60)
         self.state = GameState.COMBAT
         self.running = True
         self.clock = pygame.time.Clock()
+
+        self.player = Shooter(400, 300)
+        self.combat = Combat(self.screen, self.player, "easy")
+        
 
     def run(self):
         while self.running:
