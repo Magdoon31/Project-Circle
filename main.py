@@ -6,7 +6,3 @@ pygame.mixer.init()
 
 game = Game()
 game.run()
-
-
-
-
