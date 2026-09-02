@@ -2,7 +2,7 @@ import pygame
 
 from game.combat.projectile import projectile as Projectile
 from game.combat.boss.boss import Boss
-from lib.sfx_manager import sfx_manager as sfx
+from game.lib.sfx_manager import sfx_manager as sfx
 
 
 class Combat:

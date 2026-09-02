@@ -7,6 +7,7 @@ class Player:
         self.y = y
         self.speed = 8
         self.map = map
+        self.money = 0
 
     def draw(self, screen):
         pygame.draw.circle(screen, (200, 200, 50), ((screen.get_width()//2) - 5, (screen.get_height()//2) - 5), 10)

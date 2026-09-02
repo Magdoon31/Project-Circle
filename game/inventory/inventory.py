@@ -8,9 +8,10 @@ class Inventory:
         self.active_weapon = self.ItemD.get_item("Simple Blaster")
         self.active_armor = self.ItemD.get_item("Simple Armor")
         self.active_trinket = None
-        self.items = [self.ItemD.get_item("Simple Pistol"), self.ItemD.get_item("Simple Armor")]
+        self.items = [self.ItemD.get_item("Simple Pistol")]
         self.selected_item = None
         self.active_items = {"weapon": self.active_weapon, "armor": self.active_armor, "trinket": self.active_trinket}
+        self.all_itmes = self.items 
 
     def add_item(self, item):
         self.items.append(item)

@@ -60,7 +60,6 @@ class Boss:
                     projectiles.append(prjt(self.x, self.y, player.x, player.y, attack_info["speed"], attack_info["damage"], "boss", attack_info["width"]))
                     attack_info["last_used"] = current_time
                 elif attack_name == "minigun":
-                    print("Shooting minigun projectile")
                     if not attack_info["is_bursting"]:
                         if current_time - attack_info["last_used"] >= attack_info["cooldown"]:
                             attack_info["is_bursting"] = True

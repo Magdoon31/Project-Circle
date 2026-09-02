@@ -152,12 +152,21 @@ class Inventory_ui:
                         self.screen.get_height()//1.12,
                         self.screen.get_width()//7,
                         self.screen.get_height()//20)
+        remove_btn_rect = pygame.Rect(self.screen.get_width()//1.8+equip_btn_rect.width*1.1,
+                        self.screen.get_height()//1.12,
+                        self.screen.get_width()//7,
+                        self.screen.get_height()//20)
         if self.inventory.selected_item is not None:
             equip_btn_text = self.font_heavy["mid"].render("Unequip" if self.inventory.selected_item in self.inventory.active_items.values() else "Equip",True,(0,0,0))
             self.buttons.append(equip_btn_rect)
-            pygame.draw.rect(self.screen,(230,140,100),equip_btn_rect,0,5)
+            pygame.draw.rect(self.screen,(230,140,100) if self.inventory.selected_item in self.inventory.active_items.values() else (120,230,110),equip_btn_rect,0,5)
             self.screen.blit(equip_btn_text,(equip_btn_rect.left+equip_btn_rect.width//2-equip_btn_text.get_width()//2,
                                                      equip_btn_rect.top+equip_btn_rect.height//2-equip_btn_text.get_height()//2))
+            remove_btn_text = self.font_heavy["mid"].render("Remove",True,(0,0,0))
+            self.buttons.append(remove_btn_rect)
+            pygame.draw.rect(self.screen,(230,140,100),remove_btn_rect,0,5)
+            self.screen.blit(remove_btn_text,(remove_btn_rect.left+remove_btn_rect.width//2-remove_btn_text.get_width()//2,
+                                                     remove_btn_rect.top+remove_btn_rect.height//2-remove_btn_text.get_height()//2))
             
            
         
@@ -200,5 +209,22 @@ class Inventory_ui:
                                 self.selected_slot = None
                             elif self.inventory.selected_item:
                                 self.inventory.equip_item(self.inventory.selected_item)
+                                self.selected_slot = None
+                        elif i == 2:
+                            if self.inventory.selected_item in self.inventory.active_items.values():
+                                if self.inventory.selected_item.type == "weapon":
+                                    self.inventory.active_weapon = None
+                                    self.inventory.active_items["weapon"] = None
+                                elif self.inventory.selected_item.type == "armor":
+                                    self.inventory.active_armor = None
+                                    self.inventory.active_items["armor"] = None
+                                elif self.inventory.selected_item.type == "trinket":
+                                    self.inventory.active_trinket = None
+                                    self.inventory.active_items["trinket"] = None
+                                self.inventory.selected_item = None
+                                self.selected_slot = None
+                            elif self.inventory.selected_item:
+                                self.inventory.remove_item(self.inventory.selected_item)
+                                self.inventory.selected_item = None
                                 self.selected_slot = None
 

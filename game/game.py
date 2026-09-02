@@ -23,6 +23,7 @@ class Game:
 
         self.player = Player(128,128,self.map)
         self.map.player = self.player
+        self.map_ui.player = self.player
 
         self.player_in_combat = Shooter(400, 300)
         self.combat = None
@@ -84,6 +85,7 @@ class Game:
             if self.combat.win:
                 if self.combat.enemy == "boss1":
                     self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
+                    self.player.money+=100
             else:
                 self.player.set_position(128,128)
             
