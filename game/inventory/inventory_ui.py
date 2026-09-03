@@ -1,7 +1,7 @@
 import pygame
 
 class Inventory_ui:
-    def __init__(self, screen, inventory):
+    def __init__(self, screen, inventory, sfx):
         self.screen = screen
         self.inventory = inventory
         self.selected_slot = None
@@ -19,6 +19,10 @@ class Inventory_ui:
         self.font_heavy = {"small" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",18),
                            "mid" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",36),
                            "large" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",64)}
+
+        self.sfx = sfx
+        self.sfx.load_sfx("use", "assets/sfx/UI/use.wav")
+        self.sfx.load_sfx("click", "assets/sfx/UI/click1.wav")
 
     def draw(self):
         self.screen.fill((200, 200, 120))
@@ -184,6 +188,7 @@ class Inventory_ui:
                         if self.selected_slot == (row,column):
                             self.selected_slot = None
                             self.inventory.selected_item = None
+                            self.sfx.play("click")
                         else:
                             self.selected_slot = (row,column)
 
@@ -197,10 +202,12 @@ class Inventory_ui:
                                 self.inventory.selected_item = self.inventory.items[i]
                             else:
                                 self.inventory.selected_item = None
+                            self.sfx.play("click")
    
                         print(self.inventory.selected_item.name if self.inventory.selected_item else None, [item.name if item else None for item in self.inventory.active_items.values()])
                 for i, btn in enumerate(self.buttons):
                     if btn.collidepoint(pos):
+                        self.sfx.play("use")
                         if i == 0:
                             return "map"
                         elif i == 1:
