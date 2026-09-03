@@ -5,13 +5,15 @@ class Player:
     def __init__(self, x, y, map):
         self.x = x
         self.y = y
-        self.speed = 8
+        self.speed = 6
         self.map = map
         self.money = 0
-        self.biome = "toy_factory"
+        self.biome = "silverpine_tundra"
+        self.play_time = 0
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (200, 200, 50), ((screen.get_width()//2) - 5, (screen.get_height()//2) - 5), 10)
+        pygame.draw.circle(screen, (200, 200, 50), ((screen.get_width()//2) - 5, (screen.get_height()//2) - 5), 50)
+        self.play_time += 1/60
     def move(self, keys):
         vx = 0
         vy = 0

@@ -4,14 +4,13 @@ from game.inventory.items.item_database import ItemDatabase
 class Inventory:
 
     def __init__(self, screen):
-        self.ItemD = ItemDatabase(screen.get_height())
-        self.active_weapon = self.ItemD.get_item("Simple Blaster")
-        self.active_armor = self.ItemD.get_item("Simple Armor")
+        self.ItemDB = ItemDatabase(screen.get_height())
+        self.active_weapon = None
+        self.active_armor = None
         self.active_trinket = None
-        self.items = [self.ItemD.get_item("Simple Pistol")]
+        self.items = []
         self.selected_item = None
         self.active_items = {"weapon": self.active_weapon, "armor": self.active_armor, "trinket": self.active_trinket}
-        self.all_itmes = self.items 
 
     def add_item(self, item):
         self.items.append(item)

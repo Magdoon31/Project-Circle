@@ -11,6 +11,7 @@ from game.lib.sfx_manager import SFXManager
 from game.lib.music_manager import MusicManager
 from game.menu.menu import Menu
 from game.menu.settings_manager import SettingsManager
+from game.menu.save_manager import SaveManager
 
 
 class Game:
@@ -36,7 +37,9 @@ class Game:
         self.inventory = Inventory(self.screen)
         self.inventory_ui = Inventory_ui(self.screen,self.inventory,self.sfx)
 
-        self.menu = Menu(self.screen,self.sfx,self.music)
+        self.save_manager = SaveManager(self.player, self.inventory, self.map)
+
+        self.menu = Menu(self.screen,self.sfx,self.music, self.save_manager)
         self.music.play("menu")
 
         self.settings = SettingsManager(self.music, self.sfx)
@@ -45,6 +48,7 @@ class Game:
         self.sfx.update_volume()
 
         
+        self.save = 0
 
     def run(self):
         while self.running:
@@ -56,6 +60,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     self.settings.settings_data_save()
+                    self.save_manager.save_game(self.save)
 
             if self.state == GameState.MENU:
                 self.update_menu(events, keys, mouse_pos)
@@ -75,12 +80,19 @@ class Game:
         pygame.quit()
 
     def update_menu(self, events, keys, pos):
-        change_state = self.menu.handle_click(pos, events)
+        change_state, save_nr = self.menu.handle_click(pos, events)
         self.menu.draw()
         if change_state == "start_game":
+            self.save_manager.load_game(save_nr, self)
+            self.inventory.active_weapon = self.inventory.active_items["weapon"]
+            self.inventory.active_armor = self.inventory.active_items["armor"]
+            self.inventory.active_trinket = self.inventory.active_items["trinket"]
+            self.save = save_nr
             self.state = GameState.MAP
             self.music.stop()
             self.music.play(self.player.biome)
+        elif change_state == "play":
+            self.menu.page = "save_load"
         elif change_state == "achievements":
             self.menu.page = "achievements"
         elif change_state == "options":

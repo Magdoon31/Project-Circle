@@ -2,7 +2,7 @@ import pygame
 from game.menu.achivements import Achievements
 
 class Menu:
-    def __init__(self, screen, sfx, music):
+    def __init__(self, screen, sfx, music,save_manager):
         self.achievements = Achievements()
         self.sfx = sfx
         self.music = music
@@ -22,7 +22,7 @@ class Menu:
         self.page = "main"
         self.img = {"music": pygame.transform.scale(pygame.image.load("assets/img/menu/music_icon.png"), (self.screen.get_height() // 10, self.screen.get_height() // 10)),
                     "sfx": pygame.transform.scale(pygame.image.load("assets/img/menu/sfx_icon.png"), (self.screen.get_height() // 10, self.screen.get_height() // 10))}
-        
+        self.save_manager = save_manager
         
 
     def draw(self):
@@ -35,7 +35,7 @@ class Menu:
             button_y_start = self.screen.get_height() // 2.4
 
             for i in range(4):
-                option = ["start game", "achievements", "options", "quit"][i]
+                option = ["play", "achievements", "options", "quit"][i]
                 button_y = button_y_start + i * (button_height*1.2)
                 button_rect = pygame.Rect(button_x, button_y, button_width, button_height,)
                 self.buttons.append(button_rect)
@@ -62,20 +62,10 @@ class Menu:
                 slot_y = slot_y_start + (i // 7) * (slot_height*1.2)
                 slot_rect = pygame.Rect(slot_x, slot_y, slot_width, slot_height)
                 self.buttons.append(slot_rect)
-                print(achievement)
                 if achievement["completed"]:
                     pygame.draw.rect(self.screen, (0, 255, 0), slot_rect, 0, 10)
                 else:
                     pygame.draw.rect(self.screen, (170, 170, 170), slot_rect, 0, 10)
-            back_btn_rect = pygame.Rect(self.screen.get_width() - self.screen.get_width()//6,
-                        self.screen.get_height() - self.screen.get_height()//16,
-                        self.screen.get_width() // 6,
-                        self.screen.get_height() // 20
-                        )
-            self.buttons.append(back_btn_rect)
-            pygame.draw.rect(self.screen,(255,255,255) if self.selected_btn == len(self.buttons) - 1 else (170, 170, 170),back_btn_rect,0,5)
-            back_btn_text = self.font_heavy["mid"].render("Back",True,(0,0,0))
-            self.screen.blit(back_btn_text,(back_btn_rect.x+back_btn_rect.width/2-back_btn_text.get_width()/2,back_btn_rect.y+back_btn_rect.height/2-back_btn_text.get_height()/2))
 
         elif self.page == "options":
             slider_width = self.screen.get_width() // 4
@@ -99,6 +89,25 @@ class Menu:
             pygame.draw.circle(self.screen, (255, 255, 255), (int(sfx_circle_x), slider_y_start + slider_height*6 + slider_height // 2), 15)
             self.screen.blit(self.img["sfx"], (slider_x - self.img["sfx"].get_width()*1.2, slider_y_start + slider_height*6 + slider_height//2 - self.img["sfx"].get_height()//2))
 
+        elif self.page == "save_load":
+
+            save_slot_width = self.screen.get_width() // 7.5
+            save_slot_height = self.screen.get_height() // 4
+            save_slot_x_start = self.screen.get_width() // 3.6
+            save_slot_y = self.screen.get_height() // 3
+            for i in range(3):
+                slot_x = save_slot_x_start + i * (save_slot_width*1.2)
+                save_slot_rect = pygame.Rect(slot_x, save_slot_y, save_slot_width, save_slot_height)
+                self.buttons.append(save_slot_rect)
+                pygame.draw.rect(self.screen, (170, 170, 170) if self.selected_btn != i else (255,255,255), save_slot_rect, 0, 10)
+                save_text = self.save_manager.get_save_info(i+1)
+                for i, text in enumerate(save_text):
+                    slot_text = self.font_heavy["mid"].render(text,True,(0,0,0))
+                    self.screen.blit(slot_text,(slot_x + (save_slot_width - slot_text.width)//2,save_slot_y+(i*save_slot_height)//5))
+
+
+        if self.page in ("achievements", "options", "save_load"):
+
             back_btn_rect = pygame.Rect(self.screen.get_width() - self.screen.get_width()//6,
                                     self.screen.get_height() - self.screen.get_height()//16,
                                     self.screen.get_width() // 6,
@@ -108,6 +117,7 @@ class Menu:
             pygame.draw.rect(self.screen,(255,255,255) if self.selected_btn == len(self.buttons) - 1 else (170, 170, 170),back_btn_rect,0,5)
             back_btn_text = self.font_heavy["mid"].render("Back",True,(0,0,0))
             self.screen.blit(back_btn_text,(back_btn_rect.x+back_btn_rect.width/2-back_btn_text.get_width()/2,back_btn_rect.y+back_btn_rect.height/2-back_btn_text.get_height()/2))
+            
 
     def handle_click(self, pos, events):
         for event in events:
@@ -116,19 +126,23 @@ class Menu:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.page == "main":
                             if i == 0:
-                                return "start_game"
+                                return "play", 0
                             elif i == 1:
-                                return "achievements"
+                                return "achievements", 0
                             elif i == 2:
-                                return "options"
+                                return "options", 0
                             elif i == 3:
-                                return "quit"
-                        elif self.page == "achievements":
+                                return "quit", 0                       
+                        elif self.page == "save_load":
+                            if i == 0:
+                                return "start_game", 1
+                            elif i == 1:
+                                return "start_game", 2
+                            elif i == 2:
+                                return "start_game", 3
+                        if self.page == "achievements" or self.page == "options" or self.page == "save_load":
                             if i == len(self.buttons) - 1:
-                                return "main"
-                        elif self.page == "options":
-                            if i == len(self.buttons) - 1:
-                                return "main"
+                                return "main", 0
                     self.selected_btn = i
             if self.selected_btn in range(len(self.buttons)) and not self.buttons[self.selected_btn].collidepoint(pos):
                 self.selected_btn = -1
@@ -171,4 +185,6 @@ class Menu:
                         self.sfx.sfx_volume = max(0.0, min(1.0, self.sfx.sfx_volume))
 
                         self.sfx.update_volume()
+
+        return "", 0
         

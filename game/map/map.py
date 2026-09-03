@@ -2,7 +2,7 @@ import pygame
 
 class Map:
     def __init__(self, screen):
-        self.layout = ["1122111221","1111122111","2221121111","1211111121","1112221111","1111111111","1111111111","1111111111","1111111131","1111111111"]
+        self.layout = []
         self.tile_size = screen.get_height()//9
         self.player = None
         self.screen = screen
