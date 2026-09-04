@@ -98,7 +98,7 @@ class Shooter :
                 self.last_shot_time = pygame.time.get_ticks()
                 return True, projectiles
         return False, None
-    def take_damage(self, amount):
+    def take_damage(self, amount, effects):
         self.hp -= max(amount-self.defence, 1)
         if self.hp <= 0:
             self.hp = 0

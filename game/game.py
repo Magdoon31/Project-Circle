@@ -1,4 +1,4 @@
-import pygame
+import pygame, math, random
 from game.states import GameState
 from game.combat.combat import Combat
 from game.combat.player.shooter import Shooter
@@ -12,6 +12,7 @@ from game.lib.music_manager import MusicManager
 from game.menu.menu import Menu
 from game.menu.settings_manager import SettingsManager
 from game.menu.save_manager import SaveManager
+from game.combat.enemy.enemy_database import EnemyDB
 
 
 class Game:
@@ -33,6 +34,7 @@ class Game:
 
         self.player_in_combat = None
         self.combat = None
+        self.enemy_db = EnemyDB()
 
         self.inventory = Inventory(self.screen)
         self.inventory_ui = Inventory_ui(self.screen,self.inventory,self.sfx)
@@ -117,10 +119,23 @@ class Game:
         if self.map_ui.page == "map" and fight not in (True,False):
             self.player_in_combat = Shooter(300,300,self.inventory.active_items)
         if self.map_ui.page == "map" and fight == "boss1":
+            self.combat = Combat(self.screen, self.player_in_combat,[], "medium",self.sfx)
+            for i in range(random.randint(1,4)):
+                rnd = random.randint(1,2)
+                print("circle" if rnd == 1 else "fast")
+                if rnd == 1:
+                    self.combat.enemies.append(self.enemy_db.get_enemy("circle"))
+                    self.combat.money += self.enemy_db.get_enemy("circle").money
+                if rnd == 2:
+                    self.combat.enemies.append(self.enemy_db.get_enemy("fast"))
+                    self.combat.enemies.append(self.enemy_db.get_enemy("fast"))
+                    self.combat.money += self.enemy_db.get_enemy("fast").money*2
+            for enemy in self.combat.enemies:
+                enemy.x = random.randint(self.screen.get_width()//2,self.screen.get_width())
+                enemy.y = random.randint(self.screen.get_height()//2,self.screen.get_height())
             self.state = GameState.COMBAT
-            self.combat = Combat(self.screen, self.player_in_combat,"boss1", "easy",self.sfx)
             self.music.stop()
-            self.music.play("boss_fight1")
+            self.music.play("boss_fight2")
         if change_state == "inventory":
             self.state = GameState.INVENTORY
         elif change_state == "menu":
@@ -151,9 +166,11 @@ class Game:
             self.music.stop()
             self.music.play(self.player.biome)
             if self.combat.win:
-                if self.combat.enemy == "boss1":
+                if self.combat.boss == "boss1":
                     # self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
                     self.player.money+=100
+                else:
+                    self.player.money += int(self.combat.money * random.randint(10,40) *0.05)
             else:
                 self.player.set_position(128,128)
             self.player_in_combat = None

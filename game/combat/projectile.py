@@ -1,7 +1,7 @@
 import pygame, math
 
 class projectile:
-    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, range):
+    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, range, effects = {}):
         self.x = x
         self.y = y
         self.speed = speed
@@ -11,6 +11,7 @@ class projectile:
         self.color = (255, 255, 0) if player == "player" else (180, 180, 0)
         self.range = range
         self.shot_time = pygame.time.get_ticks()
+        self.effects = effects
 
         dx = target_x - x
         dy = target_y - y
@@ -41,6 +42,6 @@ class projectile:
     
     def deal_damage(self, target):
         if self.check_collision(target) and target.type != self.type:
-            target.take_damage(self.damage)
+            target.take_damage(self.damage,self.effects)
             return True
         return False
