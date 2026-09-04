@@ -1,8 +1,6 @@
 import pygame
 
-from game.combat.projectile import projectile as Projectile
 from game.combat.boss.boss import Boss
-from game.lib.sfx_manager import SFXManager as sfx
 
 
 class Combat:
@@ -28,19 +26,32 @@ class Combat:
 
         self.player.hp = 100
 
-    def handle_events(self, events):
+    def handle_events(self, events, mouse_btn_pressed):
+
+        
 
         for event in events:
-
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     self.finished = True
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not self.player.automatic_weapon:
                 if event.button == 1:
-                    new_projectile = self.player.shoot("basic")      
+                    multiple, new_projectile = self.player.shoot()      
                     if new_projectile is not None:
                         self.sfx.play("shoot")
-                        self.player_projectiles.append(new_projectile)
+                        if multiple:
+                            self.player_projectiles.extend(new_projectile)
+                        else:
+                            self.player_projectiles.append(new_projectile)
+
+        if mouse_btn_pressed[0] and self.player.automatic_weapon:
+            multiple, new_projectile = self.player.shoot()      
+            if new_projectile is not None:
+                self.sfx.play("shoot")
+                if multiple:
+                    self.player_projectiles.extend(new_projectile)
+                else:
+                    self.player_projectiles.append(new_projectile)
 
     def update(self):
 
@@ -57,8 +68,10 @@ class Combat:
             ):
                 self.player_projectiles.remove(projectile)
                 continue
+
             if not projectile.check_duration():
                 self.player_projectiles.remove(projectile)
+                continue
 
             if projectile.deal_damage(self.boss):
                 self.player_projectiles.remove(projectile)
@@ -72,7 +85,7 @@ class Combat:
             projectile.update()
 
             if not projectile.check_duration():
-                self.player_projectiles.remove(projectile)
+                self.boss_projectiles.remove(projectile)
 
             if projectile.deal_damage(self.player):
                 self.boss_projectiles.remove(projectile)

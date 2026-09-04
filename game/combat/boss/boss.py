@@ -5,15 +5,16 @@ class Boss:
     def __init__(self, x, y,difficulty="medium"):
         self.x = x
         self.y = y
-        self.health = 500 if difficulty == "easy" else 750 if difficulty == "medium" else 1000
+        self.health = 500 
+        self.max_hp = self.health
         self.width = 60
         self.type = "boss"
         self.speed = 1.5
         self.diff_mult = 1 if difficulty == "medium" else 1.5 if difficulty == "hard" else 0.6
-        self.attacks = {"basic" : {"damage": 30, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9, "range": 1000}, 
-                        "spinner" : {"damage": 20, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6, "range": 1000},
-                        "spinner_small" : {"damage": 10, "cooldown": 2800, "last_used": 2800, "width": 15, "speed": 7, "range": 1000},
-                        "minigun": {"damage": 10,"cooldown": 2500,"last_used": 2500,"width": 5,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500//self.diff_mult,"is_bursting": False, "range": 1000}}
+        self.attacks = {"basic" : {"damage": 30, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9, "range": 2000}, 
+                        "spinner" : {"damage": 20, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6, "range": 2000},
+                        "spinner_small" : {"damage": 10, "cooldown": 2800, "last_used": 2800, "width": 15, "speed": 7, "range": 2000},
+                        "minigun": {"damage": 10,"cooldown": 2500,"last_used": 2500,"width": 5,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500//self.diff_mult,"is_bursting": False, "range": 2000}}
                         
     def draw(self, screen):
         pygame.draw.circle(screen, (200, 100, 100), (self.x, self.y), self.width)
@@ -47,7 +48,7 @@ class Boss:
     def hp_bar(self, screen):
         bar_width = screen.get_width() // 1.5
         bar_height = screen.get_height() // 30
-        fill_width = int(bar_width * (self.health / 500 if self.diff_mult == 0.6 else self.health / 750 if self.diff_mult == 1 else self.health / 1000))
+        fill_width = int(bar_width * (self.health/self.max_hp))
         pygame.draw.rect(screen, (255, 0, 0), (screen.get_width() // 2 - bar_width // 2, 20, bar_width, bar_height))
         pygame.draw.rect(screen, (0, 255, 0), (screen.get_width() // 2 - bar_width // 2, 20, fill_width, bar_height))
     
@@ -83,7 +84,7 @@ class Boss:
                             proj_y = self.y + vy * self.width
                             target_x = self.x + vx * 1000
                             target_y = self.y + vy * 1000
-                            projectile = prjt(proj_x,proj_y,target_x,target_y,attack_info["speed"],attack_info["damage"],"boss",attack_info["width"])
+                            projectile = prjt(proj_x,proj_y,target_x,target_y,attack_info["speed"],attack_info["damage"],"boss",attack_info["width"], attack_info["range"])
                             projectiles.append(projectile)
                             if attack_info["burst_count"] >= attack_info["burst_max"]:
                                 attack_info["is_bursting"] = False
@@ -103,7 +104,7 @@ class Boss:
                         projectiles.append(projectile)
                     attack_info["last_used"] = current_time
         if player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2):
-            projectiles.append(prjt(player.x, player.y, player.x, player.y, 1, 1, "boss", 1))
+            projectiles.append(prjt(player.x, player.y, player.x, player.y, 1, 1, "boss", 1,1000))
                 
         return projectiles
 

@@ -17,7 +17,6 @@ class MapUI:
         
 
     def draw(self):
-        print(self.selected_btn)
         if self.page != "map":
             self.screen.fill((0, 0, 0))
         self.buttons = []
@@ -49,10 +48,10 @@ class MapUI:
             button_width = self.screen.get_width() // 3.9
             button_height = self.screen.get_height() // 15
             button_x = (self.screen.get_width() - button_width) // 2
-            button_y_start = self.screen.get_height() // 2.4
+            button_y_start = self.screen.get_height() // 2.6
 
-            for i in range(4):
-                option = ["return", "save", "stats", "quit game"][i]
+            for i in range(5):
+                option = ["return", "save", "stats", "main menu", "quit game"][i]
                 button_y = button_y_start + i * (button_height*1.5)
                 button_rect = pygame.Rect(button_x, button_y, button_width, button_height,)
                 self.buttons.append(button_rect)
@@ -96,6 +95,8 @@ class MapUI:
                             elif i == 2:
                                 self.page = "stats"
                             elif i == 3:
+                                return "menu"
+                            elif i == 4:
                                 return "quit"
                         elif self.page == "stats":
                             if i == 0:

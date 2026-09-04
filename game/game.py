@@ -84,6 +84,7 @@ class Game:
         self.menu.draw()
         if change_state == "start_game":
             self.save_manager.load_game(save_nr, self)
+            print(self.inventory.active_items)
             self.inventory.active_weapon = self.inventory.active_items["weapon"]
             self.inventory.active_armor = self.inventory.active_items["armor"]
             self.inventory.active_trinket = self.inventory.active_items["trinket"]
@@ -122,6 +123,12 @@ class Game:
             self.music.play("boss_fight1")
         if change_state == "inventory":
             self.state = GameState.INVENTORY
+        elif change_state == "menu":
+            self.state = GameState.MENU
+            self.music.stop()
+            self.music.play("menu")
+            self.menu.page = "main"
+            self.map_ui.page = "map"
         elif change_state == "quit":
             self.settings.settings_data_save()
             self.save_manager.save_game(self.save)
@@ -132,7 +139,10 @@ class Game:
 
 
     def update_combat(self, events, keys):
-        self.combat.handle_events(events)
+
+        mouse_btn_pressed = pygame.mouse.get_pressed()
+
+        self.combat.handle_events(events, mouse_btn_pressed)
         self.combat.update()
         self.combat.draw()
 
@@ -142,7 +152,7 @@ class Game:
             self.music.play(self.player.biome)
             if self.combat.win:
                 if self.combat.enemy == "boss1":
-                    self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
+                    # self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
                     self.player.money+=100
             else:
                 self.player.set_position(128,128)

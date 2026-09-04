@@ -135,7 +135,7 @@ class Inventory_ui:
 
                 self.tooltip_text["Damage"] = self.font_light["small"].render(f"DMG: {self.inventory.selected_item.damage}",True,(80,10,10))
                 self.tooltip_text["Fire Rate"] = self.font_light["small"].render(f"Fire Rate: {self.inventory.selected_item.rate_of_fire}",True,(10,80,10))
-                self.tooltip_text["Range"] = self.font_light["small"].render(f"Range: {self.inventory.selected_item.range}",True,(10,80,10))
+                self.tooltip_text["Range"] = self.font_light["small"].render(f"Range: {self.inventory.selected_item.range//10}",True,(10,80,10))
 
                 self.screen.blit(self.tooltip_text["Damage"],(tooltip_rect.left+tooltip_rect.width//40,tooltip_rect.top+self.screen.get_height()//60+28*2))
                 self.screen.blit(self.tooltip_text["Fire Rate"],(tooltip_rect.left+tooltip_rect.width//40,tooltip_rect.top+self.screen.get_height()//60+28*3))

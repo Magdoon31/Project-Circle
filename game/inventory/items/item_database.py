@@ -11,14 +11,30 @@ class ItemDatabase:
                                     "Simple Pistol to kompaktowe i łatwe w obsłudze\n"
                                     "urządzenie do piaskowania, zaprojektowane z myślą\n"
                                     "o szybkich pracach warsztatowych lub renowacyjnych",
-                                    "weapon",4,0.25,None,"None",100,10,25,
+                                    "weapon",4,0.23,[None],"None",7200,9,18,
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_pistol.png"),(height//10,height//10)).convert_alpha()),
             "Simple Blaster": Weapon("Simple Blaster",
                                     "Simple Blaster to kompaktowe i łatwe w obsłudze\n"
                                     "urządzenie do piaskowania, zaprojektowane z myślą\n"
                                     "o szybkich pracach warsztatowych lub renowacyjnych",
-                                    "weapon",8,0.5,None,"None",110,10,20,
-                        pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_blaster.png"),(height//10,height//10)).convert_alpha())
+                                    "weapon",8,0.5,[None],"None",20000,10,25,
+                        pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_blaster.png"),(height//10,height//10)).convert_alpha()),
+            "Minigun": Weapon("Minigun",
+                                    "Shoot really fast\nbut uncontrollably",
+                                    "weapon",1,0.05,[None],"Automatic",10000,5,12,
+                        pygame.transform.scale(pygame.image.load("assets/img/inventory/minigun.png"),(height//10,height//10)).convert_alpha(),True,20),
+            "Shotgun R6": Weapon("Shotgun R6",
+                                    "Shoots 6 bullets\nin a random pattern at once",
+                                    "weapon",10,1.2,["shotgun_r6"],"None",7200,7,20,
+                        pygame.transform.scale(pygame.image.load("assets/img/inventory/shotgun_r6.png"),(height//10,height//10)).convert_alpha(),recoil=40),
+            "Shotgun S4": Weapon("Shotgun S4",
+                                    "Shoots 4 bullets at once",
+                                    "weapon",3,0.5,["shotgun_s4"],"None",9600,6,20,
+                        pygame.transform.scale(pygame.image.load("assets/img/inventory/shotgun_s4.png"),(height//10,height//10)).convert_alpha(),recoil=20),
+            "Bubble Gun": Weapon("Bubble Gun",
+                                    "Shoots bubbles that slow down over time",
+                                    "weapon",12,0.3,["bubble"],"None",9600,6,10,
+                        pygame.transform.scale(pygame.image.load("assets/img/inventory/shotgun_s4.png"),(height//10,height//10)).convert_alpha(),recoil=10),
         }
         self.armors = {
             "Simple Armor": Armor("Simple Armor",

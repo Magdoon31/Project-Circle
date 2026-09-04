@@ -27,6 +27,7 @@ class SaveManager:
                 json.dump(save_data, f, indent=4)
 
     def load_game(self, nr, game):
+        game.inventory.items = []
         if nr in (1,2,3):
             try:
                 with open(f"game/text/save{nr}.json", "r") as f:
@@ -50,7 +51,7 @@ class SaveManager:
                 game.player.money = 0
                 game.player.play_time = 0
                 game.map.layout = ["1122111222","1111122112","2221121112","1211111122","2112221112","2111111112","2111111112","2111111112","2111111132","2222222222"]
-                game.inventory.active_weapon = game.inventory.ItemDB.get_item("Simple Blaster")
+                game.inventory.active_items["weapon"] = game.inventory.ItemDB.get_item("Simple Blaster")
                 game.inventory.items = [game.inventory.ItemDB.get_item("Simple Pistol")]
 
     def get_save_info(self,nr):
