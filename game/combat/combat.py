@@ -26,12 +26,7 @@ class Combat:
         self.sfx.load_sfx("explosion", "assets/sfx/combat/explosion.mp3")
         self.sfx.load_sfx("hit", "assets/sfx/combat/player_hit.mp3")
 
-        if difficulty == "easy":
-            self.player.hp = 150
-        elif difficulty == "medium":
-            self.player.hp = 125
-        else:
-            self.player.hp = 100
+        self.player.hp = 100
 
     def handle_events(self, events):
 
@@ -53,7 +48,7 @@ class Combat:
         self.player.move(keys, self.screen)
 
         for projectile in self.player_projectiles[:]:
-            Projectile.update(projectile)
+            projectile.update()
             if (
                 projectile.x < 0
                 or projectile.x > self.screen.get_width()
@@ -62,8 +57,10 @@ class Combat:
             ):
                 self.player_projectiles.remove(projectile)
                 continue
+            if not projectile.check_duration():
+                self.player_projectiles.remove(projectile)
 
-            if Projectile.deal_damage(projectile, self.boss):
+            if projectile.deal_damage(self.boss):
                 self.player_projectiles.remove(projectile)
                 self.sfx.play("hit")
                 if self.boss.health <= 0:
@@ -72,11 +69,16 @@ class Combat:
 
 
         for projectile in self.boss_projectiles[:]:
-            Projectile.update(projectile)
-            if Projectile.deal_damage(projectile, self.player):
+            projectile.update()
+
+            if not projectile.check_duration():
+                self.player_projectiles.remove(projectile)
+
+            if projectile.deal_damage(self.player):
                 self.boss_projectiles.remove(projectile)
                 self.sfx.play("hit")
                 if self.player.hp <= 0:
+
                     self.win = False
                     self.finished = True
 
@@ -88,9 +90,9 @@ class Combat:
 
         self.screen.fill((0, 0, 0))
         for projectile in self.player_projectiles:
-            Projectile.draw(projectile, self.screen)
+            projectile.draw(self.screen)
         for projectile in self.boss_projectiles:
-            Projectile.draw(projectile, self.screen)
+            projectile.draw(self.screen)
         self.player.draw(self.screen, self.difficulty)
         self.boss.draw(self.screen)
 

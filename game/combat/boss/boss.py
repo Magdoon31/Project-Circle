@@ -10,10 +10,10 @@ class Boss:
         self.type = "boss"
         self.speed = 1.5
         self.diff_mult = 1 if difficulty == "medium" else 1.5 if difficulty == "hard" else 0.6
-        self.attacks = {"basic" : {"damage": 30, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9}, 
-                        "spinner" : {"damage": 20, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6},
-                        "spinner_small" : {"damage": 10, "cooldown": 2800, "last_used": 2800, "width": 15, "speed": 7},
-                        "minigun": {"damage": 10,"cooldown": 2500,"last_used": 2500,"width": 5,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500//self.diff_mult,"is_bursting": False}}
+        self.attacks = {"basic" : {"damage": 30, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9, "range": 1000}, 
+                        "spinner" : {"damage": 20, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6, "range": 1000},
+                        "spinner_small" : {"damage": 10, "cooldown": 2800, "last_used": 2800, "width": 15, "speed": 7, "range": 1000},
+                        "minigun": {"damage": 10,"cooldown": 2500,"last_used": 2500,"width": 5,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500//self.diff_mult,"is_bursting": False, "range": 1000}}
                         
     def draw(self, screen):
         pygame.draw.circle(screen, (200, 100, 100), (self.x, self.y), self.width)
@@ -57,7 +57,7 @@ class Boss:
         for attack_name, attack_info in self.attacks.items():
             if current_time - attack_info["last_used"] >= attack_info["cooldown"]:
                 if attack_name == "basic": 
-                    projectiles.append(prjt(self.x, self.y, player.x, player.y, attack_info["speed"], attack_info["damage"], "boss", attack_info["width"]))
+                    projectiles.append(prjt(self.x, self.y, player.x, player.y, attack_info["speed"], attack_info["damage"], "boss", attack_info["width"], attack_info["range"]))
                     attack_info["last_used"] = current_time
                 elif attack_name == "minigun":
                     if not attack_info["is_bursting"]:
@@ -99,7 +99,7 @@ class Boss:
                         target_x = self.x + math.cos(rad) * 1000
                         target_y = self.y + math.sin(rad) * 1000
 
-                        projectile = prjt(proj_x, proj_y, target_x, target_y, attack_info["speed"], attack_info["damage"], "boss", attack_info["width"])
+                        projectile = prjt(proj_x, proj_y, target_x, target_y, attack_info["speed"], attack_info["damage"], "boss", attack_info["width"], attack_info["range"])
                         projectiles.append(projectile)
                     attack_info["last_used"] = current_time
         if player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2):

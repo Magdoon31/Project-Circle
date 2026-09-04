@@ -2,17 +2,20 @@ import pygame, math
 from game.combat.projectile import projectile as prjt
 
 class Shooter :
-    def __init__(self, x, y):
+    def __init__(self, x, y, active_items):
         self.x = x
         self.y = y
         self.width = 25
-        self.hp = 100
-        self.defence = 0
+        self.hp = 100 + (active_items["armor"].bonus_hp if active_items["armor"] else 0)
+        self.defence = (active_items["armor"].defense if active_items["armor"] else 0)
         self.speed = 10
-        self.rate_of_fire = 0.5
+        self.rate_of_fire = (active_items["weapon"].rate_of_fire if active_items["weapon"] else 99999)
         self.last_shot_time = 0
-        self.damage = 100
+        self.damage = (active_items["weapon"].damage if active_items["weapon"] else 0)
         self.type = "player"
+        self.range = (active_items["weapon"].range if active_items["weapon"] else 0)
+        self.bullet_size = (active_items["weapon"].bullet_size if active_items["weapon"] else 0)
+        self.bullet_speed = (active_items["weapon"].bullet_speed if active_items["weapon"] else 0)
 
     def draw(self, screen, difficulty):
         pygame.draw.circle(screen, (200, 50, 50), (self.x, self.y), self.width)
@@ -50,23 +53,10 @@ class Shooter :
         if type == "basic":
             if pygame.time.get_ticks() - self.last_shot_time >= self.rate_of_fire * 1000:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                projectile = prjt(self.x, self.y, mouse_x, mouse_y, 20, self.damage, "player",10)
+                projectile = prjt(self.x, self.y, mouse_x, mouse_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range)
                 self.last_shot_time = pygame.time.get_ticks()
                 return projectile
-        elif type == "shotgun":
-            if pygame.time.get_ticks() - self.last_shot_time >= self.rate_of_fire * 1200:
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                projectiles = []
-                for angle in range(-90, 90, 35):
-                    rad = math.radians(angle)
-                    cos_a = math.cos(rad)
-                    sin_a = math.sin(rad)
-                    target_x = mouse_x + cos_a * 100
-                    target_y = mouse_y + sin_a * 100
-                    projectile = prjt(self.x, self.y, target_x, target_y, 8, self.damage//2.2, "player",5,pygame.time.get_ticks())
-                    projectiles.append(projectile)
-                self.last_shot_time = pygame.time.get_ticks()
-                return projectiles
+
         return None
     def take_damage(self, amount):
         self.hp -= amount

@@ -11,13 +11,13 @@ class ItemDatabase:
                                     "Simple Pistol to kompaktowe i łatwe w obsłudze\n"
                                     "urządzenie do piaskowania, zaprojektowane z myślą\n"
                                     "o szybkich pracach warsztatowych lub renowacyjnych",
-                                    "weapon",4,0.25,None,"None",100,
+                                    "weapon",4,0.25,None,"None",100,10,25,
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_pistol.png"),(height//10,height//10)).convert_alpha()),
             "Simple Blaster": Weapon("Simple Blaster",
                                     "Simple Blaster to kompaktowe i łatwe w obsłudze\n"
                                     "urządzenie do piaskowania, zaprojektowane z myślą\n"
                                     "o szybkich pracach warsztatowych lub renowacyjnych",
-                                    "weapon",8,0.5,None,"None",110,
+                                    "weapon",8,0.5,None,"None",110,10,20,
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_blaster.png"),(height//10,height//10)).convert_alpha())
         }
         self.armors = {

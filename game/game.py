@@ -31,7 +31,7 @@ class Game:
         self.map.player = self.player
         self.map_ui.player = self.player
 
-        self.player_in_combat = Shooter(400, 300)
+        self.player_in_combat = None
         self.combat = None
 
         self.inventory = Inventory(self.screen)
@@ -39,13 +39,13 @@ class Game:
 
         self.save_manager = SaveManager(self.player, self.inventory, self.map)
 
-        self.menu = Menu(self.screen,self.sfx,self.music, self.save_manager)
-        self.music.play("menu")
-
         self.settings = SettingsManager(self.music, self.sfx)
         self.settings.settings_data_render()
         self.music.update_volume()
         self.sfx.update_volume()
+
+        self.menu = Menu(self.screen,self.sfx,self.music, self.save_manager)
+        self.music.play("menu")
 
         
         self.save = 0
@@ -104,18 +104,31 @@ class Game:
             self.running = False
 
     def update_map(self, events, keys, mouse_pos):
-        self.map.draw()
-        self.map_ui.draw()
         change_state = self.map_ui.handle_click(mouse_pos,events)
-        self.player.draw(self.screen)
-        fight = self.player.move(keys)
-        if fight == "boss1":
+        
+        if self.map_ui.page == "map":
+                    self.map.draw()
+                    self.player.draw(self.screen)
+                    fight = self.player.move(keys)
+
+        self.map_ui.draw()
+        
+        if self.map_ui.page == "map" and fight not in (True,False):
+            self.player_in_combat = Shooter(300,300,self.inventory.active_items)
+        if self.map_ui.page == "map" and fight == "boss1":
             self.state = GameState.COMBAT
             self.combat = Combat(self.screen, self.player_in_combat,"boss1", "easy",self.sfx)
             self.music.stop()
             self.music.play("boss_fight1")
         if change_state == "inventory":
             self.state = GameState.INVENTORY
+        elif change_state == "quit":
+            self.settings.settings_data_save()
+            self.save_manager.save_game(self.save)
+            self.running = False
+        elif change_state == "save":
+            self.settings.settings_data_save()
+            self.save_manager.save_game(self.save)
 
 
     def update_combat(self, events, keys):
@@ -133,6 +146,7 @@ class Game:
                     self.player.money+=100
             else:
                 self.player.set_position(128,128)
+            self.player_in_combat = None
             
 
     def update_inventory(self, events, mouse_pos):

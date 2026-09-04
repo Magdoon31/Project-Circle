@@ -1,7 +1,7 @@
 import pygame, math
 
 class projectile:
-    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, time = 0):
+    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, range):
         self.x = x
         self.y = y
         self.speed = speed
@@ -9,8 +9,8 @@ class projectile:
         self.type = player
         self.width = width
         self.color = (255, 255, 0) if player == "player" else (180, 180, 0)
-        self.shot_time = time
-        self.shotgun_range = 320
+        self.range = range
+        self.shot_time = pygame.time.get_ticks()
 
         dx = target_x - x
         dy = target_y - y
@@ -23,9 +23,10 @@ class projectile:
             self.vx = 0
             self.vy = 0
 
-    def check_duration(self, time):
-        if self.shot_time + self.shotgun_range < time and self.shot_time != 0:
+    def check_duration(self):
+        if pygame.time.get_ticks() - self.shot_time < self.range and self.shot_time != 0:
             return True
+        return False
         
     def update(self):
         self.x += self.vx

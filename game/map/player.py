@@ -12,7 +12,7 @@ class Player:
         self.play_time = 0
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (200, 200, 50), ((screen.get_width()//2) - 5, (screen.get_height()//2) - 5), 50)
+        pygame.draw.circle(screen, (200, 200, 50), ((screen.get_width()//2) - 5, (screen.get_height()//2) - 5), 10)
         self.play_time += 1/60
     def move(self, keys):
         vx = 0

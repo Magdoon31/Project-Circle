@@ -1,4 +1,4 @@
 music_volume
 0.4875
 sfx_volume
-1.0
+0.453125
