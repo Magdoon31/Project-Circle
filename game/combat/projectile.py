@@ -1,25 +1,34 @@
+import copy
+
 import pygame, math
 
 class projectile:
-    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, range, effects = {}):
+    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, range, color = (180,180,0), effects = {}):
         self.x = x
         self.y = y
         self.speed = speed
         self.damage = damage
         self.type = player
         self.width = width
-        self.color = (255, 255, 0) if player == "player" else (180, 180, 0)
+        self.color = color
         self.range = range
         self.shot_time = pygame.time.get_ticks()
         self.effects = effects
+        self.target_x = target_x
+        self.target_y = target_y
+        self.vx = 0
+        self.vy = 0
 
-        dx = target_x - x
-        dy = target_y - y
+        self.set_velocity()
+
+    def set_velocity(self):
+        dx = self.target_x - self.x
+        dy = self.target_y - self.y
         length = math.sqrt(dx**2 + dy**2)
 
         if length != 0:
-            self.vx = dx / length * speed
-            self.vy = dy / length * speed
+            self.vx = dx / length * self.speed
+            self.vy = dy / length * self.speed
         else:
             self.vx = 0
             self.vy = 0
@@ -30,6 +39,15 @@ class projectile:
         return False
         
     def update(self):
+        if self.effects:
+            for effect in self.effects:
+                if effect == "bubble":
+                    self.speed -= 0.25
+                    if self.speed < 0:
+                        self.speed = 0
+                    self.set_velocity()
+
+        
         self.x += self.vx
         self.y += self.vy
 
@@ -42,6 +60,6 @@ class projectile:
     
     def deal_damage(self, target):
         if self.check_collision(target) and target.type != self.type:
-            target.take_damage(self.damage,self.effects)
+            target.take_damage(self.damage,copy.deepcopy(self.effects))
             return True
         return False

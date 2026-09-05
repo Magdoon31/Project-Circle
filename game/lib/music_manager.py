@@ -20,7 +20,7 @@ class MusicManager:
 
     def play(self, name):
         if name in self.music:
-            self.music[name].play()
+            self.music[name].play(-1)
     def stop(self, name=None):
         if name in self.music:
             self.music[name].stop()

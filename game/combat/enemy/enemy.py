@@ -10,19 +10,40 @@ class Enemy:
         self.width = width
         self.type = type
         self.speed = speed
+        self.og_speed = speed
         self.attacks = attacks
         self.money = money
+        self.color = (255,255,255)
         self.effects = {}      
 
-    def draw(self, screen):
-        pygame.draw.circle(screen, (220, 150, 150), (self.x, self.y), self.width)
+    def draw(self, screen, hard_mode = False):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
+        effect_del = []
+        if self.effects:
+            for effect_name, effect in self.effects.items():
+                if effect_name == "slow":
+                    self.speed = self.og_speed * (1-effect[1])
+
+                effect[0] -= 1/60 if not hard_mode else 1/50
+                if effect[0] <= 0:
+                    effect_del.append(effect_name)
+            for name in effect_del:
+                if name == "slow":
+                    self.speed = self.og_speed
+                self.effects.pop(name)
+            print(self.effects)
+                
 
     def take_damage(self, amount, effects):
         self.hp -= amount
         if self.hp < 0:
             self.hp = 0
-            return True
-        return False
+        if effects:
+            for effect_name, effect in effects.items():
+                if effect_name in ("slow"):
+                    self.effects[effect_name] = effect
+        
+
 
     def move(self, target_x, target_y, screen):
         dx = target_x - self.x
@@ -33,7 +54,6 @@ class Enemy:
         if length != 0:
             dx /= length
             dy /= length
-        print(self.speed)
         self.x += dx * self.speed
         self.y += dy * self.speed
         if self.x < 0 + self.width:
@@ -45,11 +65,23 @@ class Enemy:
         if self.y > screen.get_height()-self.width:
             self.y = screen.get_height()-self.width
 
-    def attack(self, player):
+    def attack(self, player = None, hard_mode = False):
         projectiles = []
         current_time = pygame.time.get_ticks()
         for attack_name, attack_info in self.attacks.items():
-            if current_time - attack_info["last_used"] >= attack_info["cooldown"]:
+            if attack_name == "death_spiral" and self.hp == 0:
+                for angle in range(0, 360,30):
+                    rad = math.radians(angle)
+                    proj_x = self.x + math.cos(rad) * self.width
+                    proj_y = self.y + math.sin(rad) * self.width
+
+                    target_x = self.x + math.cos(rad) * 1000
+                    target_y = self.y + math.sin(rad) * 1000
+
+                    projectile = prjt(proj_x, proj_y, target_x, target_y, self.attacks["death_spiral"]["speed"], self.attacks["death_spiral"]["damage"], "enemy", self.attacks["death_spiral"]["width"], self.attacks["death_spiral"]["range"])
+                    projectiles.append(projectile)
+                break
+            elif current_time - attack_info["last_used"] >= attack_info["cooldown"] - (200 if hard_mode else 0) and player:
                 if attack_name == "basic": 
                     projectiles.append(prjt(self.x, self.y, player.x, player.y, attack_info["speed"], attack_info["damage"], "enemy", attack_info["width"], attack_info["range"]))
                     attack_info["last_used"] = current_time
@@ -85,7 +117,8 @@ class Enemy:
                                 attack_info["last_used"] = current_time
                         
                 elif attack_name == "spinner":
-                    for angle in range(0, 360, 30 if attack_name == "spinner" else 20):
+                    rnd = random.randint(-5,5)
+                    for angle in range(0+rnd*20, 360+rnd*20, 360//attack_info["bullets"]):
                         rad = math.radians(angle)
                         proj_x = self.x + math.cos(rad) * self.width
                         proj_y = self.y + math.sin(rad) * self.width
@@ -96,8 +129,9 @@ class Enemy:
                         projectile = prjt(proj_x, proj_y, target_x, target_y, attack_info["speed"], attack_info["damage"], "enemy", attack_info["width"], attack_info["range"])
                         projectiles.append(projectile)
                     attack_info["last_used"] = current_time
-        if player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2):
-            projectiles.append(prjt(player.x, player.y, player.x, player.y, 1, 1, "enemy", 1,1000))
+            
+        if player and player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2):
+            projectiles.append(prjt(player.x, player.y, player.x, player.y, 1, 2, "enemy", 1,1000))
                 
         return projectiles
 
@@ -107,4 +141,4 @@ class Enemy:
             bar_height = screen.get_height() // 30
             fill_width = int(bar_width * (self.hp/self.max_hp))
             pygame.draw.rect(screen, (255, 0, 0), (screen.get_width() // 2 - bar_width // 2, 20, bar_width, bar_height))
-            pygame.draw.rect(screen, (0, 255, 0), (screen.get_width() // 2 - bar_width // 2, 20, fill_width, bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (screen.get_width() // 2 - bar_width // 2, 20, fill_width, bar_height))()

@@ -22,11 +22,12 @@ class Shooter :
         self.weapon_effect = (active_items["weapon"].effect if active_items["weapon"] else None)
         self.armor_effect = (active_items["armor"].effect if active_items["armor"] else None)
         self.trinket_effect = (active_items["trinket"].effect if active_items["trinket"] else None)
+        self.color = (active_items["weapon"].color if active_items["weapon"] else (0,0,0))
 
 
-    def draw(self, screen, difficulty):
+    def draw(self, screen):
         pygame.draw.circle(screen, (200, 50, 50), (self.x, self.y), self.width)
-        self.hp_bar(screen, difficulty)
+        self.hp_bar(screen)
     def move(self, keys, screen):
         vx = 0
         vy = 0
@@ -60,39 +61,39 @@ class Shooter :
         if pygame.time.get_ticks() - self.last_shot_time >= self.rate_of_fire * 1000:  
             mouse_x, mouse_y = pygame.mouse.get_pos()   
 
-            if self.weapon_effect[0] not in ("shotgun_r6","shotgun_s4"):
+            if next(iter(self.weapon_effect), None)  not in ("shotgun_r6","shotgun_s4"):
                     angle = math.atan2(mouse_y - self.y, mouse_x - self.x)
                     recoil_angle = math.radians(random.uniform(-self.recoil / 2, self.recoil / 2))
                     angle += recoil_angle
                     target_x = self.x + math.cos(angle) * 1000
                     target_y = self.y + math.sin(angle) * 1000
 
-                    projectile = prjt(self.x, self.y, target_x, target_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range)
+                    projectile = prjt(self.x, self.y, target_x, target_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range, self.color, self.weapon_effect)
                     self.last_shot_time = pygame.time.get_ticks()
                     return False, projectile
             
-            elif self.weapon_effect[0][:7] == "shotgun":
+            elif next(iter(self.weapon_effect), None)[:7] == "shotgun":
                 projectiles = []
-                if self.weapon_effect[0][-2] == "r":
-                    for i in range(int(self.weapon_effect[0][-1])):
+                if next(iter(self.weapon_effect), None)[-2] == "r":
+                    for i in range(int(next(iter(self.weapon_effect), None)[-1])):
                         angle = math.atan2(mouse_y - self.y, mouse_x - self.x)
                         recoil_angle = math.radians(random.uniform(-self.recoil / 2, self.recoil / 2))
                         angle += recoil_angle
                         target_x = self.x + math.cos(angle) * 1000
                         target_y = self.y + math.sin(angle) * 1000
                         
-                        projectile = prjt(self.x, self.y, target_x, target_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range)
+                        projectile = prjt(self.x, self.y, target_x, target_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range, self.color, self.weapon_effect)
                         projectiles.append(projectile)
                 
-                elif self.weapon_effect[0][-2] == "s":
-                    shots = int(self.weapon_effect[0][-1])
+                elif next(iter(self.weapon_effect), None)[-2] == "s":
+                    shots = int(next(iter(self.weapon_effect), None)[-1])
                     angle = math.atan2(mouse_y - self.y, mouse_x - self.x)
                     angle += math.radians(-self.recoil//2)
                     for i in range(shots):
                         angle += math.radians(self.recoil/shots)
                         target_x = self.x + math.cos(angle) * 1000
                         target_y = self.y + math.sin(angle) * 1000
-                        projectile = prjt(self.x, self.y, target_x, target_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range)
+                        projectile = prjt(self.x, self.y, target_x, target_y, self.bullet_speed, self.damage, "player", self.bullet_size, self.range, self.color, self.weapon_effect)
                         projectiles.append(projectile)
 
                 self.last_shot_time = pygame.time.get_ticks()
@@ -100,11 +101,15 @@ class Shooter :
         return False, None
     def take_damage(self, amount, effects):
         self.hp -= max(amount-self.defence, 1)
+        if effects:
+            for effect_name, effect in effects.items():
+                if effect_name in ("slow"):
+                    self.effects[effect_name] = effect
         if self.hp <= 0:
             self.hp = 0
             return True
         return False
-    def hp_bar(self, screen,difficulty):
+    def hp_bar(self, screen):
         bar_width = 50
         bar_height = 5
         fill_width = int(bar_width * self.hp / (self.max_hp))

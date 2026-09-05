@@ -1,7 +1,7 @@
 import pygame
 
 class MapUI:
-    def __init__(self, screen):
+    def __init__(self, screen, sfx):
         self.screen = screen
         self.font_light = {"small" : pygame.font.Font("assets/font/Nexa-ExtraLight.ttf",18),
                             "mid" : pygame.font.Font("assets/font/Nexa-ExtraLight.ttf",36),
@@ -13,6 +13,8 @@ class MapUI:
         self.selected_btn = -1
         self.player = None
         self.page = "map"
+        self.sfx = sfx
+        
 
         
 
@@ -31,8 +33,8 @@ class MapUI:
             inventory_btn_text = self.font_heavy["mid"].render("Inventory",True,(0,0,0))
             self.screen.blit(inventory_btn_text,(inventory_btn_rect.x+inventory_btn_rect.width/2-inventory_btn_text.get_width()/2,inventory_btn_rect.y+inventory_btn_rect.height/2-inventory_btn_text.get_height()/2))
 
-            menu_btn_rect = pygame.Rect(self.screen.get_width() - self.screen.get_width()//6,
-                            self.screen.get_height()//16,
+            menu_btn_rect = pygame.Rect(self.screen.get_width() - self.screen.get_width()//10,
+                            self.screen.get_height()//25,
                             self.screen.get_width()//14,
                             self.screen.get_height()//22
                             )
@@ -82,6 +84,7 @@ class MapUI:
             for i, btn in enumerate(self.buttons):
                 if btn.collidepoint(pos):
                     if event.type == pygame.MOUSEBUTTONDOWN:
+                        self.sfx.play("use")
                         if self.page == "map":
                             if i == 0:
                                 return "inventory"

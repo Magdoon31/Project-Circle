@@ -1,4 +1,5 @@
 import json
+import os
 
 class SaveManager:
     def __init__(self, player, inventory, map):
@@ -6,7 +7,7 @@ class SaveManager:
         self.inventory = inventory
         self.map = map
         
-    def save_game(self, nr):
+    def save_game(self, nr, hard_mode):
         if nr in (1,2,3):
             save_data = {
                         "player": {
@@ -21,6 +22,9 @@ class SaveManager:
                         },
                         "map": {
                             "layout" : self.map.layout
+                        },
+                        "game": {
+                            "hard_mode" : hard_mode
                         }
                     }
             with open(f"game/text/save{nr}.json", "w") as f:
@@ -37,6 +41,7 @@ class SaveManager:
                     game.player.money = save_data["player"]["money"]
                     game.player.play_time = save_data["player"]["playtime"]
                     game.map.layout = save_data["map"]["layout"]
+                    game.hard_mode = save_data["game"]["hard_mode"]
                     for item_name in save_data["inventory"]["active_items"]:
                         item = game.inventory.ItemDB.get_item(item_name)
                         if item is not None:
@@ -59,8 +64,13 @@ class SaveManager:
             try:
                 with open(f"game/text/save{nr}.json", "r") as f:
                     save_data = json.load(f)
+                    hard_mode = True if save_data["game"]["hard_mode"] == "True" else False
                     time = int(save_data['player']['playtime'])
-                    return [f"Save {nr}","Time Played:", f"{time//3600}:{(time//60)%60:02d}",f"Money: {save_data['player']['money']}"]
+                    return [f"Save {nr}","Time Played:", f"{time//3600}:{(time//60)%60:02d}",f"Money: {save_data['player']['money']}"], hard_mode
             except (FileNotFoundError, json.JSONDecodeError):
-                    return [f"Save {nr}"," ",f"EMPTY"]
-                
+                    return [f"Save {nr}"," ",f"EMPTY"], False
+        return None, False
+    
+    def reset_data(self, nr):
+        if os.path.exists(f"game/text/save{nr}.json"):
+            os.remove(f"game/text/save{nr}.json")

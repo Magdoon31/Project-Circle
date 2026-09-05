@@ -23,6 +23,10 @@ class Menu:
         self.img = {"music": pygame.transform.scale(pygame.image.load("assets/img/menu/music_icon.png"), (self.screen.get_height() // 10, self.screen.get_height() // 10)),
                     "sfx": pygame.transform.scale(pygame.image.load("assets/img/menu/sfx_icon.png"), (self.screen.get_height() // 10, self.screen.get_height() // 10))}
         self.save_manager = save_manager
+
+        self.difficulty = 0
+        self.new_game = False
+        self.save_selected = 0
         
 
     def draw(self):
@@ -95,18 +99,56 @@ class Menu:
             save_slot_height = self.screen.get_height() // 4
             save_slot_x_start = self.screen.get_width() // 3.6
             save_slot_y = self.screen.get_height() // 3
+            
             for i in range(3):
+
+                save_text, hard_mode = self.save_manager.get_save_info(i+1)
                 slot_x = save_slot_x_start + i * (save_slot_width*1.2)
+                color = 1.5 if hard_mode else 1
                 save_slot_rect = pygame.Rect(slot_x, save_slot_y, save_slot_width, save_slot_height)
                 self.buttons.append(save_slot_rect)
-                pygame.draw.rect(self.screen, (170, 170, 170) if self.selected_btn != i else (255,255,255), save_slot_rect, 0, 10)
-                save_text = self.save_manager.get_save_info(i+1)
+
+                pygame.draw.rect(self.screen, (170, 170//color, 170//color) if self.selected_btn != i else (255,255//color,255//color), save_slot_rect, 0, 10)
                 for i, text in enumerate(save_text):
                     slot_text = self.font_heavy["mid"].render(text,True,(0,0,0))
                     self.screen.blit(slot_text,(slot_x + (save_slot_width - slot_text.width)//2,save_slot_y+(i*save_slot_height)//5))
 
+        elif self.page == "new_game":
+            button_width = self.screen.get_width() // 3.9
+            button_height = self.screen.get_height() // 11
+            button_x = (self.screen.get_width() - button_width) // 2
+            button_y_start = self.screen.get_height() // 2.4
 
-        if self.page in ("achievements", "options", "save_load"):
+            for i, text in enumerate(["New Game","Continue"]):
+
+                button = pygame.Rect(button_x,button_y_start+(i*button_height*1.5),button_width,button_height)
+                self.buttons.append(button)
+
+                pygame.draw.rect(self.screen,(170,170,170) if self.selected_btn != i else (255,255,255),button,0,10)
+                btn_text = self.font_heavy["mid"].render(text,True,(0,0,0))
+
+                btn_text_rect = btn_text.get_rect(center=button.center)
+                self.screen.blit(btn_text, btn_text_rect)
+
+        elif self.page == "difficulty":
+
+            button_width = self.screen.get_width() // 3.9
+            button_height = self.screen.get_height() // 11
+            button_x = (self.screen.get_width() - button_width) // 2
+            button_y_start = self.screen.get_height() // 2.4
+
+            for i, text in enumerate(["Normal","Hard Mode"]):
+
+                button = pygame.Rect(button_x,button_y_start+(i*button_height*1.5),button_width,button_height)
+                self.buttons.append(button)
+
+                pygame.draw.rect(self.screen,(170,170,170) if self.selected_btn != i else (255,255,255),button,0,10)
+                btn_text = self.font_heavy["mid"].render(text,True,(0,0,0))
+
+                btn_text_rect = btn_text.get_rect(center=button.center)
+                self.screen.blit(btn_text, btn_text_rect)
+
+        if self.page in ("achievements", "options", "save_load", "new_game", "difficulty"):
 
             back_btn_rect = pygame.Rect(self.screen.get_width() - self.screen.get_width()//6,
                                     self.screen.get_height() - self.screen.get_height()//16,
@@ -126,23 +168,43 @@ class Menu:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if self.page == "main":
                             if i == 0:
-                                return "play", 0
+                                self.page = "save_load"
                             elif i == 1:
-                                return "achievements", 0
+                                self.page = "achievements"
                             elif i == 2:
-                                return "options", 0
+                                self.page = "options"
                             elif i == 3:
-                                return "quit", 0                       
+                                return "quit", 0, False        
+                                          
                         elif self.page == "save_load":
+                            if i in (0,1,2):  
+                                self.save_selected = i+1
+                                if self.save_manager.get_save_info(self.save_selected)[0][-1] == "EMPTY":
+                                    self.page = "difficulty"
+                                else:  
+                                    self.page = "new_game"
+
+                        elif self.page == "new_game":  
                             if i == 0:
-                                return "start_game", 1
+                                self.page = "difficulty"
                             elif i == 1:
-                                return "start_game", 2
+                                return "start_game", self.save_selected, self.save_manager.get_save_info(self.save_selected)[1]
                             elif i == 2:
-                                return "start_game", 3
-                        if self.page == "achievements" or self.page == "options" or self.page == "save_load":
+                                self.page = "save_load"
+                                self.save_selected = 0
+                        elif self.page == "difficulty":
+                            if i == 0:
+                                self.save_manager.reset_data(self.save_selected)
+                                return "start_game", self.save_selected, False
+                            elif i == 1:
+                                self.save_manager.reset_data(self.save_selected)
+                                return "start_game", self.save_selected, True
+                            elif i == 2:
+                                self.page = "save_load"
+                                self.save_selected = 0
+                        if self.page in ("achievements", "options", "save_load"):
                             if i == len(self.buttons) - 1:
-                                return "main", 0
+                                self.page = "main"
                     self.selected_btn = i
             if self.selected_btn in range(len(self.buttons)) and not self.buttons[self.selected_btn].collidepoint(pos):
                 self.selected_btn = -1
@@ -186,5 +248,5 @@ class Menu:
 
                         self.sfx.update_volume()
 
-        return "", 0
+        return "", 0, False
         
