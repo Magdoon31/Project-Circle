@@ -13,7 +13,7 @@ class ItemDatabase:
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_pistol.png"),(height//10,height//10)).convert_alpha()),
             "Simple Blaster": Weapon("Simple Blaster",
                                     "Starter weapon\nmade by the starter itself,\nmaybe he doesn't know about this",
-                                    "weapon",80,0.5,{},"None",20000,10,25,(120,60,200),
+                                    "weapon",30,0.5,{"confusion" : [30], "slow":[30,0.5]},"None",20000,10,25,(120,60,200),
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/simple_blaster.png"),(height//10,height//10)).convert_alpha()),
             "Minigun": Weapon("Minigun",
                                     "Shoot really fast\nbut uncontrollably, like everything around",
@@ -29,7 +29,7 @@ class ItemDatabase:
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/shotgun_s4.png"),(height//10,height//10)).convert_alpha(),recoil=20),
             "Bubble Gun": Weapon("Bubble Gun",
                                     "Shoots bubbles that slow down over time.\nRange is short, as is life",
-                                    "weapon",5,0.15,{"bubble" : 1, "slow": [0.5,0.3]},"Slows enemies, Automatic",14000,9,10,(20,100,200),
+                                    "weapon",5,0.15,{"bubble" : 1, "slow": [30,0.3]},"Slows enemies, Automatic",14000,9,10,(20,100,200),
                         pygame.transform.scale(pygame.image.load("assets/img/inventory/bubble_gun.png"),(height//10,height//10)).convert_alpha(),True,10),
         }
         self.armors = {

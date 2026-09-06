@@ -34,7 +34,7 @@ class Game:
 
         self.player_in_combat = None
         self.combat = None
-        self.enemy_db = EnemyDB()
+        self.enemy_db = EnemyDB(self.sfx)
 
         self.hard_mode = False
 
@@ -116,7 +116,7 @@ class Game:
         self.map_ui.draw()
         
         if self.map_ui.page == "map" and fight not in (True,False):
-            self.player_in_combat = Shooter(300,300,self.inventory.active_items)
+            self.player_in_combat = Shooter(300,300,self.inventory.active_items,self.sfx)
         if self.map_ui.page == "map" and fight == "fight":
 
             self.combat = Combat(self.screen, self.player_in_combat,[],self.hard_mode,self.sfx)
@@ -191,7 +191,7 @@ class Game:
             self.music.play(self.player.biome)
             if self.combat.win:
                 if self.combat.boss == "boss1":
-                    self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
+                    # self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
                     self.player.money += int(self.combat.money)
                 else:
                     self.player.money += int(self.combat.money * self.combat.money_mult *0.05)

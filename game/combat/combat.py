@@ -2,7 +2,6 @@ import math
 import random
 
 import pygame
-from game.combat.enemy.enemy import Enemy
 
 
 class Combat:
@@ -39,6 +38,7 @@ class Combat:
         self.sfx.load_sfx("enemy_death", "assets/sfx/combat/enemy_death.wav")
         self.sfx.load_sfx("player_hit", "assets/sfx/combat/player_hit.wav")
         self.sfx.load_sfx("bullet_burst", "assets/sfx/combat/bullet_burst.mp3")
+        self.sfx.load_sfx("dmg_effect", "assets/sfx/combat/dmg_effect.wav")
 
 
         self.player.hp = 100
@@ -112,6 +112,7 @@ class Combat:
 
             if not projectile.check_duration():
                 self.enemy_projectiles.remove(projectile)
+                continue
 
             if projectile.deal_damage(self.player):
                 self.enemy_projectiles.remove(projectile)
