@@ -82,7 +82,7 @@ class Enemy:
         self.hp -= max(amount - self.defence,1)
         if self.hp < 0:
             self.hp = 0
-            self.sfx.play("enemy_death")
+            
 
         if effects:
             for effect_name, effect in effects.items():

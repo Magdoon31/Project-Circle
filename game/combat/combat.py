@@ -52,6 +52,8 @@ class Combat:
 
         self.segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/zap{nr}.png"),(64,64)) for nr in range(1,5)]
         self.zapped_enemies = []
+        self.explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/boom{nr}.png") for nr in range(1,7)]
+        self.explosions = []
 
     def handle_events(self, events, mouse_btn_pressed):
 
@@ -97,15 +99,23 @@ class Combat:
                 self.player_projectiles.remove(projectile)
                 continue
             for enemy in self.enemies:
+
                 special_effect = projectile.deal_damage(enemy)
+                #special_effect -> [name,weapon_effect]
+
                 if special_effect:
-                    self.player_projectiles.remove(projectile)
+                    if special_effect[0] != "pierce":
+                        self.player_projectiles.remove(projectile)
 
                     if special_effect[0] == "zap":
                         self.zap(special_effect[1], enemy)
                         self.sfx.play(f"zap{random.randint(1,3)}")
+                    elif special_effect[0] == "explosion":
+                        self.explosion((projectile.x,projectile.y), special_effect[1],enemy)
+                        self.sfx.play("explosion")
                         
                     if enemy.hp <= 0:    
+                        self.sfx.play("enemy_death")
                         projectiles = enemy.attack(self.timer)
                         self.enemy_projectiles.extend(projectiles)
                         self.enemies.remove(enemy)
@@ -178,6 +188,7 @@ class Combat:
                 enemy[2] -= 1
                 if enemy[2] <= 0:
                     self.zapped_enemies.remove(enemy)
+        self.ExplosionEffect()
 
         if self.win:
 
@@ -242,6 +253,7 @@ class Combat:
                     self.enemies[self.enemies.index(next_enemy)].take_damage(effect[2]*effect[1])
 
                     if self.enemies[self.enemies.index(next_enemy)].hp <= 0:
+                        self.sfx.play("enemy_death")
                         self.enemies.pop(self.enemies.index(next_enemy))
 
                     self.zapped_enemies.append([(last_enemy.x,last_enemy.y),(next_enemy.x,next_enemy.y),8])
@@ -249,6 +261,33 @@ class Combat:
                     last_enemy = next_enemy
                     next_enemy = None
                     e.remove(last_enemy)
+
+    def explosion(self, pos, effect, enemy_hit):
+        # effect -> [width,dmg_mult,dmg]
+
+        e = self.enemies.copy()
+
+        self.explosions.append([effect[0],pos,18])
+        
+        if len(e) > 1:
+
+            e.remove(enemy_hit)
+            w = effect[0]
+
+            for enemy in e:
+
+                dx = enemy.x - pos[0]
+                dy = enemy.y - pos[1]
+                dist = math.sqrt(dx*dx + dy*dy)
+
+                if dist <= w:
+                    self.enemies[self.enemies.index(enemy)].take_damage(effect[2]*effect[1])
+
+                    if self.enemies[self.enemies.index(enemy)].hp <= 0:
+                        self.sfx.play("enemy_death")
+                        self.enemies.pop(self.enemies.index(enemy))
+                    
+
 
     
     def ZapEffect(self, start_pos, end_pos):
@@ -272,11 +311,33 @@ class Combat:
             y = start_pos[1] + dy * progress
 
             zap_img = random.choice(self.segments)
-
             
             zap_img = pygame.transform.rotate(zap_img, angle)
-
 
             rect = zap_img.get_rect(center=(x, y))
 
             self.screen.blit(zap_img, rect)
+
+    def ExplosionEffect(self): 
+        # exp -> [width,pos,time]
+        for exp in self.explosions:
+
+            w = exp[0]
+            pos = exp[1]
+
+            if exp[2] > 0:
+
+                stage = math.ceil(exp[2]/6)
+                img = pygame.transform.scale(self.explosion_img[stage],(w*2,w*2))
+                rect = img.get_rect(center=pos)
+
+                if exp[2]>8:
+
+                    pygame.draw.circle(self.screen,(240,170,160),pos,w,w//15)
+
+                self.screen.blit(img, rect)
+                exp[2] -= 1
+
+            else:
+
+                self.explosions.remove(exp)

@@ -38,7 +38,7 @@ class projectile:
 
     def check_duration(self):
         if pygame.time.get_ticks() - self.shot_time < self.range and self.shot_time != 0:
-            return True
+            return self.effects
         return False
         
     def update(self):
@@ -72,7 +72,7 @@ class projectile:
     def deal_damage(self, target):
         if self.check_collision(target) and target.type != self.type:
             effect = target.take_damage(self.damage,copy.deepcopy(self.effects))
-            if effect not in (True,False):
+            if effect not in (True,False,None):
                 effect[1].append(self.damage)
             return effect
         return False
