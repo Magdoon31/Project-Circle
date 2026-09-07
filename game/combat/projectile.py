@@ -71,6 +71,8 @@ class projectile:
     
     def deal_damage(self, target):
         if self.check_collision(target) and target.type != self.type:
-            target.take_damage(self.damage,copy.deepcopy(self.effects))
-            return True
+            effect = target.take_damage(self.damage,copy.deepcopy(self.effects))
+            if effect not in (True,False):
+                effect[1].append(self.damage)
+            return effect
         return False

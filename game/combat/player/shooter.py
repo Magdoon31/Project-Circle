@@ -62,7 +62,7 @@ class Shooter :
 
     def handle_effects(self, check = False):
         effect_del = []
-        text = None
+        text = []
         if self.effects:
             for effect_name, effect in self.effects.items():
                 if effect_name == "slow":
@@ -80,9 +80,9 @@ class Shooter :
                 elif effect_name == "acid":
                     self.defence = self.og_defence * (1-effect[1])
                 elif effect_name == "confusion":
-                    text = "confusion"
+                    text.append("confusion")
                 elif effect_name == "binded":
-                    text = "blinded"
+                    text.append("binded") 
 
                 if not check:
                     effect[0] -= 1
@@ -99,13 +99,13 @@ class Shooter :
                 elif name == "acid":
                     self.defence = self.og_defence
                 self.effects.pop(name)
-            return text
+        return text
         
     def move(self, keys, screen):
         vx = 0
         vy = 0
 
-        confusion = self.handle_effects(True) == "confusion"    
+        confusion = "confusion" in self.handle_effects(True)
             
         if confusion:
             if keys[pygame.K_s]:
@@ -144,13 +144,12 @@ class Shooter :
             self.y = screen.get_height()-self.width
     def shoot(self):
 
-        binded = self.handle_effects(True) == "blinded"
+        binded = "binded" in self.handle_effects(True)
         
         if pygame.time.get_ticks() - self.last_shot_time >= self.rate_of_fire * 1000 and not binded:  
             mouse_x, mouse_y = pygame.mouse.get_pos()   
-            print(next(iter(self.weapon_effect), None))
+
             if next(iter(self.weapon_effect), None) not in ("shotgun_r6","shotgun_s4"):
-                    print("normal")
                     angle = math.atan2(mouse_y - self.y, mouse_x - self.x)
                     recoil_angle = math.radians(random.uniform(-self.recoil / 2, self.recoil / 2))
                     angle += recoil_angle
@@ -173,7 +172,6 @@ class Shooter :
                         angle += recoil_angle
                         target_x = self.x + math.cos(angle) * 1000
                         target_y = self.y + math.sin(angle) * 1000
-                        print(target_x,target_y)
                         projectile = prjt(self.x, self.y, target_x, target_y, 
                                           self.bullet_speed, self.damage, "player", 
                                           self.bullet_size, self.range, self.bullet_type_info,
@@ -199,16 +197,15 @@ class Shooter :
         return False, None
     def take_damage(self, amount, effects):
         self.hp -= max(amount-self.defence, 1)
+        if self.hp < 0:
+            self.hp = 0
         if effects:
             for effect_name, effect in effects.items():
                 # slow - slow, poison - deal dmg every 0.5s, weakness - less dmg, glued - less fire_rate,
                 # confusion - reverse inputs, binded - can't shoot, burn - deal dmg every 0.1s, acid - less def
                 if effect_name in ("slow","poison","weakness","glued","confusion","binded", "burn", "acid"):
                     self.effects[effect_name] = effect
-        if self.hp <= 0:
-            self.hp = 0
-            return True
-        return False
+        return True
     def hp_bar(self, screen):
         bar_width = 50
         bar_height = 5

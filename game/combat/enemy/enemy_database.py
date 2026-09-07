@@ -21,7 +21,6 @@ class EnemyDB:
 
     def get_enemy(self, name):
         e = self.enemies[name]
-        print(e)
         return Enemy(*e[:-1],copy.deepcopy(e[-1]),self.sfx, self.bullet_type_info)
     def get_boss(self, name):
         b = self.bosses[name]

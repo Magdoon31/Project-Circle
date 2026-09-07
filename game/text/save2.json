@@ -1,20 +1,20 @@
 {
     "player": {
-        "x": 838.6833329081844,
-        "y": 893.6093065034916,
-        "money": 3488,
-        "playtime": 2306.2166666684207
+        "x": 685.3452377915603,
+        "y": 829.9696961967014,
+        "money": 4512,
+        "playtime": 2571.7166666718012
     },
     "inventory": {
         "active_items": [
-            "Bubble Gun",
+            "Simple Blaster",
             "Electro Armor"
         ],
         "items": [
             "Simple Pistol",
             "Shotgun R6",
             "Shotgun S4",
-            "Simple Blaster",
+            "Bubble Gun",
             "Minigun"
         ]
     },

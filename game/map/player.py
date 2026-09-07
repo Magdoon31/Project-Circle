@@ -53,7 +53,7 @@ class Player:
         if new_x != self.x or new_y != self.y:
             rnd = random.random()
             print(rnd)
-            if rnd < 0.0015:
+            if rnd < 0.0115:
                 return "fight"
 
         self.set_position(new_x,new_y)

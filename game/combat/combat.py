@@ -40,12 +40,18 @@ class Combat:
         self.sfx.load_sfx("player_hit", "assets/sfx/combat/player_hit.wav")
         self.sfx.load_sfx("bullet_burst", "assets/sfx/combat/bullet_burst.mp3")
         self.sfx.load_sfx("dmg_effect", "assets/sfx/combat/dmg_effect.wav")
+        self.sfx.load_sfx("zap1", "assets/sfx/combat/zap_sfx1.mp3")
+        self.sfx.load_sfx("zap2", "assets/sfx/combat/zap_sfx2.mp3")
+        self.sfx.load_sfx("zap3", "assets/sfx/combat/zap_sfx3.mp3")
 
         self.money = 0
         self.money_mult = random.randint(10,40)
 
         self.hard_mode = hard_mode
         self.timer = 0
+
+        self.segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/zap{nr}.png"),(64,64)) for nr in range(1,5)]
+        self.zapped_enemies = []
 
     def handle_events(self, events, mouse_btn_pressed):
 
@@ -91,13 +97,19 @@ class Combat:
                 self.player_projectiles.remove(projectile)
                 continue
             for enemy in self.enemies:
-                if projectile.deal_damage(enemy):
+                special_effect = projectile.deal_damage(enemy)
+                if special_effect:
                     self.player_projectiles.remove(projectile)
+
+                    if special_effect[0] == "zap":
+                        self.zap(special_effect[1], enemy)
+                        self.sfx.play(f"zap{random.randint(1,3)}")
+                        
                     if enemy.hp <= 0:    
                         projectiles = enemy.attack(self.timer)
                         self.enemy_projectiles.extend(projectiles)
                         self.enemies.remove(enemy)
-                        self.sfx.play("enemy_death")
+                        
                     else:
                         self.sfx.play("hit")
                     break
@@ -111,7 +123,7 @@ class Combat:
 
             if not projectile.check_duration():
                 self.enemy_projectiles.remove(projectile)
-                continue
+                continue 
 
             if projectile.deal_damage(self.player):
                 self.enemy_projectiles.remove(projectile)
@@ -119,12 +131,13 @@ class Combat:
                 if self.player.hp <= 0:
                     self.win = False
                     self.finished = True
+
         for enemy in self.enemies:
             enemy.move(self.player.x, self.player.y, self.screen)
             proj = enemy.attack(self.timer, self.player, self.hard_mode)
             self.enemy_projectiles.extend(proj)
-            pass
 
+    # enemy collision
         for i, enemy1 in enumerate(self.enemies):
             for enemy2 in self.enemies[i + 1:]:
                 dx = enemy2.x - enemy1.x
@@ -159,6 +172,13 @@ class Combat:
         self.player.draw(self.screen)
         for enemy in self.enemies:
             enemy.draw(self.screen)
+        for enemy in self.zapped_enemies:
+            if enemy[2] > 0:
+                self.ZapEffect(enemy[0],enemy[1])
+                enemy[2] -= 1
+                if enemy[2] <= 0:
+                    self.zapped_enemies.remove(enemy)
+
         if self.win:
 
             pygame.draw.rect(self.screen,(200,200,200),(self.screen.get_width()/2 - self.screen.get_width()/12, self.screen.get_height()/3, self.screen.get_width()/6,self.screen.get_height()/2.9),0,10)
@@ -192,3 +212,71 @@ class Combat:
             self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
 
         pygame.display.flip()
+
+    def zap(self, effect, enemy_hit):
+
+        e = self.enemies.copy()
+
+        if len(e) > 1:
+            
+            e.remove(enemy_hit)
+            pos = (enemy_hit.x,enemy_hit.y)
+
+            next_enemy = enemy_hit
+            last_enemy = enemy_hit
+        
+            for i in range(effect[0]):
+                if len(e) > 0:
+                    dist = 0
+                    nearest = 9999
+                    for enemy in e:
+
+                        dx = pos[0] - enemy.x
+                        dy = pos[1] - enemy.y
+                        dist = math.sqrt(dx*dx+dy*dy)
+                        if dist < nearest:
+                            nearest = dist
+                            next_enemy = enemy
+                        
+                    
+                    self.enemies[self.enemies.index(next_enemy)].take_damage(effect[2]*effect[1])
+
+                    if self.enemies[self.enemies.index(next_enemy)].hp <= 0:
+                        self.enemies.pop(self.enemies.index(next_enemy))
+
+                    self.zapped_enemies.append([(last_enemy.x,last_enemy.y),(next_enemy.x,next_enemy.y),8])
+
+                    last_enemy = next_enemy
+                    next_enemy = None
+                    e.remove(last_enemy)
+
+    
+    def ZapEffect(self, start_pos, end_pos):
+
+        dx = end_pos[0] - start_pos[0]
+        dy = end_pos[1] - start_pos[1]
+        dist = math.sqrt(dx*dx + dy*dy)
+
+        if dist == 0:
+            return
+
+        zap_length = 64
+        amount = max(1,math.ceil(dist / zap_length))
+
+        angle = math.degrees(math.atan2(-dy, dx))
+
+        for i in range(amount):
+            progress = (i + 0.5) / amount
+
+            x = start_pos[0] + dx * progress
+            y = start_pos[1] + dy * progress
+
+            zap_img = random.choice(self.segments)
+
+            
+            zap_img = pygame.transform.rotate(zap_img, angle)
+
+
+            rect = zap_img.get_rect(center=(x, y))
+
+            self.screen.blit(zap_img, rect)

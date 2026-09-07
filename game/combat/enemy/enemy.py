@@ -78,14 +78,19 @@ class Enemy:
         return text
                 
 
-    def take_damage(self, amount, effects):
+    def take_damage(self, amount, effects = {}):
         self.hp -= max(amount - self.defence,1)
         if self.hp < 0:
             self.hp = 0
+            self.sfx.play("enemy_death")
+
         if effects:
             for effect_name, effect in effects.items():
                 if effect_name in ("slow","poison","weakness","glued","confusion","binded", "burn", "acid"):
                     self.effects[effect_name] = effect
+                elif effect_name in ("zap","explosion","piercing","knockback"):
+                    return [effect_name, effect]
+
         
 
 
@@ -220,7 +225,6 @@ class Enemy:
         }
 
         for i, effect in enumerate(self.effects.keys()):
-            print(effect)
             if effect in EFFECT_COLORS:
                 radius = self.width + (i+1) * 6
                 pygame.draw.circle(screen, EFFECT_COLORS[effect], (int(self.x), int(self.y)), radius, 3)

@@ -185,7 +185,6 @@ class Game:
                 for event in pygame.event.get():
                     if event.type == pygame.MOUSEBUTTONDOWN and i > 100:
                         end_screen = False
-                        print("click")
                 self.combat.draw()
 
             self.state = GameState.MAP
