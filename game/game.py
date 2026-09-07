@@ -13,7 +13,7 @@ from game.menu.menu import Menu
 from game.menu.settings_manager import SettingsManager
 from game.menu.save_manager import SaveManager
 from game.combat.enemy.enemy_database import EnemyDB
-
+from game.combat.bullet_types import BulletTypes
 
 class Game:
 
@@ -52,6 +52,7 @@ class Game:
         self.music.play("menu")
         
         self.save = 0
+        self.bullet_type_info = BulletTypes()
 
         self.sfx.load_sfx("use", "assets/sfx/UI/use.wav")
 
@@ -65,7 +66,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     self.settings.settings_data_save()
-                    self.save_manager.save_game(self.save)
+                    self.save_manager.save_game(self.save, self.hard_mode)
 
             if self.state == GameState.MENU:
                 self.update_menu(events, keys, mouse_pos)
@@ -116,7 +117,7 @@ class Game:
         self.map_ui.draw()
         
         if self.map_ui.page == "map" and fight not in (True,False):
-            self.player_in_combat = Shooter(300,300,self.inventory.active_items,self.sfx)
+            self.player_in_combat = Shooter(300,300,self.inventory.active_items,self.sfx,self.bullet_type_info)
         if self.map_ui.page == "map" and fight == "fight":
 
             self.combat = Combat(self.screen, self.player_in_combat,[],self.hard_mode,self.sfx)

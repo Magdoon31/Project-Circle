@@ -2,13 +2,14 @@ import pygame, math, random
 from game.combat.projectile import projectile as prjt
 
 class Enemy:
-    def __init__(self, x, y, hp, width, type, speed, money, defence, attacks, sfx):
+    def __init__(self, x, y, hp, width, type, speed, money, defence, attacks, sfx, bullet_type_info):
         self.x = x
         self.y = y
         self.hp = hp
         self.max_hp = self.hp
         self.width = width
         self.type = type
+        self.bullet_type_info = bullet_type_info
 
         self.speed = speed
         self.og_speed = speed
@@ -29,11 +30,15 @@ class Enemy:
 
         self.sfx = sfx
 
-    def draw(self, screen, hard_mode = False):
+    def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
         self.hp_bar(screen)
+        self.handle_effects()
+        self.draw_effects(screen)
 
+    def handle_effects(self, check = False):
         effect_del = []
+        text = []
         if self.effects:
             for effect_name, effect in self.effects.items():
                 if effect_name == "slow":
@@ -50,8 +55,12 @@ class Enemy:
                     self.hp -= effect[1]
                 elif effect_name == "acid":
                     self.defence = self.og_defence * (1-effect[1])
-
-                effect[0] -= 1
+                elif effect_name == "confusion":
+                    text.append("confusion")
+                elif effect_name == "binded":
+                    text.append("binded")
+                if not check:
+                    effect[0] -= 1
 
                 if effect[0] <= 0:
                     effect_del.append(effect_name)
@@ -66,7 +75,7 @@ class Enemy:
                 elif name == "acid":
                     self.defence = self.og_defence
                 self.effects.pop(name)
-
+        return text
                 
 
     def take_damage(self, amount, effects):
@@ -87,9 +96,7 @@ class Enemy:
         length = math.sqrt(dx*dx + dy*dy)
         confusion = False
         
-        for effect_name, effect in self.effects.items():
-            if effect_name == "confusion":
-                confusion = True
+        confusion = "confusion" in self.handle_effects(True)
 
 
         if length != 0:
@@ -106,12 +113,9 @@ class Enemy:
         if self.y > screen.get_height()-self.width:
             self.y = screen.get_height()-self.width
 
-    def attack(self, player = None, hard_mode = False):
+    def attack(self, timer, player = None, hard_mode = False):
 
-        binded = False
-        for effect_name, effect in self.effects.items():
-            if effect_name == "binded":
-                binded = True
+        binded = "binded" in self.handle_effects(True)
 
         projectiles = []
         current_time = pygame.time.get_ticks()
@@ -127,12 +131,18 @@ class Enemy:
                     target_x = self.x + math.cos(rad) * 1000
                     target_y = self.y + math.sin(rad) * 1000
 
-                    projectile = prjt(proj_x, proj_y, target_x, target_y, self.attacks["death_spiral"]["speed"], self.attacks["death_spiral"]["damage"], "enemy", self.attacks["death_spiral"]["width"], self.attacks["death_spiral"]["range"], effects=attack_info["effects"])
+                    projectile = prjt(proj_x, proj_y, target_x, target_y, self.attacks["death_spiral"]["speed"],
+                                        self.attacks["death_spiral"]["damage"], "enemy",
+                                        self.attacks["death_spiral"]["width"], self.attacks["death_spiral"]["range"],
+                                        self.bullet_type_info, attack_info["type"], effects=attack_info["effects"])
                     projectiles.append(projectile)
                 break
             elif current_time - attack_info["last_used"] >= (attack_info["cooldown"] - (200 if hard_mode else 0))* self.rate_of_fire and player and not binded:
                 if attack_name == "basic": 
-                    projectiles.append(prjt(self.x, self.y, player.x, player.y, attack_info["speed"], self.damage*attack_info["damage"], "enemy", attack_info["width"], attack_info["range"], effects=attack_info["effects"]))
+                    projectiles.append(prjt(self.x, self.y, player.x, player.y, attack_info["speed"],
+                                            self.damage*attack_info["damage"], "enemy", 
+                                            attack_info["width"], attack_info["range"], 
+                                            self.bullet_type_info, attack_info["type"], effects=attack_info["effects"]))
                     attack_info["last_used"] = current_time
                 elif attack_name == "minigun":
                     if not attack_info["is_bursting"]:
@@ -158,7 +168,10 @@ class Enemy:
                             proj_y = self.y + vy * self.width
                             target_x = self.x + vx * 1000
                             target_y = self.y + vy * 1000
-                            projectile = prjt(proj_x,proj_y,target_x,target_y,attack_info["speed"],self.damage*attack_info["damage"],"enemy",attack_info["width"], attack_info["range"], effects=attack_info["effects"])
+                            projectile = prjt(proj_x,proj_y,target_x,target_y,attack_info["speed"],
+                                              self.damage*attack_info["damage"],"enemy",
+                                              attack_info["width"], attack_info["range"], 
+                                              self.bullet_type_info, attack_info["type"], effects=attack_info["effects"])
                             projectiles.append(projectile)
                             if attack_info["burst_count"] >= attack_info["burst_max"]:
                                 attack_info["is_bursting"] = False
@@ -175,12 +188,15 @@ class Enemy:
                         target_x = self.x + math.cos(rad) * 1000
                         target_y = self.y + math.sin(rad) * 1000
 
-                        projectile = prjt(proj_x, proj_y, target_x, target_y, attack_info["speed"], self.damage*attack_info["damage"], "enemy", attack_info["width"], attack_info["range"],  effects=attack_info["effects"])
+                        projectile = prjt(proj_x, proj_y, target_x, target_y, attack_info["speed"], 
+                                          self.damage*attack_info["damage"], "enemy", 
+                                          attack_info["width"], attack_info["range"], 
+                                          self.bullet_type_info, attack_info["type"],  effects=attack_info["effects"])
                         projectiles.append(projectile)
                     attack_info["last_used"] = current_time
             
-        if player and player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2):
-            projectiles.append(prjt(player.x, player.y, player.x, player.y, 1, 2, "enemy", 1,1000))
+        if player and player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2) and timer % 10 == 0:
+            projectiles.append(prjt(player.x, player.y, player.x, player.y, 1, 5, "enemy", 1,1000, self.bullet_type_info, attack_info["type"]))
                 
         return projectiles
 
@@ -191,3 +207,20 @@ class Enemy:
             fill_width = int(bar_width * (self.hp/self.max_hp))
             pygame.draw.rect(screen, (255, 0, 0), (screen.get_width() // 2 - bar_width // 2, 20, bar_width, bar_height))
             pygame.draw.rect(screen, (0, 255, 0), (screen.get_width() // 2 - bar_width // 2, 20, fill_width, bar_height))
+
+    def draw_effects(self, screen):
+        EFFECT_COLORS = {
+            "slow":      (70, 150, 255),   # blue
+            "weakness":  (190, 190, 190),  # light_gray
+            "glued":     (255, 210, 40),   # yellow
+            "confusion": (170, 80, 255),   # purple
+            "binded":    (130, 80, 40),    # brown
+            "acid":      (255, 110, 40),   # orange
+            "poison":    (70, 200, 80),    # green
+        }
+
+        for i, effect in enumerate(self.effects.keys()):
+            print(effect)
+            if effect in EFFECT_COLORS:
+                radius = self.width + (i+1) * 6
+                pygame.draw.circle(screen, EFFECT_COLORS[effect], (int(self.x), int(self.y)), radius, 3)

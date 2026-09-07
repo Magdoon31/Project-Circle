@@ -4,6 +4,7 @@ import random
 import pygame
 
 
+
 class Combat:
 
     def __init__(self, screen, player, enemies, hard_mode, sfx=None, boss=None):
@@ -40,16 +41,14 @@ class Combat:
         self.sfx.load_sfx("bullet_burst", "assets/sfx/combat/bullet_burst.mp3")
         self.sfx.load_sfx("dmg_effect", "assets/sfx/combat/dmg_effect.wav")
 
-
-        self.player.hp = 100
         self.money = 0
         self.money_mult = random.randint(10,40)
 
         self.hard_mode = hard_mode
+        self.timer = 0
 
     def handle_events(self, events, mouse_btn_pressed):
 
-        
 
         for event in events:
                 
@@ -73,7 +72,7 @@ class Combat:
                     self.player_projectiles.append(new_projectile)
 
     def update(self):
-
+        self.timer += 1
         keys = pygame.key.get_pressed()
         self.player.move(keys, self.screen)
 
@@ -95,7 +94,7 @@ class Combat:
                 if projectile.deal_damage(enemy):
                     self.player_projectiles.remove(projectile)
                     if enemy.hp <= 0:    
-                        projectiles = enemy.attack()
+                        projectiles = enemy.attack(self.timer)
                         self.enemy_projectiles.extend(projectiles)
                         self.enemies.remove(enemy)
                         self.sfx.play("enemy_death")
@@ -122,7 +121,7 @@ class Combat:
                     self.finished = True
         for enemy in self.enemies:
             enemy.move(self.player.x, self.player.y, self.screen)
-            proj = enemy.attack(self.player, self.hard_mode)
+            proj = enemy.attack(self.timer, self.player, self.hard_mode)
             self.enemy_projectiles.extend(proj)
             pass
 
@@ -159,7 +158,7 @@ class Combat:
             projectile.draw(self.screen)
         self.player.draw(self.screen)
         for enemy in self.enemies:
-            enemy.draw(self.screen, self.hard_mode)
+            enemy.draw(self.screen)
         if self.win:
 
             pygame.draw.rect(self.screen,(200,200,200),(self.screen.get_width()/2 - self.screen.get_width()/12, self.screen.get_height()/3, self.screen.get_width()/6,self.screen.get_height()/2.9),0,10)

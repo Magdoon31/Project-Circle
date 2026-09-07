@@ -1,28 +1,31 @@
 from game.combat.enemy.enemy import Enemy
+from game.combat.bullet_types import BulletTypes
 import copy, random, math
 
 class EnemyDB:
     def __init__(self, sfx):
         self.enemies = {
-            "circle" : [0,0,70,30,"enemy",3,10,2,{"basic" : {"damage": 20, "cooldown": 500, "last_used": 0, "width": 10, "speed": 12, "range": 1500, "effects": {}}}, sfx],
-            "fast" : [0,0,30,25,"enemy",6.5,10,0,{"death_spiral": {"damage": 20, "cooldown": 0, "last_used": 0, "width": 15, "speed": 5, "range": 3500, "effects": {}}}, sfx],
-            "turret" : [0,0,150,40,"enemy",0,20,0,{"basic": {"damage": 40, "cooldown": 800, "last_used": 0, "width": 15, "speed": 16, "range": 3500, "effects": {}},
-                                              "spinner": {"damage": 10, "cooldown": 1800, "last_used": 0, "width": 5, "speed": 5, "range": 4000, "bullets": 18, "effects": {}}}, sfx]
+            "circle" : [0,0,70,30,"enemy",3,10,2,{"basic" : {"damage": 20, "cooldown": 500, "last_used": 0, "width": 10, "speed": 12, "range": 1500, "effects": {}, "type":"missile_blue"}}],
+            "fast" : [0,0,30,25,"enemy",6.5,10,0,{"death_spiral": {"damage": 20, "cooldown": 0, "last_used": 0, "width": 15, "speed": 5, "range": 3500, "effects": {}, "type":"normal_red"}}],
+            "turret" : [0,0,150,40,"enemy",0,20,0,{"basic": {"damage": 40, "cooldown": 800, "last_used": 0, "width": 15, "speed": 16, "range": 3500, "effects": {}, "type":"missile_red"},
+                                              "spinner": {"damage": 10, "cooldown": 1800, "last_used": 0, "width": 5, "speed": 5, "range": 4000, "bullets": 18, "effects": {}, "type":"normal_red"}}]
             }
         self.bosses = {
-            "boss1": [900, 900,500,40,"boss",5,200,3,{"basic" : {"damage": 30, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9, "range": 2000, "effects" : {"binded" : [180]}}, 
-                                                "spinner1" : {"damage": 20, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6, "range": 2000, "bullets": 12, "effects" : {"burn" : [30,3]}},
-                                                "spinner2" : {"damage": 10, "cooldown": 2800, "last_used": 2800, "width": 8, "speed": 7, "range": 2000, "bullets": 36, "effects" : {"slow" : [60,0.5]}},
-                                                "minigun": {"damage": 10,"cooldown": 2500,"last_used": 2500,"width": 8,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500,"is_bursting": False, "range": 2000, "effects" : {"confusion" : [180]}}}, sfx]
+            "boss1": [900, 900,500,40,"boss",5,200,3,{"basic" : {"damage": 3, "cooldown": 2000, "last_used": 2000, "width": 30, "speed": 9, "range": 2000, "effects" : {"binded" : [180]}, "type":"normal_yellow"}, 
+                                                "spinner1" : {"damage": 2, "cooldown": 3200, "last_used": 3200, "width": 24, "speed": 6, "range": 2000, "bullets": 12, "effects" : {"poison" : [600,2]}, "type":"normal_green"},
+                                                "spinner2" : {"damage": 1, "cooldown": 2800, "last_used": 2800, "width": 8, "speed": 7, "range": 2000, "bullets": 36, "effects" : {"glued" : [60,0.5]}, "type":"laser_green"},
+                                                "minigun": {"damage": 1,"cooldown": 2500,"last_used": 2500,"width": 8,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 30,"last_shot": 2500,"is_bursting": False, "range": 2000, "effects" : {"confusion" : [180]},"type":"nail"}}]
         }
+        self.bullet_type_info = BulletTypes()
+        self.sfx = sfx
 
     def get_enemy(self, name):
         e = self.enemies[name]
         print(e)
-        return Enemy(*e[:-2],copy.deepcopy(e[-2]),e[-1])
+        return Enemy(*e[:-1],copy.deepcopy(e[-1]),self.sfx, self.bullet_type_info)
     def get_boss(self, name):
         b = self.bosses[name]
-        return Enemy(*b[:-2],copy.deepcopy(b[-2]),b[-1])
+        return Enemy(*b[:-1],copy.deepcopy(b[-1]),self.sfx, self.bullet_type_info)
 
     def provoke_enemies(self, biome, hard_mode, screen):
         money = 0
