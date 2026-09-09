@@ -29,7 +29,7 @@ class Combat:
         self.sfx = sfx
         
         self.sfx.load_sfx("shoot", "assets/sfx/combat/player_shoot.mp3")
-        self.sfx.load_sfx("explosion", "assets/sfx/combat/explosion.mp3")
+        self.sfx.load_sfx("explosion", "assets/sfx/combat/explosion.wav")
         self.sfx.load_sfx("hit", "assets/sfx/combat/hit.wav")
         self.sfx.load_sfx("laser1", "assets/sfx/combat/laser1.mp3")
         self.sfx.load_sfx("laser2", "assets/sfx/combat/laser2.wav")
@@ -39,7 +39,8 @@ class Combat:
         self.sfx.load_sfx("enemy_death", "assets/sfx/combat/enemy_death.wav")
         self.sfx.load_sfx("player_hit", "assets/sfx/combat/player_hit.wav")
         self.sfx.load_sfx("bullet_burst", "assets/sfx/combat/bullet_burst.mp3")
-        self.sfx.load_sfx("dmg_effect", "assets/sfx/combat/dmg_effect.wav")
+        self.sfx.load_sfx("posion_effect", "assets/sfx/combat/posion_effect.wav")
+        self.sfx.load_sfx("burn_effect", "assets/sfx/combat/burn_effect.mp3")
         self.sfx.load_sfx("zap1", "assets/sfx/combat/zap_sfx1.mp3")
         self.sfx.load_sfx("zap2", "assets/sfx/combat/zap_sfx2.mp3")
         self.sfx.load_sfx("zap3", "assets/sfx/combat/zap_sfx3.mp3")
@@ -85,7 +86,7 @@ class Combat:
         self.player.move(keys, self.screen)
 
         for projectile in self.player_projectiles[:]:
-            projectile.update()
+            projectile.update(self.enemies)
             if (
                 projectile.x < 0
                 or projectile.x > self.screen.get_width()
@@ -98,14 +99,19 @@ class Combat:
             if not projectile.check_duration():
                 self.player_projectiles.remove(projectile)
                 continue
+           
             for enemy in self.enemies:
 
                 special_effect = projectile.deal_damage(enemy)
-                #special_effect -> [name,weapon_effect]
+                #special_effect -> [name,effect] (and also (T/F) if it hit an enemy) name in (zap, pierce, explosion) effect = []
 
                 if special_effect:
                     if special_effect[0] != "pierce":
                         self.player_projectiles.remove(projectile)
+                    else:
+                        if special_effect[1]:
+                            self.player_projectiles.remove(projectile)
+
 
                     if special_effect[0] == "zap":
                         self.zap(special_effect[1], enemy)
@@ -113,23 +119,18 @@ class Combat:
                     elif special_effect[0] == "explosion":
                         self.explosion((projectile.x,projectile.y), special_effect[1],enemy)
                         self.sfx.play("explosion")
-                        
-                    if enemy.hp <= 0:    
-                        self.sfx.play("enemy_death")
-                        projectiles = enemy.attack(self.timer)
-                        self.enemy_projectiles.extend(projectiles)
-                        self.enemies.remove(enemy)
+
                         
                     else:
                         self.sfx.play("hit")
                     break
-            if len(self.enemies) == 0:
-                self.win = True
-                self.finished = True
+        if len(self.enemies) == 0:
+            self.win = True
+            self.finished = True
 
 
         for projectile in self.enemy_projectiles[:]:
-            projectile.update()
+            projectile.update([self.player])
 
             if not projectile.check_duration():
                 self.enemy_projectiles.remove(projectile)
@@ -146,6 +147,11 @@ class Combat:
             enemy.move(self.player.x, self.player.y, self.screen)
             proj = enemy.attack(self.timer, self.player, self.hard_mode)
             self.enemy_projectiles.extend(proj)
+            if enemy.hp <= 0:    
+                self.sfx.play("enemy_death")
+                projectiles = enemy.attack(self.timer)
+                self.enemy_projectiles.extend(projectiles)
+                self.enemies.remove(enemy)
 
     # enemy collision
         for i, enemy1 in enumerate(self.enemies):
@@ -170,7 +176,6 @@ class Combat:
                     enemy1.y -= move_y
                     enemy2.x += move_x
                     enemy2.y += move_y
-
            
     def draw(self):
 
@@ -179,9 +184,15 @@ class Combat:
             projectile.draw(self.screen)
         for projectile in self.enemy_projectiles:
             projectile.draw(self.screen)
-        self.player.draw(self.screen)
+        if self.player.draw(self.screen):
+            self.win = False
+            self.finished = True
         for enemy in self.enemies:
-            enemy.draw(self.screen)
+            if enemy.draw(self.screen):
+                self.sfx.play("enemy_death")
+                projectiles = enemy.attack(self.timer)
+                self.enemy_projectiles.extend(projectiles)
+                self.enemies.remove(enemy)
         for enemy in self.zapped_enemies:
             if enemy[2] > 0:
                 self.ZapEffect(enemy[0],enemy[1])
@@ -262,17 +273,17 @@ class Combat:
                     next_enemy = None
                     e.remove(last_enemy)
 
-    def explosion(self, pos, effect, enemy_hit):
+    def explosion(self, pos, exp_effect, enemy_hit):
         # effect -> [width,dmg_mult,dmg]
 
         e = self.enemies.copy()
-
-        self.explosions.append([effect[0],pos,18])
+        effects = self.player.weapon_effect
+        self.explosions.append([exp_effect[0],pos,18])
         
         if len(e) > 1:
 
             e.remove(enemy_hit)
-            w = effect[0]
+            w = exp_effect[0]
 
             for enemy in e:
 
@@ -281,7 +292,7 @@ class Combat:
                 dist = math.sqrt(dx*dx + dy*dy)
 
                 if dist <= w:
-                    self.enemies[self.enemies.index(enemy)].take_damage(effect[2]*effect[1])
+                    self.enemies[self.enemies.index(enemy)].take_damage(exp_effect[2]*exp_effect[1],effects)
 
                     if self.enemies[self.enemies.index(enemy)].hp <= 0:
                         self.sfx.play("enemy_death")

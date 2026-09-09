@@ -5,8 +5,8 @@ import copy, random, math
 class EnemyDB:
     def __init__(self, sfx):
         self.enemies = {
-            "circle" : [0,0,70,30,"enemy",3,10,2,{"basic" : {"damage": 20, "cooldown": 500, "last_used": 0, "width": 10, "speed": 12, "range": 1500, "effects": {}, "type":"missile_blue"}}],
-            "fast" : [0,0,30,25,"enemy",6.5,10,0,{"death_spiral": {"damage": 20, "cooldown": 0, "last_used": 0, "width": 15, "speed": 5, "range": 3500, "effects": {}, "type":"normal_red"}}],
+            "circle" : [0,0,30,30,"enemy",3,10,0,{"basic" : {"damage": 5, "cooldown": 1100, "last_used": 0, "width": 10, "speed": 12, "range": 1500, "effects": {"homing" : [0.5]}, "type":"normal_red"}}],
+            "fast" : [0,0,15,25,"enemy",6,10,0,{"death_spiral": {"damage": 10, "cooldown": 0, "last_used": 0, "width": 15, "speed": 5, "range": 3500, "effects": {}, "type":"normal_red"}}],
             "turret" : [0,0,150,40,"enemy",0,20,0,{"basic": {"damage": 40, "cooldown": 800, "last_used": 0, "width": 15, "speed": 16, "range": 3500, "effects": {}, "type":"missile_red"},
                                               "spinner": {"damage": 10, "cooldown": 1800, "last_used": 0, "width": 5, "speed": 5, "range": 4000, "bullets": 18, "effects": {}, "type":"normal_red"}}]
             }

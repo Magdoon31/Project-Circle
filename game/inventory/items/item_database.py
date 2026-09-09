@@ -3,35 +3,95 @@ from game.inventory.items.weapon import Weapon
 from game.inventory.items.armor import Armor
 from game.inventory.items.trinket import Trinket
 
+# EFFECTS: (time in frames)
+# slow : [time,-speed%], poison : [time,dmg] /s, weakness : [time,-dmg%], glued : [time,-rate_of_fire%],
+# confusion : [1] (reverse controls), binded : [time] (can't attack), burn : [time,dmg]/0.25s, acid : [time,-def%]
+# PROJECTILE:
+# bubble : [1] (slows overtime), homing : [turn_speed], explosion : [radius,%dmg], 
+# zap : [e_zapped-e_hit,%dmg], pierce : [e_pirced-e_hit]
+
 class ItemDatabase:
     def __init__(self,height):
         self.img_size = (height // 10, height // 10)
         self.weapons = {
 
+        # --- VILLAGE ---
+
             "Simple Pistol": Weapon("Simple Pistol",
-                                    "Starter weapon\nmade by the starter itself,\nmaybe he started this",
-                                    "weapon",20,1,{"explosion" : [100,1.0]},"None",14200,20,18,"missile_red",
-                                    self.load_img("weapon/simple_pistol.png")),
+                                    "Starter weapon made by the starter itself,\nI think he knows",
+                                    "weapon",3,0.25,{},"None",7500,8,10,"normal_red",
+                                    self.load_img("weapon/simple_pistol.png"),recoil=5),
             "Simple Blaster": Weapon("Simple Blaster",
-                                    "Starter weapon\nmade by the starter itself,\nmaybe he doesn't know about this",
-                                    "weapon",30,0.5,{"zap":[2,0.5]},"None",20000,10,25,"laser_blue",
+                                    "Starter weapon made by the starter itself,\nmaybe he doesn't know about this",
+                                    "weapon",5,0.5,{},"None",11500,12,18,"laser_red",
                                     self.load_img("weapon/simple_blaster.png")),
-            "Minigun": Weapon("Minigun",
-                                    "Shoot really fast\nbut uncontrollably, like everything around",
-                                    "weapon",1,0.05,{},"Automatic",10000,5,12,"normal_red",
-                                    self.load_img("weapon/minigun.png"),True,20),
-            "Shotgun R6": Weapon("Shotgun R6",
-                                    "Shoots 6 bullets\nin a random pattern at once",
-                                    "weapon",10,1.4,{"shotgun_r6" : 1},"None",7200,7,20,"normal_red",
-                                    self.load_img("weapon/shotgun_r6.png"),recoil=30),
+            "Flintlock": Weapon("Flintlock",
+                                    "An ancient-looking weapon that\nsomehow hasn't fallen apart yet.",
+                                    "weapon",8,1.1,{"burn":[45,1]},"Small Burn",10500,12,16,"normal_red",
+                                    self.load_img("weapon/flintlock.png")),
+            "Toy Rifle": Weapon("Toy Rifle",
+                                    "It looks like a toy. It doesn't behave like one.",
+                                    "weapon",3,0.2,{},"Automatic",9200,12,16,"laser_blue",
+                                    self.load_img("weapon/toy_rifle.png"),True,8),
+
+        # --- RAINBOW FIELDS ---
+
+            "Water Hose": Weapon("Water Hose",
+                                    "It's just a hose. Right?",
+                                    "weapon",1,0.04,{"bubble" : [1]},"Automatic",8100,16,16,"water",
+                                    self.load_img("weapon/hose1.png"),True,10),
+            "Rifle A2": Weapon("Rifle A2",
+                                    "A sturdy little rifle.\nThe markings suggest it was mass-produced.",
+                                    "weapon",10,0.33,{},"Automatic",10200,14,16,"normal_red",
+                                    self.load_img("weapon/rifle_a2.png"),True),
+            "Normal Blaster": Weapon("Normal Blaster",
+                                    "A colorful blaster with a surprisingly serious design.",
+                                    "weapon",10,0.45,{"pierce" : [1]},"Pierces one enemy",12200,16,22,"laser_blue",
+                                    self.load_img("weapon/blaster1.png")),
+            "Finger Gun": Weapon("Finger Gun",
+                                    "You point. It shoots. Nobody knows why.",
+                                    "weapon",30,1.0,{},"None",10200,25,20,"normal_red",
+                                    self.load_img("weapon/finger_gun.png")),
+
+        # --- SUGARWOOD GROVE ---
+
+            "Glue Gun": Weapon("Glue Gun",
+                                    "The label says 'NOT FOR TREES'.\nSomeone has ignored that warning many times.",
+                                    "weapon",20,0.5,{"glued" : [90,0.35]},"Glue: -35% fire rate",9600,16,12,"normal_yellow",
+                                    self.load_img("weapon/glue_gun.png")),
             "Shotgun S4": Weapon("Shotgun S4",
-                                    "Shoots 4 bullets at once",
-                                    "weapon",3,0.5,{"shotgun_s4" : 1},"None",9600,6,20,"normal_red",
-                                    self.load_img("weapon/shotgun_s4.png"),recoil=20),
-            "Bubble Gun": Weapon("Bubble Gun",
-                                    "Shoots bubbles that slow down over time.\nRange is short, as is life",
-                                    "weapon",5,0.15,{"bubble" : 1, "slow": [30,0.3]},"Slows enemies, Automatic",14000,9,10,"bubble",
-                                    self.load_img("weapon/bubble_gun.png"),True,5),
+                                    "A sturdy little rifle.\nThe markings suggest it was mass-produced.",
+                                    "weapon",10,0.33,{"shotgun" : ["s",4]},"None",7200,16,18,"normal_red",
+                                    self.load_img("weapon/shotgun_s4.png")),
+            "Normal Blaster": Weapon("Normal Blaster",
+                                    "A colorful blaster with a surprisingly serious design.",
+                                    "weapon",10,0.45,{"pierce" : [1]},"Pierces one enemy",12200,16,22,"laser_blue",
+                                    self.load_img("weapon/blaster1.png")),
+            "Finger Gun": Weapon("Finger Gun",
+                                    "You point. It shoots. Nobody knows why.",
+                                    "weapon",30,1.0,{},"None",10200,25,20,"normal_red",
+                                    self.load_img("weapon/finger_gun.png")),
+            "Finger Gun": Weapon("Finger Gun",
+                                    "You point. It shoots. Nobody knows why.",
+                                    "weapon",30,1.0,{},"None",10200,25,20,"normal_red",
+                                    self.load_img("weapon/finger_gun.png")),
+
+        # --- TOY FACTORY ---
+
+
+        # --- SILVERPINE TUNDRA ---
+
+
+        # --- UNDERGROUND GARDEN ---
+
+
+        # --- THE CORE ---
+
+
+        # --- THE VOID ---
+
+
+            
         }
         
 

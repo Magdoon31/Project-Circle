@@ -7,8 +7,14 @@ class SFXManager:
     def load_sfx(self, name, path):
         self.sfx[name] = pygame.mixer.Sound(path)
     def play(self, name):
+        channel = pygame.mixer.find_channel()
         if name in self.sfx:
-            self.sfx[name].play()
+            if channel:
+                channel.play(self.sfx[name])
+            else:
+                print("Too many SFX to play!!")
+        else:
+            print("No SFX found")
     def stop(self, name=None):
         if name in self.sfx:
             self.sfx[name].stop()

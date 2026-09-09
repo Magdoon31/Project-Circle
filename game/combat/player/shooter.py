@@ -20,6 +20,7 @@ class Shooter :
         self.og_damage = self.damage
         self.type = "player"
 
+
         self.range = (active_items["weapon"].range//active_items["weapon"].bullet_speed if active_items["weapon"] else 0)
         self.bullet_size = (active_items["weapon"].bullet_size if active_items["weapon"] else 0)
         self.bullet_speed = (active_items["weapon"].bullet_speed if active_items["weapon"] else 0)
@@ -29,9 +30,9 @@ class Shooter :
         self.automatic_weapon = (active_items["weapon"].automatic if active_items["weapon"] else False)
         self.recoil = (active_items["weapon"].recoil if active_items["weapon"] else 0)
 
-        self.weapon_effect = (active_items["weapon"].effect if active_items["weapon"] else None)
-        self.armor_effect = (active_items["armor"].effect if active_items["armor"] else None)
-        self.trinket_effect = (active_items["trinket"].effect if active_items["trinket"] else None)
+        self.weapon_effect = (active_items["weapon"].effect if active_items["weapon"] else {})
+        self.armor_effect = (active_items["armor"].effect if active_items["armor"] else {})
+        self.trinket_effect = (active_items["trinket"].effect if active_items["trinket"] else {})
 
 
         self.effects = {}
@@ -39,13 +40,14 @@ class Shooter :
 
     def draw_effects(self, screen):
         EFFECT_COLORS = {
-            "slow":      (70, 150, 255),   # blue
+            "slow":      (50, 110, 205),   # blue
             "weakness":  (190, 190, 190),  # light_gray
             "glued":     (255, 210, 40),   # yellow
             "confusion": (170, 80, 255),   # purple
             "binded":    (130, 80, 40),    # brown
             "acid":      (255, 110, 40),   # orange
             "poison":    (70, 200, 80),    # green
+            "burn":      (220,120,30),     # red
         }
 
         for i, effect in enumerate(self.effects.keys()):
@@ -58,7 +60,8 @@ class Shooter :
         pygame.draw.circle(screen, (200, 50, 50), (self.x, self.y), self.width)
         self.draw_effects(screen)
         self.hp_bar(screen)
-        self.handle_effects()
+        die = self.handle_effects()[1]
+        return die
 
     def handle_effects(self, check = False):
         effect_del = []
@@ -67,16 +70,16 @@ class Shooter :
             for effect_name, effect in self.effects.items():
                 if effect_name == "slow":
                     self.speed = self.og_speed * (1-effect[1])
-                elif effect_name == "poison" and effect[0] % 30 == 0:
-                    self.sfx.play("dmg_effect")
+                elif effect_name == "poison" and effect[0] % 60 == 0 and not check:
+                    self.sfx.play("posion_effect")
                     self.hp -= effect[1]
                 elif effect_name == "weakness":
                     self.damage = self.og_damage * (1-effect[1])
                 elif effect_name == "glued":
                     self.rate_of_fire = self.og_rate_of_fire * (1+effect[1])
-                elif effect_name == "burn" and effect[0] % 6 == 0:
-                    self.sfx.play("dmg_effect")
-                    self.hp -= effect[1]
+                elif effect_name == "burn" and effect[0] % 15 == 0 and not check:
+                    self.sfx.play("burn_effect")
+                    self.hp -= effect[1] - self.defence//2
                 elif effect_name == "acid":
                     self.defence = self.og_defence * (1-effect[1])
                 elif effect_name == "confusion":
@@ -99,13 +102,13 @@ class Shooter :
                 elif name == "acid":
                     self.defence = self.og_defence
                 self.effects.pop(name)
-        return text
+        return text, self.hp <= 0
         
     def move(self, keys, screen):
         vx = 0
         vy = 0
 
-        confusion = "confusion" in self.handle_effects(True)
+        confusion = "confusion" in self.handle_effects(True)[0]
             
         if confusion:
             if keys[pygame.K_s]:
@@ -144,12 +147,12 @@ class Shooter :
             self.y = screen.get_height()-self.width
     def shoot(self):
 
-        binded = "binded" in self.handle_effects(True)
+        binded = "binded" in self.handle_effects(True)[0]
         
         if pygame.time.get_ticks() - self.last_shot_time >= self.rate_of_fire * 1000 and not binded:  
             mouse_x, mouse_y = pygame.mouse.get_pos()   
 
-            if next(iter(self.weapon_effect), None) not in ("shotgun_r6","shotgun_s4"):
+            if "shotgun" not in self.effects:
                     angle = math.atan2(mouse_y - self.y, mouse_x - self.x)
                     recoil_angle = math.radians(random.uniform(-self.recoil / 2, self.recoil / 2))
                     angle += recoil_angle
@@ -163,7 +166,7 @@ class Shooter :
                     self.last_shot_time = pygame.time.get_ticks()
                     return False, projectile
             
-            elif next(iter(self.weapon_effect), None)[:7] == "shotgun":
+            elif "shotgun" in self.effects:
                 projectiles = []
                 if next(iter(self.weapon_effect), None)[-2] == "r":
                     for i in range(int(next(iter(self.weapon_effect), None)[-1])):
@@ -200,12 +203,10 @@ class Shooter :
         if self.hp < 0:
             self.hp = 0
         if effects:
-            for effect_name, effect in effects.items():
-                # slow - slow, poison - deal dmg every 0.5s, weakness - less dmg, glued - less fire_rate,
-                # confusion - reverse inputs, binded - can't shoot, burn - deal dmg every 0.1s, acid - less def
+            for effect_name, effect in effects.items():             
                 if effect_name in ("slow","poison","weakness","glued","confusion","binded", "burn", "acid"):
                     self.effects[effect_name] = effect
-        return True
+        return [True]
     def hp_bar(self, screen):
         bar_width = 50
         bar_height = 5

@@ -1,21 +1,20 @@
 {
     "player": {
-        "x": 398.9777054234132,
-        "y": 276.49242404917504,
-        "money": 5852,
-        "playtime": 2636.6500000059614
+        "x": 324.2426406871171,
+        "y": 858.9402589451788,
+        "money": 11467,
+        "playtime": 2986.9666666770886
     },
     "inventory": {
         "active_items": [
-            "Simple Pistol",
-            "Electro Armor"
+            "Water Hose"
         ],
         "items": [
-            "Shotgun R6",
-            "Shotgun S4",
-            "Simple Blaster",
-            "Bubble Gun",
-            "Minigun"
+            "Rifle A2",
+            "Flintlock",
+            "Normal Blaster",
+            "Toy Rifle",
+            "Finger Gun"
         ]
     },
     "map": {

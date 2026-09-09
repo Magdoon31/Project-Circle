@@ -33,8 +33,9 @@ class Enemy:
     def draw(self, screen):
         pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
         self.hp_bar(screen)
-        self.handle_effects()
+        die = self.handle_effects()[1]  
         self.draw_effects(screen)
+        return die
 
     def handle_effects(self, check = False):
         effect_del = []
@@ -43,16 +44,16 @@ class Enemy:
             for effect_name, effect in self.effects.items():
                 if effect_name == "slow":
                     self.speed = self.og_speed * (1-effect[1])
-                elif effect_name == "poison" and effect[0] % 0.5 == 0:
-                    self.sfx.play("dmg_effect")
+                elif effect_name == "poison" and effect[0] % 60 == 0:
+                    self.sfx.play("posion_effect")
                     self.hp -= effect[1]
                 elif effect_name == "weakness":
-                    self.damage = 1-effect[1]
+                    self.damage = self.og_damage * (1-effect[1])
                 elif effect_name == "glued":
-                    self.rate_of_fire = (1+effect[1])
-                elif effect_name == "burn" and effect[0] % 0.1 == 0:
-                    self.sfx.play("dmg_effect")
-                    self.hp -= effect[1]
+                    self.rate_of_fire = self.of_rate_of_fire * (1+effect[1])
+                elif effect_name == "burn" and effect[0] % 15 == 0:
+                    self.sfx.play("burn_effect")
+                    self.hp -= max(1,effect[1] - self.defence//4)
                 elif effect_name == "acid":
                     self.defence = self.og_defence * (1-effect[1])
                 elif effect_name == "confusion":
@@ -75,21 +76,22 @@ class Enemy:
                 elif name == "acid":
                     self.defence = self.og_defence
                 self.effects.pop(name)
-        return text
+        return text, self.hp <= 0
                 
 
     def take_damage(self, amount, effects = {}):
         self.hp -= max(amount - self.defence,1)
         if self.hp < 0:
-            self.hp = 0
-            
+            self.hp = 0      
 
         if effects:
             for effect_name, effect in effects.items():
                 if effect_name in ("slow","poison","weakness","glued","confusion","binded", "burn", "acid"):
                     self.effects[effect_name] = effect
-                elif effect_name in ("zap","explosion","piercing","knockback"):
+            for effect_name, effect in effects.items():
+                if effect_name in ("zap","explosion","pierce","knockback"):
                     return [effect_name, effect]
+        return [True]
 
         
 
@@ -101,7 +103,7 @@ class Enemy:
         length = math.sqrt(dx*dx + dy*dy)
         confusion = False
         
-        confusion = "confusion" in self.handle_effects(True)
+        confusion = "confusion" in self.handle_effects(True)[0]
 
 
         if length != 0:
@@ -120,13 +122,13 @@ class Enemy:
 
     def attack(self, timer, player = None, hard_mode = False):
 
-        binded = "binded" in self.handle_effects(True)
+        binded = "binded" in self.handle_effects(True)[0]
 
         projectiles = []
         current_time = pygame.time.get_ticks()
 
         for attack_name, attack_info in self.attacks.items():
-            if attack_name == "death_spiral" and self.hp == 0:
+            if attack_name == "death_spiral" and self.hp <= 0:
                 for angle in range(0, 360,30):
 
                     rad = math.radians(angle)
@@ -215,13 +217,14 @@ class Enemy:
 
     def draw_effects(self, screen):
         EFFECT_COLORS = {
-            "slow":      (70, 150, 255),   # blue
+            "slow":      (50, 110, 205),   # blue
             "weakness":  (190, 190, 190),  # light_gray
             "glued":     (255, 210, 40),   # yellow
             "confusion": (170, 80, 255),   # purple
             "binded":    (130, 80, 40),    # brown
             "acid":      (255, 110, 40),   # orange
             "poison":    (70, 200, 80),    # green
+            "burn":      (220,120,30),     # red
         }
 
         for i, effect in enumerate(self.effects.keys()):
