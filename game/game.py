@@ -37,6 +37,7 @@ class Game:
         self.enemy_db = EnemyDB(self.sfx)
 
         self.hard_mode = False
+        self.timer = 0
 
         self.inventory = Inventory(self.screen)
         self.inventory_ui = Inventory_ui(self.screen,self.inventory,self.sfx)
@@ -49,15 +50,18 @@ class Game:
         self.sfx.update_volume()
 
         self.menu = Menu(self.screen,self.sfx,self.music, self.save_manager)
-        self.music.play("menu")
+        self.music.play("menu_intro")
         
         self.save = 0
         self.bullet_type_info = BulletTypes()
+        self.trinket_effects = {}
 
         self.sfx.load_sfx("use", "assets/sfx/UI/use.wav")
 
     def run(self):
         while self.running:
+            self.trinket_effects = self.inventory.active_trinket.effect if self.inventory.active_trinket else {}
+            self.timer += 1
             keys = pygame.key.get_pressed()
             events = pygame.event.get()
             mouse_pos = pygame.mouse.get_pos()
@@ -70,6 +74,9 @@ class Game:
 
             if self.state == GameState.MENU:
                 self.update_menu(events, keys, mouse_pos)
+                if self.timer == 254:
+                    self.music.stop("menu_intro")
+                    self.music.play("menu_loop")
 
             elif self.state == GameState.MAP:
                 self.update_map(events, keys, mouse_pos)
@@ -100,6 +107,7 @@ class Game:
 
             self.music.stop()
             self.music.play(self.player.biome)
+            self.timer = 0
 
         elif change_state == "quit":
 
@@ -116,11 +124,11 @@ class Game:
 
         self.map_ui.draw()
         
-        if self.map_ui.page == "map" and fight not in (True,False):
+        if self.map_ui.page == "map" and fight not in (True,False,None):
             self.player_in_combat = Shooter(300,300,self.inventory.active_items,self.sfx,self.bullet_type_info)
         if self.map_ui.page == "map" and fight == "fight":
 
-            self.combat = Combat(self.screen, self.player_in_combat,[],self.hard_mode,self.sfx)
+            self.combat = Combat(self.screen, self.player_in_combat,[], self.enemy_db, self.hard_mode, self.sfx)
             enemies, money = self.enemy_db.provoke_enemies(self.player.biome,self.hard_mode,self.screen)
 
             self.combat.enemies.extend(enemies)
@@ -132,7 +140,7 @@ class Game:
             
         elif self.map_ui.page == "map" and fight == "boss1":
             boss = self.enemy_db.get_boss("boss1")
-            self.combat = Combat(self.screen, self.player_in_combat,[boss],self.hard_mode,self.sfx,"boss1")
+            self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.hard_mode, self.sfx, "boss1",)
             self.combat.money += self.enemy_db.get_boss("boss1").money
             self.state = GameState.COMBAT
             self.music.stop()
@@ -147,7 +155,7 @@ class Game:
 
             self.state = GameState.MENU
             self.music.stop()
-            self.music.play("menu")
+            self.music.play("menu_intro")
 
             self.menu.page = "main"
             self.map_ui.page = "map"
@@ -194,9 +202,9 @@ class Game:
                     # self.map.layout[8] = self.map.layout[8][:8] + "1" + self.map.layout[8][8 + 1:]
                     self.player.money += int(self.combat.money)
                 else:
-                    self.player.money += int(self.combat.money * self.combat.money_mult *0.05)
+                    self.player.money += int(self.combat.money * self.combat.money_mult)
             else:
-                self.player.set_position(128,128)
+                self.player.set_position(600,628)
             self.player_in_combat = None
             
 

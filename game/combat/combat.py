@@ -1,3 +1,4 @@
+import copy
 import math
 import random
 
@@ -7,14 +8,14 @@ import pygame
 
 class Combat:
 
-    def __init__(self, screen, player, enemies, hard_mode, sfx=None, boss=None):
+    def __init__(self, screen, player, enemies, enemy_db, hard_mode, sfx=None, boss=None):
         self.screen = screen
         self.player = player
         self.boss = boss
         self.player_projectiles = []
         self.enemy_projectiles = []
+        self.enemy_db = enemy_db
 
-        self.timer = pygame.time.get_ticks()
         self.enemies = enemies
         self.win = False
         self.finished = False
@@ -39,14 +40,18 @@ class Combat:
         self.sfx.load_sfx("enemy_death", "assets/sfx/combat/enemy_death.wav")
         self.sfx.load_sfx("player_hit", "assets/sfx/combat/player_hit.wav")
         self.sfx.load_sfx("bullet_burst", "assets/sfx/combat/bullet_burst.mp3")
-        self.sfx.load_sfx("posion_effect", "assets/sfx/combat/posion_effect.wav")
+        self.sfx.load_sfx("posion_effect", "assets/sfx/combat/posion_effect.mp3")
         self.sfx.load_sfx("burn_effect", "assets/sfx/combat/burn_effect.mp3")
         self.sfx.load_sfx("zap1", "assets/sfx/combat/zap_sfx1.mp3")
         self.sfx.load_sfx("zap2", "assets/sfx/combat/zap_sfx2.mp3")
         self.sfx.load_sfx("zap3", "assets/sfx/combat/zap_sfx3.mp3")
+        self.sfx.load_sfx("overclock","assets/sfx/combat/overclock.mp3")
+        self.sfx.load_sfx("gain_effect","assets/sfx/combat/effect_gain.wav")
+        self.sfx.load_sfx("emergency","assets/sfx/combat/emergency.mp3")
 
         self.money = 0
-        self.money_mult = random.randint(10,40)
+        self.money_mult = random.randint(10,40)*0.05
+        self.money_mult_og = self.money_mult
 
         self.hard_mode = hard_mode
         self.timer = 0
@@ -96,7 +101,13 @@ class Combat:
                 self.player_projectiles.remove(projectile)
                 continue
 
-            if not projectile.check_duration():
+            proj_expire, effect = projectile.check_duration()
+            if not proj_expire:
+                
+                if "explosion" in effect:
+                    effect["explosion"].append(projectile.damage)
+                    self.explosion((projectile.x,projectile.y), effect["explosion"],None)
+                    self.sfx.play("explosion") 
                 self.player_projectiles.remove(projectile)
                 continue
            
@@ -118,9 +129,7 @@ class Combat:
                         self.sfx.play(f"zap{random.randint(1,3)}")
                     elif special_effect[0] == "explosion":
                         self.explosion((projectile.x,projectile.y), special_effect[1],enemy)
-                        self.sfx.play("explosion")
-
-                        
+                        self.sfx.play("explosion")     
                     else:
                         self.sfx.play("hit")
                     break
@@ -130,27 +139,76 @@ class Combat:
 
 
         for projectile in self.enemy_projectiles[:]:
+            if "frost" in self.player.armor_effect:
+
+                dx = self.player.x - projectile.x
+                dy = self.player.y - projectile.y
+
+                dist = math.sqrt(dx**2 + dy**2)
+                current_speed = math.sqrt(projectile.vx**2 + projectile.vy**2)
+
+                if current_speed > 0:
+                    dir_x = projectile.vx / current_speed
+                    dir_y = projectile.vy / current_speed
+
+                    if dist < self.player.armor_effect["frost"][0]:
+                        projectile.speed = projectile.og_speed / 2
+                    else:
+                        projectile.speed = projectile.og_speed
+
+                    projectile.vx = dir_x * projectile.speed
+                    projectile.vy = dir_y * projectile.speed
+    
             projectile.update([self.player])
-
-            if not projectile.check_duration():
+            proj_expire, effect = projectile.check_duration()
+            if not proj_expire:
+                if "explosion" in effect:
+                    effect["explosion"].append(projectile.damage)
+                    self.explosion((projectile.x,projectile.y), effect["explosion"],"player")
+                    self.sfx.play("explosion") 
                 self.enemy_projectiles.remove(projectile)
-                continue 
 
-            if projectile.deal_damage(self.player):
+            player_hit = projectile.deal_damage(self.player)
+
+            if player_hit:
+
+                if player_hit[0] == "static":
+
+                    self.zap([999,1.0,player_hit[1]],self.player)
+
+                if player_hit[0] == "explosion":
+
+                    self.explosions.append([player_hit[1][0],(projectile.x,projectile.y),24])
+                    self.sfx.play("explosion")
+
                 self.enemy_projectiles.remove(projectile)
                 self.sfx.play("player_hit")
+
                 if self.player.hp <= 0:
-                    self.win = False
-                    self.finished = True
+                    if self.player.emergency_used == 1:
+
+                        self.enemy_projectiles = []
+                        self.sfx.play("emergency")
+                        self.player.emergency_used = 0
+                        self.player.effects["speed"] = [180,0.33]
+                        self.player.hp = self.player.max_hp*0.15
+
+                    else:
+                        self.win = False
+                        self.finished = True
 
         for enemy in self.enemies:
             enemy.move(self.player.x, self.player.y, self.screen)
-            proj = enemy.attack(self.timer, self.player, self.hard_mode)
+            print(self.enemy_db)
+            proj,enemies = enemy.attack(self.timer, self.player, self.hard_mode, self.enemy_db)
+            print(proj)
             self.enemy_projectiles.extend(proj)
+            self.enemies.extend(enemies)
             if enemy.hp <= 0:    
                 self.sfx.play("enemy_death")
-                projectiles = enemy.attack(self.timer)
+                projectiles,enemies_spawn = enemy.attack(self.timer, enemy_db=self.enemy_db)
                 self.enemy_projectiles.extend(projectiles)
+                self.enemies.extend(enemies_spawn)
                 self.enemies.remove(enemy)
 
     # enemy collision
@@ -176,29 +234,73 @@ class Combat:
                     enemy1.y -= move_y
                     enemy2.x += move_x
                     enemy2.y += move_y
+
+        for enemy in self.enemies:
+            dx = enemy.x - self.player.x
+            dy = enemy.y - self.player.y
+
+            distance = math.sqrt(dx**2 + dy**2)
+            min_distance = enemy.width + self.player.width*0.66
+
+            if distance < min_distance:
+                if distance == 0:
+                    distance = 0.1
+                    dx = random.choice([-1, 1])
+                    dy = random.choice([-1, 1])
+
+                overlap = min_distance - distance
+
+                # Wektor przesunięcia
+                move_x = (dx / distance) * overlap
+                move_y = (dy / distance) * overlap
+
+                enemy.x += move_x * 0.5
+                enemy.y += move_y * 0.5
+                self.player.x -= move_x * 0.5
+                self.player.y -= move_y * 0.5
            
     def draw(self):
 
-        self.screen.fill((0, 0, 0))
+        self.screen.fill((230, 250, 200))
         for projectile in self.player_projectiles:
             projectile.draw(self.screen)
         for projectile in self.enemy_projectiles:
+            print(projectile)
             projectile.draw(self.screen)
+        if "frost" in self.player.armor_effect:
+            pygame.draw.circle(self.screen,(40,120,220),(self.player.x,self.player.y),self.player.armor_effect["frost"][0],8)
         if self.player.draw(self.screen):
             self.win = False
             self.finished = True
         for enemy in self.enemies:
             if enemy.draw(self.screen):
                 self.sfx.play("enemy_death")
-                projectiles = enemy.attack(self.timer)
+                projectiles,enemies_spawn = enemy.attack(self.timer, enemy_db=self.enemy_db)
                 self.enemy_projectiles.extend(projectiles)
+                self.enemies.extend(enemies_spawn)
                 self.enemies.remove(enemy)
-        for enemy in self.zapped_enemies:
-            if enemy[2] > 0:
-                self.ZapEffect(enemy[0],enemy[1])
-                enemy[2] -= 1
-                if enemy[2] <= 0:
-                    self.zapped_enemies.remove(enemy)
+        
+
+        for zap_data in self.zapped_enemies[:]:
+            if zap_data["duration"] > 0:
+
+                if zap_data["start_enemy"] in self.enemies:
+                    start_pos = (zap_data["start_enemy"].x, zap_data["start_enemy"].y)
+                    zap_data["last_start_pos"] = start_pos
+                else:
+                    start_pos = zap_data["last_start_pos"]
+
+                if zap_data["end_enemy"] in self.enemies:
+                    end_pos = (zap_data["end_enemy"].x, zap_data["end_enemy"].y)
+                    zap_data["last_end_pos"] = end_pos
+                else:
+                    end_pos = zap_data["last_end_pos"]
+
+                self.ZapEffect(start_pos, end_pos)
+                zap_data["duration"] -= 1
+                if zap_data["duration"] <= 0:
+                    self.zapped_enemies.remove(zap_data)
+
         self.ExplosionEffect()
 
         if self.win:
@@ -208,17 +310,20 @@ class Combat:
 
             flawless_text = self.font_heavy["mid"].render("Flawless!!", True, (255,255,255))
             is_flawless = self.player.hp == self.player.max_hp
-            money_base = self.money*self.money_mult*0.05 if not self.boss else self.money
-            if is_flawless and not self.hard_mode and not self.boss:
-
-                end_text = self.font_light["mid"].render(f"{money_base}$ X 1.5!", True, (0,0,0))
-
-                if not self.money_boost_applied:
-                    self.money_mult *= 1.5
-                    self.money_boost_applied = True
-
+            money_base = self.money*self.money_mult if not self.boss else self.money     
+            if not self.money_boost_applied and not self.boss:
+                if not self.hard_mode and is_flawless:
+                    self.money_mult *= 1.5      
+                if "enemy_gold" in self.player.trinket_effect:
+                    self.money_mult *= 1+self.player.trinket_effect["enemy_gold"][0]
+                    print("jest book")
+                self.money_boost_applied = True
+            if round(self.money_mult/self.money_mult_og,1) != 1.0:
+                end_text = self.font_light["mid"].render(f"{int(money_base)}$ X {round(self.money_mult/self.money_mult_og,2)}!", True, (0,0,0))
             else:
-                end_text = self.font_light["mid"].render(f"{money_base}$", True, (0,0,0))
+                end_text = self.font_light["mid"].render(f"{int(money_base)}$", True, (0,0,0))
+  
+                
             self.screen.blit(end_title, (self.screen.get_width()/2 - end_title.get_width()/2, self.screen.get_height()/2 - end_title.get_height()*3))
             self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
 
@@ -240,13 +345,16 @@ class Combat:
         e = self.enemies.copy()
 
         if len(e) > 1:
-            
-            e.remove(enemy_hit)
+
+            if enemy_hit in e:
+                e.remove(enemy_hit)
+                next_enemy = enemy_hit
+            else:
+                next_enemy = None
+
+            last_enemy = enemy_hit
             pos = (enemy_hit.x,enemy_hit.y)
 
-            next_enemy = enemy_hit
-            last_enemy = enemy_hit
-        
             for i in range(effect[0]):
                 if len(e) > 0:
                     dist = 0
@@ -260,14 +368,16 @@ class Combat:
                             nearest = dist
                             next_enemy = enemy
                         
-                    
-                    self.enemies[self.enemies.index(next_enemy)].take_damage(effect[2]*effect[1])
+                    if next_enemy and next_enemy in self.enemies:
+                        self.enemies[self.enemies.index(next_enemy)].take_damage(effect[2]*effect[1])
 
-                    if self.enemies[self.enemies.index(next_enemy)].hp <= 0:
-                        self.sfx.play("enemy_death")
-                        self.enemies.pop(self.enemies.index(next_enemy))
-
-                    self.zapped_enemies.append([(last_enemy.x,last_enemy.y),(next_enemy.x,next_enemy.y),8])
+                    self.zapped_enemies.append({
+                        "start_enemy": last_enemy,
+                        "end_enemy": next_enemy,
+                        "last_start_pos": (last_enemy.x, last_enemy.y),
+                        "last_end_pos": (next_enemy.x, next_enemy.y),
+                        "duration": 8
+                    })
 
                     last_enemy = next_enemy
                     next_enemy = None
@@ -276,27 +386,41 @@ class Combat:
     def explosion(self, pos, exp_effect, enemy_hit):
         # effect -> [width,dmg_mult,dmg]
 
-        e = self.enemies.copy()
-        effects = self.player.weapon_effect
-        self.explosions.append([exp_effect[0],pos,18])
         
-        if len(e) > 1:
 
-            e.remove(enemy_hit)
-            w = exp_effect[0]
-
+        if enemy_hit != "player":
+            e = self.enemies[:]
+            if enemy_hit:
+                e.remove(enemy_hit)
+        
+        self.explosions.append([exp_effect[0],pos,24])
+        w = exp_effect[0]
+        
+        if enemy_hit != "player" and len(e) > 1:
+            
             for enemy in e:
 
                 dx = enemy.x - pos[0]
                 dy = enemy.y - pos[1]
                 dist = math.sqrt(dx*dx + dy*dy)
 
-                if dist <= w:
-                    self.enemies[self.enemies.index(enemy)].take_damage(exp_effect[2]*exp_effect[1],effects)
+                if dist <= w + enemy.width*0.5:
+                    self.enemies[self.enemies.index(enemy)].take_damage(exp_effect[2]*exp_effect[1],copy.deepcopy(self.player.weapon_effect))
 
                     if self.enemies[self.enemies.index(enemy)].hp <= 0:
                         self.sfx.play("enemy_death")
+                        projectiles,enemies_spawn = enemy.attack(self.timer, enemy_db=self.enemy_db)
+                        self.enemy_projectiles.extend(projectiles)
+                        self.enemies.extend(enemies_spawn)
                         self.enemies.pop(self.enemies.index(enemy))
+
+        elif enemy_hit == "player":
+            dx = self.player.x - pos[0]
+            dy = self.player.y - pos[1]
+            dist = math.sqrt(dx*dx + dy*dy)
+
+            if dist <= w + self.player.width*0.5:
+                self.player.take_damage(exp_effect[2]*exp_effect[1],copy.deepcopy(self.player.weapon_effect))
                     
 
 
@@ -338,8 +462,8 @@ class Combat:
 
             if exp[2] > 0:
 
-                stage = math.ceil(exp[2]/6)
-                img = pygame.transform.scale(self.explosion_img[stage],(w*2,w*2))
+                stage = math.ceil(exp[2]/4)
+                img = pygame.transform.scale(self.explosion_img[6-stage],(w*2,w*2))
                 rect = img.get_rect(center=pos)
 
                 if exp[2]>8:

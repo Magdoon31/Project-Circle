@@ -1,20 +1,31 @@
 {
     "player": {
-        "x": 324.2426406871171,
-        "y": 858.9402589451788,
-        "money": 11467,
-        "playtime": 2986.9666666770886
+        "x": 600,
+        "y": 628,
+        "money": 8898,
+        "playtime": 4813.1000000141075
     },
     "inventory": {
         "active_items": [
-            "Water Hose"
+            "Simple Pistol",
+            "Frost Armor",
+            "Shoe"
         ],
         "items": [
-            "Rifle A2",
-            "Flintlock",
-            "Normal Blaster",
-            "Toy Rifle",
-            "Finger Gun"
+            "Rose",
+            "Toxic Ring",
+            "Holy Orb",
+            "Crown",
+            "Cyber Armor",
+            "Plate Armor",
+            "Tribe Armor",
+            "Heroic Armor",
+            "Scrap Armor",
+            "Magic Dust",
+            "Mecha-King Armor",
+            "Electro Armor",
+            "Samurai Armor",
+            "Laser Arrow"
         ]
     },
     "map": {

@@ -1,15 +1,16 @@
 import copy
 
-import pygame, math
+import pygame, math, random
 
 class projectile:
-    def __init__(self, x, y, target_x, target_y, speed, damage, player, width, range, bullet_type_info, bullet_type , effects = {}):
+    def __init__(self, x, y, target_x, target_y, speed, damage, type, width, range, bullet_type_info, bullet_type , effects = {}):
         self.x = x
         self.y = y
 
         self.speed = speed
+        self.og_speed = speed
         self.damage = damage
-        self.type = player
+        self.type = type
         self.width = width
         self.range = range
 
@@ -28,8 +29,9 @@ class projectile:
 
         self.bullet_type = bullet_type
         self.bullet_type_info = bullet_type_info
+        img = random.choice(self.bullet_type)
 
-        self.base_image = pygame.transform.scale(self.bullet_type_info.img.get(self.bullet_type),(self.width*2,self.width*2))
+        self.base_image = pygame.transform.scale(self.bullet_type_info.img.get(img),(self.width*2,self.width*2))
 
         self.set_velocity()
 
@@ -47,16 +49,18 @@ class projectile:
 
     def check_duration(self):
         if pygame.time.get_ticks() - self.shot_time < self.range and self.shot_time != 0:
-            return True
-        return False
+            return True, {}
+        return False, self.effects
         
     def update(self,enemies):
+
+        
         if self.effects:
             for effect_name, effect in self.effects.items():
                 if effect_name == "bubble":
-                    self.speed -= 0.25
-                    if self.speed < 0:
-                        self.speed = 0
+                    self.speed -= effect[0]
+                    if self.speed < 1.0:
+                        self.speed = 1.0
                     self.set_velocity()
                 elif effect_name == "homing":
             # effect -> [turn_speed]
@@ -115,18 +119,18 @@ class projectile:
         if "pierce" in self.effects:
             if target in self.targets_hit:
                 return False
-            elif distance < target.width:
+            elif distance < target.width*1.3:
                 self.targets_hit.append(target)
-        return distance < target.width
+        return distance < target.width*1.3
     
     def deal_damage(self, target):
         if self.check_collision(target) and target.type != self.type:
             effect = target.take_damage(self.damage,copy.deepcopy(self.effects))
-            # ["pierce",[10]] or ["explosion",[20,0.5]]
-            print(effect)
+            # ["pierce",[10]] or ["explosion",[20,0.5]] or [static dmg]
             if effect not in (True,False,None,[True]):
                 if effect[0] == "pierce":
                     return [effect[0],effect[1][0]<len(self.targets_hit)]
-                effect[1].append(self.damage)
+                if effect[0] != "static":
+                    effect[1].append(self.damage)
             return effect
         return False

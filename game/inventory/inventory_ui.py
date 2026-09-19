@@ -128,12 +128,12 @@ class Inventory_ui:
                                 }
             self.screen.blit(self.tooltip_text["Name"],(tooltip_rect.left+tooltip_rect.width//40,tooltip_rect.top+self.screen.get_height()//60))
             self.screen.blit(self.tooltip_text["Type"],(tooltip_rect.left+tooltip_rect.width//40,tooltip_rect.top+self.screen.get_height()//60+self.tooltip_text["Name"].get_height()))
-            self.screen.blit(self.tooltip_text["desc"],(tooltip_rect.left+tooltip_rect.width//3.6,tooltip_rect.top+self.screen.get_height()//60))
+            self.screen.blit(self.tooltip_text["desc"],(tooltip_rect.left+tooltip_rect.width//(4.2 if self.inventory.selected_item.type == "trinket" else 3.6),tooltip_rect.top+self.screen.get_height()//60))
 
         
             if self.inventory.selected_item.type == "weapon":
 
-                self.tooltip_text["Damage"] = self.font_light["small"].render(f"DMG: {self.inventory.selected_item.damage}",True,(80,10,10))
+                self.tooltip_text["Damage"] = self.font_light["small"].render(f"DMG: {self.inventory.selected_item.damage}"+(f" x {self.inventory.selected_item.effect['shotgun'][1]}"if "shotgun" in self.inventory.selected_item.effect else ""),True,(80,10,10))
                 self.tooltip_text["Fire Rate"] = self.font_light["small"].render(f"Fire Rate: {self.inventory.selected_item.rate_of_fire}",True,(10,80,10))
                 self.tooltip_text["Range"] = self.font_light["small"].render(f"Range: {self.inventory.selected_item.range//10}",True,(10,80,10))
 
@@ -150,7 +150,7 @@ class Inventory_ui:
                 self.screen.blit(self.tooltip_text["Defense"],(tooltip_rect.left+tooltip_rect.width//40,tooltip_rect.top+self.screen.get_height()//60+28*3))
 
             self.tooltip_text["Effect"] = self.font_light["small"].render(f"Effect: {self.inventory.selected_item.effect_description}",True,(130,40,110))
-            self.screen.blit(self.tooltip_text["Effect"],(tooltip_rect.left+tooltip_rect.width//3.6,tooltip_rect.top+self.screen.get_height()//60+self.tooltip_text["desc"].get_height()))
+            self.screen.blit(self.tooltip_text["Effect"],(tooltip_rect.left+tooltip_rect.width//(4.2 if self.inventory.selected_item.type == "trinket" else 3.6),tooltip_rect.top+self.screen.get_height()//60+self.tooltip_text["desc"].get_height()))
 
         equip_btn_rect = pygame.Rect(self.screen.get_width()//1.8,
                         self.screen.get_height()//1.12,
@@ -204,7 +204,7 @@ class Inventory_ui:
                                 self.inventory.selected_item = None
                             self.sfx.play("click")
    
-                        print(self.inventory.selected_item.name if self.inventory.selected_item else None, [item.name if item else None for item in self.inventory.active_items.values()])
+
                 for i, btn in enumerate(self.buttons):
                     if btn.collidepoint(pos):
                         self.sfx.play("use")

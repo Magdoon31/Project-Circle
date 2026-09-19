@@ -2,7 +2,8 @@ import pygame
 
 class MusicManager:
     def __init__(self):
-        self.music = {"menu": pygame.mixer.Sound("assets/music/menu/menu.mp3"),
+        self.music = {"menu_intro": pygame.mixer.Sound("assets/music/menu/menu_intro.mp3"),
+                      "menu_loop": pygame.mixer.Sound("assets/music/menu/menu_loop.mp3"),
                       "rainbow_hills": pygame.mixer.Sound("assets/music/biomes/rainbow_fields.mp3"),
                       "village": pygame.mixer.Sound("assets/music/biomes/village.mp3"),
                       "sugarwood_grove": pygame.mixer.Sound("assets/music/biomes/sugarwood_grove.mp3"),
