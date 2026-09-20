@@ -8,7 +8,7 @@ class Player:
         self.speed = 6
         self.map = map
         self.money = 0
-        self.biome = "village"
+        self.biome = "the_void"
         self.play_time = 0
 
     def draw(self, screen):

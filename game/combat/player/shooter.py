@@ -176,6 +176,8 @@ class Shooter :
     def take_damage(self, amount, effects):
         if self.imm_frames <= 0:
             self.imm_frames = 20
+            hurted_dmg_info = [1]
+            last_health = self.hp
             if ("dodge" in self.armor_effect and random.random() > self.armor_effect["dodge"][0]) or "dodge" not in self.armor_effect:
 
                 self.nodmg_time = 0
@@ -213,12 +215,6 @@ class Shooter :
                             elif effect_name in ("speed","strength","boost"):
                                 if self.effects[effect_name][0] != "inf":
                                     self.effects[effect_name][0] *= self.buff_time
-                        elif effect_name == "hurted_dmg":
-
-                            hurted_dmg_info = [math.floor((amount+self.leftover_dmg_hurted_dmg)/5),amount%5]
-                            self.leftover_dmg_hurted_dmg += hurted_dmg_info[1]
-                            self.leftover_dmg_hurted_dmg %= 5
-
                         elif effect_name in ("binded","confusion"):
                             rnd = random.random()
                             if rnd < effect[1]*(self.bind_chance if effect_name == "binded" else self.confusion_chance):
@@ -226,11 +222,26 @@ class Shooter :
                                 self.effects[effect_name][0] *= self.debuff_time
                         
                 if "hurted_dmg" in self.trinket_effect:
-                    self.og_damage*=(1+self.trinket_effect["hurted_dmg"][0]*hurted_dmg_info[0])
+
+                    pct_before = last_health / self.max_hp
+                    pct_after = self.hp / self.max_hp
+                    
+                    steps_before = math.floor(pct_before / 0.05)
+                    steps_after = math.floor(pct_after / 0.05)
+                    
+                    steps = steps_before - steps_after
+                    
+                    if steps > 0:
+                      
+                        bonus_per_trigger = self.trinket_effect["hurted_dmg"][0]
+                        self.og_damage *= (1 + bonus_per_trigger * steps)
+
                 if "explosion" in effects:
                     return ["explosion", effects["explosion"]]
                 if "static" in self.armor_effect:
                     return ["static",self.armor_effect["static"][0]*amount]
+
+                print(int(self.og_damage),steps,f"{int((self.hp/self.max_hp)*100)}%")
                 
                 return [True]
         return False
@@ -256,7 +267,6 @@ class Shooter :
 
         if "regen" in self.armor_effect and self.hp < self.max_hp*self.armor_effect["regen"][0] and self.regen_timer >= 30:
 
-            print("yes")
             self.hp += self.armor_effect["regen"][1]
             self.regen_timer = 0
 

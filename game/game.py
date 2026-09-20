@@ -125,7 +125,7 @@ class Game:
         self.map_ui.draw()
         
         if self.map_ui.page == "map" and fight not in (True,False,None):
-            self.player_in_combat = Shooter(300,300,self.inventory.active_items,self.sfx,self.bullet_type_info)
+            self.player_in_combat = Shooter(self.screen.get_width()//2,self.screen.get_height()//2,self.inventory.active_items,self.sfx,self.bullet_type_info)
         if self.map_ui.page == "map" and fight == "fight":
 
             self.combat = Combat(self.screen, self.player_in_combat,[], self.enemy_db, self.hard_mode, self.sfx)
@@ -155,6 +155,7 @@ class Game:
 
             self.state = GameState.MENU
             self.music.stop()
+            self.timer = 0
             self.music.play("menu_intro")
 
             self.menu.page = "main"

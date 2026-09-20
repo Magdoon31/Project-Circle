@@ -9,7 +9,7 @@ class BulletTypes:
             "bullet_red", "bullet_blue", "bullet_green", "bullet", "ghost_bullet", "acid",
             "laser_red", "laser_blue", "laser_purple", "laser_green", "laser_yellow", "grenade_red",
             "missile_red", "missile_blue", "nail", "water", "bubble", "arrow_blue", "arrow_red",
-            "spore", "flower_green", "flower_orange", "flower_pink", "flower_blue", "bullet_gold"
+            "spore", "flower_green", "flower_orange", "flower_pink", "flower_blue", "flower_white", "bullet_gold"
             
         ]
         for b_type in self.bullet_types:

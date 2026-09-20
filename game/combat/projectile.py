@@ -6,6 +6,8 @@ class projectile:
     def __init__(self, x, y, target_x, target_y, speed, damage, type, width, range, bullet_type_info, bullet_type , effects = {}):
         self.x = x
         self.y = y
+        self.start_x = self.x
+        self.start_y = self.y
 
         self.speed = speed
         self.og_speed = speed
@@ -25,7 +27,9 @@ class projectile:
         self.vy = 0
         dx = self.target_x - self.x
         dy = self.target_y - self.y
+
         self.angle = math.degrees(math.atan2(-dy, dx))
+        self.progress = 0
 
         self.bullet_type = bullet_type
         self.bullet_type_info = bullet_type_info
@@ -57,11 +61,27 @@ class projectile:
         
         if self.effects:
             for effect_name, effect in self.effects.items():
+
                 if effect_name == "bubble":
+
                     self.speed -= effect[0]
                     if self.speed < 1.0:
                         self.speed = 1.0
                     self.set_velocity()
+
+                elif effect_name == "throw":
+                    old_progress = self.progress
+
+                    elapsed = pygame.time.get_ticks() - self.shot_time
+                    progress = min(elapsed / self.range, 1)
+
+                    progress = 1 - (1 - progress) ** 3
+
+                    self.vx = (self.target_x - self.start_x) * (progress - old_progress)
+                    self.vy = (self.target_y - self.start_y) * (progress - old_progress)
+
+                    self.progress = progress
+
                 elif effect_name == "homing":
             # effect -> [turn_speed]
                     target = None
@@ -116,8 +136,8 @@ class projectile:
 
     def check_collision(self, target):
         distance = math.sqrt((self.x - target.x) ** 2 + (self.y - target.y) ** 2)
-        if "pierce" in self.effects:
-            if target in self.targets_hit:
+        if "pierce" in self.effects or "throw" in self.effects:
+            if target in self.targets_hit or "throw" in self.effects:
                 return False
             elif distance < target.width*1.3:
                 self.targets_hit.append(target)

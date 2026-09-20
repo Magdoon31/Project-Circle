@@ -59,6 +59,7 @@ class Combat:
         self.segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/zap{nr}.png"),(64,64)) for nr in range(1,5)]
         self.zapped_enemies = []
         self.explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/boom{nr}.png") for nr in range(1,7)]
+        self.nova_explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/nova_boom{nr}.png") for nr in range(1,7)]
         self.explosions = []
 
     def handle_events(self, events, mouse_btn_pressed):
@@ -89,6 +90,9 @@ class Combat:
         self.timer += 1
         keys = pygame.key.get_pressed()
         self.player.move(keys, self.screen)
+        if len(self.enemies) > 32:
+            for i in range(len(self.enemies)-32):
+                self.enemies[-1].hp = 0
 
         for projectile in self.player_projectiles[:]:
             projectile.update(self.enemies)
@@ -166,6 +170,10 @@ class Combat:
                     effect["explosion"].append(projectile.damage)
                     self.explosion((projectile.x,projectile.y), effect["explosion"],"player")
                     self.sfx.play("explosion") 
+                elif "nova_explosion" in effect:
+                    effect["nova_explosion"].append(projectile.damage)
+                    self.explosion((projectile.x,projectile.y), effect["nova_explosion"],"player",type="nova_")
+                    self.sfx.play("explosion") 
                 self.enemy_projectiles.remove(projectile)
 
             player_hit = projectile.deal_damage(self.player)
@@ -178,7 +186,7 @@ class Combat:
 
                 if player_hit[0] == "explosion":
 
-                    self.explosions.append([player_hit[1][0],(projectile.x,projectile.y),24])
+                    self.explosions.append([player_hit[1][0],(projectile.x,projectile.y),24,None])
                     self.sfx.play("explosion")
 
                 self.enemy_projectiles.remove(projectile)
@@ -199,9 +207,7 @@ class Combat:
 
         for enemy in self.enemies:
             enemy.move(self.player.x, self.player.y, self.screen)
-            print(self.enemy_db)
             proj,enemies = enemy.attack(self.timer, self.player, self.hard_mode, self.enemy_db)
-            print(proj)
             self.enemy_projectiles.extend(proj)
             self.enemies.extend(enemies)
             if enemy.hp <= 0:    
@@ -265,7 +271,6 @@ class Combat:
         for projectile in self.player_projectiles:
             projectile.draw(self.screen)
         for projectile in self.enemy_projectiles:
-            print(projectile)
             projectile.draw(self.screen)
         if "frost" in self.player.armor_effect:
             pygame.draw.circle(self.screen,(40,120,220),(self.player.x,self.player.y),self.player.armor_effect["frost"][0],8)
@@ -316,7 +321,6 @@ class Combat:
                     self.money_mult *= 1.5      
                 if "enemy_gold" in self.player.trinket_effect:
                     self.money_mult *= 1+self.player.trinket_effect["enemy_gold"][0]
-                    print("jest book")
                 self.money_boost_applied = True
             if round(self.money_mult/self.money_mult_og,1) != 1.0:
                 end_text = self.font_light["mid"].render(f"{int(money_base)}$ X {round(self.money_mult/self.money_mult_og,2)}!", True, (0,0,0))
@@ -383,7 +387,7 @@ class Combat:
                     next_enemy = None
                     e.remove(last_enemy)
 
-    def explosion(self, pos, exp_effect, enemy_hit):
+    def explosion(self, pos, exp_effect, enemy_hit, type=None):
         # effect -> [width,dmg_mult,dmg]
 
         
@@ -393,7 +397,7 @@ class Combat:
             if enemy_hit:
                 e.remove(enemy_hit)
         
-        self.explosions.append([exp_effect[0],pos,24])
+        self.explosions.append([exp_effect[0],pos,24,type])
         w = exp_effect[0]
         
         if enemy_hit != "player" and len(e) > 1:
@@ -454,7 +458,7 @@ class Combat:
             self.screen.blit(zap_img, rect)
 
     def ExplosionEffect(self): 
-        # exp -> [width,pos,time]
+        # exp -> [width,pos,time,nova]
         for exp in self.explosions:
 
             w = exp[0]
@@ -463,7 +467,10 @@ class Combat:
             if exp[2] > 0:
 
                 stage = math.ceil(exp[2]/4)
-                img = pygame.transform.scale(self.explosion_img[6-stage],(w*2,w*2))
+                if exp[3]:
+                    img = pygame.transform.scale(self.nova_explosion_img[6-stage],(w*2,w*2))
+                else:
+                    img = pygame.transform.scale(self.explosion_img[6-stage],(w*2,w*2))
                 rect = img.get_rect(center=pos)
 
                 if exp[2]>8:

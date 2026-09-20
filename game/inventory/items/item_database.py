@@ -47,7 +47,7 @@ class ItemDatabase:
 
             "Water Hose": Weapon("Water Hose",
                                     "It's just a hose. Right?",
-                                    "weapon",1,0.04,{"bubble" : [1]},"Automatic",8100,16,16,["water"],
+                                    "weapon",1,0.04,{"bubble" : [0.4]},"Automatic",8100,16,16,["water"],
                                     self.load_img("weapon/hose1.png"),True,10),
                                     # 25 DPS +2Auto             |   27p
             "Rifle A2": Weapon("Rifle A2",

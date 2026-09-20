@@ -258,7 +258,7 @@ class Enemy:
                             attack_info["last_shot"] = self.attack_timer
                             attack_info["burst_count"] += 1
                             base_angle = math.atan2(player.y - self.y, player.x - self.x)
-                            spread = attack_info["sperad"]
+                            spread = attack_info["spread"]
                             random_offset = random.uniform(-spread, spread)
                             angle = base_angle + random_offset
                             vx = math.cos(angle)
@@ -277,7 +277,7 @@ class Enemy:
                                 attack_info["burst_count"] = 0
                                 attack_info["last_used"] = self.attack_timer
                         
-                elif attack_name == "spinner":
+                elif attack_name == "spiral":
                     rnd = random.randint(-5,5)
                     for angle in range(0+rnd*20, 360+rnd*20, 360//attack_info["bullets"]):
                         rad = math.radians(angle)
@@ -327,7 +327,16 @@ class Enemy:
                                             self.bullet_type_info, attack_info["type"], effects={"explosion":[attack_info["radius"],1.0]}))
                     attack_info["last_used"] = self.attack_timer
                 elif attack_name == "throw":   
-                    
+                    angle = random.uniform(0, math.tau)
+                    distance = math.sqrt(random.uniform(0, attack_info["recoil"]**2))
+
+                    target_x = player.x + math.cos(angle) * distance
+                    target_y = player.y + math.sin(angle) * distance
+                    projectiles.append(prjt(self.x, self.y, target_x, target_y, 0,
+                                            self.damage*attack_info["damage"], "enemy", 
+                                            attack_info["width"], attack_info["fly_time"]*1000, 
+                                            self.bullet_type_info, attack_info["type"], effects={"throw":[1], f"{attack_info["exp_type"]}explosion":[attack_info["radius"],1.0]}))
+                    attack_info["last_used"] = self.attack_timer
 
         if player and player.width + self.width > math.sqrt((self.x - player.x) ** 2 + (self.y - player.y) ** 2) and timer % 10 == 0 and "dmgless_contact" not in player.trinket_effect:
             hit = player.take_damage(self.contact_dmg,{"speed":[120,0.3]} if "speed_on_contact" in player.trinket_effect else {})
