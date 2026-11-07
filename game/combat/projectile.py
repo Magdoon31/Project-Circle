@@ -8,6 +8,8 @@ import pygame, math, random
 #   {"kind": "creep", "speed": px}  a mine that slowly crawls towards its target
 #   {"kind": "split", "after": frames, "children": spec}  bursts into smaller bullets after a while
 #   {"kind": "land_ring", "children": spec}  a thrown bomb that throws out a ring of bullets where it lands
+#   {"kind": "slowdown", "decay": 0.97, "min": px}  starts fast, slows down every frame (Shroom Mother's spores)
+#   wave + "bounce": n, "bounds": (w, h)  the wobbling line bounces off the screen edges n times
 # spec (children) = {"bullets", "speed", "damage" (final), "width", "range", "type", "effects", "start" (degrees)}
 
 
@@ -109,9 +111,23 @@ class projectile:
             v = math.sin(math.pi * t / out) if t < out else -math.sin(math.pi * (t - out) / back)
             self.vx, self.vy = self.dir_x * self.speed * v, self.dir_y * self.speed * v
             return True
+        if kind == "slowdown":
+            self.speed = max(m["min"], self.speed * m["decay"])
+            self.vx, self.vy = self.dir_x * self.speed, self.dir_y * self.speed
+            return True
         if kind == "wave":
             self.base_x += self.dir_x * self.speed
             self.base_y += self.dir_y * self.speed
+            if m.get("bounce", 0) > 0 and m.get("bounds"):           # off a wall: the line turns back
+                w, h = m["bounds"]
+                if not 0 <= self.base_x <= w:
+                    self.dir_x = -self.dir_x
+                    self.base_x = min(w, max(0, self.base_x))
+                    m["bounce"] -= 1
+                elif not 0 <= self.base_y <= h:
+                    self.dir_y = -self.dir_y
+                    self.base_y = min(h, max(0, self.base_y))
+                    m["bounce"] -= 1
             off = m["amp"] * math.sin(math.tau * self.age / m["period"]) * m["sign"]
             self.vx = self.base_x - self.dir_y * off - self.x
             self.vy = self.base_y + self.dir_x * off - self.y

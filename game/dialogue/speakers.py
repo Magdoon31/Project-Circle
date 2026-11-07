@@ -52,6 +52,7 @@ NPC_DIALOGUES = {
     "milo_garden_factory": "milo_garden_factory",
     "milo_garden_tundra": "milo_garden_tundra",
     "milo_core_entrance": "milo_core_entrance",
+    "milo_island": "milo_island",    # the "second" Milo on the Village island (Pale World link, 4th wall)
     "angler": "angler",
     "bramble": "bramble",
     "dot": "dot",

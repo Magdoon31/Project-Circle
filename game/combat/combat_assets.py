@@ -26,10 +26,17 @@ class CombatAssets:
         "gain_effect": "assets/sfx/combat/effect_gain.wav",
         "emergency": "assets/sfx/combat/emergency.mp3",
     }
+    # boss phase change (7.11): put a file here; without it the "overclock" sound plays
+    OPTIONAL_SFX = {"boss_phase": "assets/sfx/combat/boss_phase.wav"}
 
     def __init__(self, sfx):
         for name, path in self.COMBAT_SFX.items():
             sfx.load_sfx(name, path)
+        for name, path in self.OPTIONAL_SFX.items():       # used only if the file is there
+            try:
+                sfx.load_sfx(name, path)
+            except (pygame.error, FileNotFoundError):
+                pass
 
         self.font_light = {"small" : pygame.font.Font("assets/font/Nexa-ExtraLight.ttf",18),
                            "mid" : pygame.font.Font("assets/font/Nexa-ExtraLight.ttf",36),}

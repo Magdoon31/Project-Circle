@@ -5,7 +5,8 @@ import pygame
 # a list = the first file that exists
 OPTIONAL_MUSIC = {"dialogue": "assets/music/dialogue/dialogue.mp3",
                   "minigame": ["assets/music/minigame.mp3", "assets/music/minigames/minigame.mp3"],   # while playing a minigame
-                  "lunapark": "assets/music/biomes/lunapark.mp3"}
+                  "lunapark": "assets/music/biomes/lunapark.mp3",
+                  "nowhere": "assets/music/biomes/nowhere.mp3"}      # below the pale Garden (pale_world.py)
 # PLACEHOLDER: music that isn't there yet -> this one plays instead
 MUSIC_FALLBACK = {"lunapark": "sugarwood_grove"}
 
@@ -100,4 +101,4 @@ class MusicManager:
             self.current = self.channel = None
     def update_volume(self):
         for music in self.music.values():
-            music.set_volume(self.music_volume)
+            music.set_volume(self.music_volume)

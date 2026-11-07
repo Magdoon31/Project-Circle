@@ -42,6 +42,7 @@ TILES = {
     "p": {"name": "pipe",        "solid": True,  "encounter": False},
     "O": {"name": "core",        "solid": True,  "encounter": False},   # THE core object
     "k": {"name": "crate",       "solid": True,  "encounter": False},
+    "Q": {"name": "glitch_stone","solid": True,  "encounter": False},   # Pale World: push into it with the Pale Orb on
 }
 
 DEFAULT_COLORS = {
@@ -52,7 +53,7 @@ DEFAULT_COLORS = {
     "^": (95, 90, 85),    "M": (40, 38, 45),    "F": (255, 205, 90),   "a": (150, 155, 170), "q": (228, 228, 232),
     "g": (95, 95, 105),   "v": (70, 70, 78),    "m": (170, 130, 60),  "k": (140, 100, 60),
     ">": (70, 70, 78),    "<": (70, 70, 78),    "A": (70, 70, 78),
-    "e": (200, 60, 90),   "E": (235, 190, 70),   "p": (105, 105, 125), "O": (255, 80, 110),
+    "e": (200, 60, 90),   "E": (235, 190, 70),  "Q": (140, 138, 150),   "p": (105, 105, 125), "O": (255, 80, 110),
 }
 
 # only what differs from DEFAULT_COLORS
@@ -90,6 +91,7 @@ BIOME_COLORS["underground_garden"] = {
 BIOME_COLORS["the_core"] = {
     "g": (72, 60, 78), "#": (36, 27, 42), "_": (84, 72, 90), ",": (92, 80, 98), "m": (118, 112, 132), "k": (96, 78, 70), "M": (18, 12, 22),
 }
+BIOME_COLORS["###"] = {"_": (16, 16, 18), "M": (0, 0, 0), "Q": (40, 40, 44)}     # the bottom of the Pale World maze
 BIOME_COLORS["the_void"] = {
     ".": (44, 32, 64), "#": (10, 7, 16), "_": (56, 44, 76), ",": (52, 40, 72), "*": (96, 66, 160), "x": (64, 54, 84),
     "r": (70, 58, 92), "T": (150, 100, 230), "M": (4, 3, 8), "~": (12, 8, 24), "=": (98, 82, 130),
@@ -119,3 +121,16 @@ EMPTY = " "
 def is_solid(char):
     tile = TILES.get(char)
     return tile["solid"] if tile else True
+
+
+_PALE_CACHE = {}
+
+
+def pale_color(color):
+    """The Pale World's washed-out version of a colour (grey-white, a little cold)."""
+    if color not in _PALE_CACHE:
+        r, g, b = color
+        lum = 0.3 * r + 0.59 * g + 0.11 * b
+        base = 150 + lum * 0.4
+        _PALE_CACHE[color] = tuple(int(min(255, 0.18 * c + 0.82 * base + k)) for c, k in zip(color, (-6, 0, 8)))
+    return _PALE_CACHE[color]

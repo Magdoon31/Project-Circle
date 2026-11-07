@@ -2,7 +2,7 @@ import pygame, math, random, hashlib
 from game.states import GameState
 from game.combat.combat import Combat
 from game.combat.player.shooter import Shooter
-from game.map.map import Map, BOSS_NAME, LEVEL_TITLES, LEVELS
+from game.map.map import Map, BOSS_NAME, BOSS_OF_ZONE, LEVEL_TITLES, LEVELS
 from game.map.map_ui import MapUI
 from game.map.world_map import WorldMap
 from game.map.player import Player
@@ -23,16 +23,17 @@ from game.minigames.memory import Memory
 from game.minigames.sudoku import Sudoku
 from game.minigames.wires import Wires
 from game.minigames.fishing import Fishing
-from game.minigames.wheel import Wheel
+from game.minigames.wheel import Wheel, GOLDEN_FLAG
 from game.world import loot
 from game.story.milo import milo_npcs, path_locks, choose_path
 from game.story.wren import wren_npcs, auto_npc_near
 from game.story.garden import garden_npcs, PaleAltar
 from game.story import ferris as FERRIS
+from game.world import pale_world as PALE
 from game.shop.shop import Shop
 from game.shop.stock import ShopStock
 from game.shop import stock as S
-from game.inventory.sigils import Sigils, ALL_SIGILS, HAGGLER_PRICE, LUCKY_COIN_REROLLS, LUCKY_COIN_GOLD
+from game.inventory.sigils import Sigils, ALL_SIGILS, HAGGLER_PRICE, LUCKY_COIN_REROLL, LUCKY_COIN_GOLD
 from game.inventory import sigils as SG
 
 ESCAPE_GRACE_FRAMES = 180   # after running away: no random fight for the next 3 s of walking
@@ -68,7 +69,11 @@ BIOME_KEYS = {
 DEBUG_STORY_ITEMS_KEY = pygame.K_0
 STORY_ITEMS = ["Peace Gun", "Broken Bulb", "Cassette Tape", "Old Note",
                "Meter"]   # Meter: the Foreman's part from the shop - TEST ONLY until the shop exists
-SECRET_HINTS = {"core_vault": "The gold is still lying on the ground"}   # bumping into a closed secret way
+SECRET_HINTS = {"core_vault": "The gold is still lying on the ground",    # bumping into a closed secret way
+                "garden_backroom": "Something is still awake."}
+HARD_BOSS_HP = 1.33         # hard mode: bosses have 33% more HP
+GLITCH_PUSH_FRAMES = 90     # Pale World: push into a glitch stone this long (1.5 s) with the Pale Orb on
+NOT_YET_FRAMES = 150        # the "ultra secret" glitch: a black screen with "Not yet." (the world isn't made yet)
 SELL_SHARE = 0.25           # the buyer pays 25% of the shop price
 SIGIL_POPUP_FRAMES = 180    # "New Sigil" on the screen for 3 s
 MINIGAME_FADE_MS = 800      # the music fades out this long before a minigame's countdown (then the minigame music)
@@ -247,6 +252,13 @@ class Game:
 
     def update_map(self, events, keys, mouse_pos):
         self.refresh_talk_background()
+        if getattr(self, "not_yet", 0) > 0:               # the ultra secret glitch: not made yet
+            self.not_yet -= 1
+            self.screen.fill((0, 0, 0))
+            text = self.font.render("Not yet.", True, (200, 200, 205))
+            text.set_alpha(min(255, (NOT_YET_FRAMES - self.not_yet) * 6, self.not_yet * 6))
+            self.screen.blit(text, text.get_rect(center=self.screen.get_rect().center))
+            return
         # a minigame from a dialogue: it takes all input; afterwards the dialogue goes on
         if self.minigame:
             if self.minigame_fade > 0:                    # the music goes quiet first, then the countdown starts
@@ -326,8 +338,11 @@ class Game:
             self.open_shop()
             return
         if self.map_ui.page == "map" and any(e.type == pygame.KEYDOWN and e.key == pygame.K_m for e in events):
-            self.open_world_map()
-            return
+            if PALE.is_pale(self.map.level):
+                self.map_ui.show_message("...", 90)       # the world map doesn't work in the Pale World
+            else:
+                self.open_world_map()
+                return
 
         change_state = self.map_ui.handle_click(mouse_pos,events)
         on_map = self.map_ui.page == "map"
@@ -344,7 +359,7 @@ class Game:
                     self.counters["sigils"] = self.sigils.to_dict()
                     self.map_ui.show_message("TEST: story items + all sigils", 120)
                 elif event.type == pygame.KEYDOWN and event.key == DEBUG_FIGHT_KEY and not self.dialogue:
-                    if self.player.biome in SPAWNS and self.map.level not in NO_FIGHT_LEVELS:
+                    if self.player.biome in SPAWNS and self.map.level not in NO_FIGHT_LEVELS and not PALE.is_pale(self.map.level):
                         self.start_fight()
                         return
                     self.map_ui.show_message("TEST: no fights here", 90)
@@ -374,7 +389,19 @@ class Game:
             self.update_story()
             self.map.lock_hit = False
             self.map.secret_hit = None
+            self.map.glitch_hit = None
+            self.map.orb_on = self.pale_orb_on()
+            if PALE.is_pale(self.map.level) and not self.map.orb_on:
+                self.leave_pale()                          # took the Pale Orb off: thrown back out
+                return
+            if "boss:garden" in self.map.flags:
+                self.map.flags.add(PALE.BACKROOM_FLAG)     # Spare Pocket's room behind the Garden boss opens
             event = self.player.move(keys)
+            if self.map.glitch_hit and self.map.orb_on and self.map.glitch_hit == getattr(self, "glitch_tile", None):
+                self.glitch_push += 1
+            else:
+                self.glitch_push = 0
+            self.glitch_tile = self.map.glitch_hit if self.map.orb_on else None
             if self.map.confine_hit and self.map_ui.message_timer <= 0:
                 self.map_ui.show_message("Maybe talk to Milo first...", 120)
             elif self.map.lock_hit and self.map_ui.message_timer <= 0:
@@ -385,6 +412,12 @@ class Game:
             self.map.draw()
             self.player.draw(self.screen)
             self.map.draw_overlay()          # e.g. cellar darkness - under the UI
+            if self.glitch_push:
+                self.draw_glitch(self.glitch_push / GLITCH_PUSH_FRAMES)
+                if self.glitch_push >= GLITCH_PUSH_FRAMES:
+                    self.glitch_push = 0
+                    self.use_glitch(self.glitch_tile)
+                    return
             auto = auto_npc_near(self.map.npcs(), self.map.tile_at(self.player.x, self.player.y))
             if auto:
                 self.start_dialogue(auto)                 # e.g. the overheard Wren x Milo argument
@@ -399,11 +432,12 @@ class Game:
                 if "pale_orb" in self.sfx.sfx:
                     self.sfx.play("pale_orb")
                 self.map_ui.show_message("Something pale appears on the stone.", 150)
-            # music follows the biome of the tile the player stands on
-            if self.player.biome != self.current_music:
-                self.current_music = self.player.biome
+            # music follows the biome of the tile the player stands on (the Pale World: its own)
+            music = PALE.music_for(self.map.level, self.player.biome)
+            if music != self.current_music:
+                self.current_music = music
                 self.music.stop()
-                self.music.play(self.player.biome)
+                self.music.play(music)
 
         self.map_ui.draw()
         self.draw_sigil_popup()
@@ -671,7 +705,8 @@ class Game:
             self.minigame = Fishing(self.screen, self.dialogue.background, volume)
         elif family == "wheel":                           # Lucky's wheel of fortune (stake in the name)
             self.minigame = Wheel(self.screen, self.dialogue.background, int(kind.split("_")[1]), volume,
-                                  sigil=None if "haggler" in self.sigils.owned else "haggler")   # the "?" field
+                                  sigil=None if "haggler" in self.sigils.owned else "haggler",   # the "?" field
+                                  golden=GOLDEN_FLAG in self.map.flags)        # the Coupon (Pale World): 104%
         elif kind.startswith("wires"):                    # "wires_5" = Hal's antenna with 5 wires
             self.minigame = Wires(self.screen, self.dialogue.background, int(kind.split("_")[1]), volume)
         else:
@@ -685,6 +720,78 @@ class Game:
         return LUCKY_COIN_GOLD if self.sigils.on("lucky_coin") else 1.0      # Lucky Coin sigil
 
     # --- the shop ----------------------------------------------------------------------------------
+    # --- Pale World (7.11, game/world/pale_world.py) --------------------------------------------------------
+    def pale_orb_on(self):
+        return any(t and "pale_world" in t.effect for t in (self.inventory.active_trinket, self.inventory.active_trinket2))
+
+    def draw_glitch(self, amount):
+        """The screen breaks up more and more while you push into a glitch stone."""
+        sw, sh = self.screen.get_size()
+        frame = self.screen.copy()
+        for _ in range(int(4 + amount * 26)):
+            y, h = random.randrange(sh), random.randint(4, int(10 + amount * 50))
+            shift = random.randint(-int(amount * 60) - 2, int(amount * 60) + 2)
+            self.screen.blit(frame, (shift, y), (0, y, sw, h))
+        if amount > 0.6:
+            veil = pygame.Surface((sw, sh))
+            veil.fill((235, 235, 240))
+            veil.set_alpha(int((amount - 0.6) / 0.4 * 200))
+            self.screen.blit(veil, (0, 0))
+
+    def place_at_tile(self, level, tile):
+        """Puts the player on that tile of that level (or the nearest free one) - no message, no portal jump."""
+        if self.map.level != level:
+            self.change_level(level)
+        tx, ty = tile
+        for r in range(0, 12):
+            for dy in range(-r, r + 1):
+                for dx in range(-r, r + 1):
+                    if max(abs(dx), abs(dy)) != r:
+                        continue
+                    pos = self.map.tile_centre((tx + dx, ty + dy))
+                    if self.map.can_stand(pos[0], pos[1], self.player.radius):
+                        self.player.set_position(*pos)
+                        self.last_portal = self.map.portal_at(pos[0], pos[1], self.player.radius)
+                        self.player.encounter_grace = ESCAPE_GRACE_FRAMES
+                        return
+
+    def use_glitch(self, tile):
+        """Through a glitch stone: the same tile in the other world (normal <-> pale), or the stone's own target
+        (the ultra secret: the edge of the pale Garden <-> outside the map)."""
+        level = self.map.level
+        glitch = next((g for g in getattr(self.map.world, "glitches", []) if tuple(g["tile"]) == tuple(tile)), None)
+        if glitch is None:
+            return
+        if PALE.is_pale(level) and glitch.get("needs") and glitch["needs"] not in self.map.flags:
+            self.map_ui.show_message(SECRET_HINTS.get(glitch.get("hint"), "..."), 150)   # e.g. Spare Pocket's room
+            return
+        if "pale_orb" in self.sfx.sfx:
+            self.sfx.play("pale_orb")
+        if glitch.get("target"):
+            target, to = glitch["target"]
+        elif PALE.is_pale(level):
+            target, to = PALE.base_level(level), glitch["stand"]
+        else:
+            target, to = PALE.PALE_PREFIX + level, glitch["stand"]
+        if not PALE.is_pale(level):
+            self.map.pale_return = (level, (self.player.x, self.player.y))     # saving in there = saving here
+        elif not PALE.is_pale(target):
+            self.map.pale_return = None
+        back = self.map.pale_return
+        self.place_at_tile(target, to)
+        self.map.pale_return = back
+        self.player.vx = self.player.vy = 0.0
+
+    def leave_pale(self):
+        back = self.map.pale_return
+        self.map.pale_return = None
+        if back:
+            self.change_level(back[0])
+            self.player.set_position(*back[1])
+        else:
+            self.place_at_tile(PALE.base_level(self.map.level), self.map.tile_at(self.player.x, self.player.y))
+        self.map_ui.show_message("...", 90)
+
     # --- sigils (7.11): how they are found - see game/inventory/sigils.py and the project's SIGILS.md --------
     def award_sigil(self, sigil_id):
         """The player finds a sigil: sound + "New Sigil" in the middle of the screen (not switched on by itself)."""
@@ -796,7 +903,7 @@ class Game:
             "give": lambda name: self.give_item(self.inventory.ItemDB.get_item(name)),
             "inventory_full": self.inventory.is_full, "play_sfx": self.sfx.play,
             "price_mult": HAGGLER_PRICE if self.sigils.on("haggler") else 1.0,              # Haggler sigil
-            "extra_rerolls": LUCKY_COIN_REROLLS if self.sigils.on("lucky_coin") else 0,      # Lucky Coin sigil
+            "reroll_mult": LUCKY_COIN_REROLL if self.sigils.on("lucky_coin") else 1.0,       # Lucky Coin sigil
             "luck": self.luck(), "wins": self.counters.get("biome_wins", {}),
             "can_sell": "boss:rainbow_fields" in self.map.flags,                 # the Sell page (7.11)
             "inventory": lambda: list(self.inventory.items), "sell_price": self.sell_price, "sell": self.sell_item})
@@ -949,11 +1056,14 @@ class Game:
         self.music.play(f"boss_fight{random.randint(1,2)}")
 
     def start_boss_fight(self, gate):
-        boss_name = BOSS_NAME   # TEMPORARY: the same boss everywhere
+        boss_name = BOSS_OF_ZONE.get(gate.get("from"), BOSS_NAME)   # boss1 where there is no real boss yet
         self.active_boss_gate = gate
         self.player.vx = self.player.vy = 0.0
         self.player_in_combat = self.new_shooter()
         boss = self.enemy_db.get_boss(boss_name)
+        if self.hard_mode:
+            boss.hp = boss.max_hp = round(boss.max_hp * HARD_BOSS_HP)       # hard mode: every boss is tougher
+            boss.hard = True                                                # (phases may add "hard" attacks)
         self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.hard_mode, self.sfx, boss_name, assets=self.combat_assets)
         self.combat.money += boss.money
         self.state = GameState.COMBAT
@@ -981,7 +1091,7 @@ class Game:
                 self.sfx.play("coin_pickup")
                 self.map_ui.show_message(f"+{pickup['amount']}$", 90)
                 if self.map.level == "core" and all(p["pos"] in self.map.collected
-                                                    for p in self.map.world.pickups if p["type"] == "gold"):
+                                                    for p in self.map.world.pickups if p["type"] == "gold" and not p.get("glitch")):
                     self.map.flags.add("open:core_vault")          # all the Core's gold: the vault wall lets you in
             else:
                 self.give_item(self.inventory.ItemDB.get_item(pickup["item"]))

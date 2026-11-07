@@ -8,7 +8,8 @@
 # Shelves: the NEWEST biome gets 2, every older one 1, at most 6 - the oldest falls off:
 #   VV -> RRV -> SSRV -> FFSRV -> GGFSRV -> (tundra boss) GGFTSR -> ...
 # New stock after every boss (rolled the first time the shop is opened after it). A bought shelf stays SOLD.
-# 2 rerolls per boss, after a reroll every shelf has a different item than before.
+# REROLLS (7.11): as many as you like, after a reroll every shelf has a different item than before. The FIRST one after
+# every boss is free, then the price grows with the square: base x 1, 4, 9, 16... (free again after the next boss).
 # PRICES (7.11): price = how many fights in the item's biome it is worth x the average gold of one fight there
 #   (FIGHT_GOLD: enemies' money + the biome's gold on the map spread over ~15 fights). Common (weight 10) = 4 fights,
 #   medium (5) = 8, rare (2) = 16. A reroll = 1 fight of the newest biome. All rounded to 10.
@@ -23,7 +24,6 @@ SHELVES = 6
 TIERS = {"village": 1, "rainbow_fields": 2, "sugarwood_grove": 3, "toy_factory": 4, "silverpine_tundra": 4,
          "underground_garden": 5, "the_core": 6}
 PATHS = {"factory": "toy_factory", "tundra": "silverpine_tundra"}
-REROLLS_PER_STAGE = 2
 # average gold of one normal fight in the biome, map gold included (7.11 simulation: 3000 fights, 5 worlds)
 FIGHT_GOLD = {"village": 21, "rainbow_fields": 41, "sugarwood_grove": 108, "toy_factory": 190, "silverpine_tundra": 181,
               "underground_garden": 654, "the_core": 857, "the_void": 1702}
@@ -95,10 +95,12 @@ def price_of(item, biome):
     return round10(FIGHT_GOLD.get(biome, 100) * fights)
 
 
-def reroll_price(flags):
-    """A reroll = the gold of one fight in the newest open biome."""
+def reroll_price(flags, used=0, mult=1.0):
+    """The first reroll since the last boss is free, then the gold of one fight in the newest open biome x (rerolls
+    done since the last boss) squared (x mult - the Lucky Coin sigil)."""
     biomes = open_biomes(flags)
-    return round10(max(FIGHT_GOLD.get(b, 100) for b, t in biomes if t == biomes[0][1]))
+    base = max(FIGHT_GOLD.get(b, 100) for b, t in biomes if t == biomes[0][1])
+    return round10(base * used ** 2 * mult) if used else 0
 
 
 def rare_allowed(biome, flags, wins, reroll):
@@ -131,25 +133,23 @@ class ShopStock:
         data = data or {}
         self.stage = data.get("stage")                  # stage_key the shelves were rolled for (None = never)
         self.shelves = data.get("shelves", [])
-        self.rerolls = data.get("rerolls", REROLLS_PER_STAGE)
+        self.used = data.get("used", 0)                 # rerolls done since the last boss (the price grows)
         self.greeted = data.get("greeted", [])         # stage_key of the last greeting (a boss line after a boss)
 
     def to_dict(self):
-        return {"stage": self.stage, "shelves": self.shelves, "rerolls": self.rerolls, "greeted": self.greeted}
+        return {"stage": self.stage, "shelves": self.shelves, "used": self.used, "greeted": self.greeted}
 
     def refresh(self, flags, owned, luck=0, wins=None):
         """New stock if a boss was beaten since the last roll. True if it was rolled now."""
         key = stage_key(flags)
         if self.stage == key and self.shelves:
             return False
-        self.stage, self.rerolls = key, REROLLS_PER_STAGE
+        self.stage, self.used = key, 0
         self.shelves = roll(flags, owned, luck=luck, wins=wins)
         return True
 
     def reroll(self, flags, owned, luck=0, wins=None):
-        if self.rerolls <= 0:
-            return False
-        self.rerolls -= 1
+        self.used += 1
         self.shelves = roll(flags, owned, avoid=[s["item"] for s in self.shelves if s["item"]], luck=luck,
                             wins=wins, reroll=True)
         return True

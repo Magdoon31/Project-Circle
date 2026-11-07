@@ -1,0 +1,40 @@
+{
+    "_comment": "The 'second' Milo on the little island in the Village (pale_world.py, link 'milo'). There from the very first second, reachable only through the Pale World. The ONE fourth-wall break in the game (heavy irony, like Fredbear in FNaF World's Halloween update). Scary voice = black screen + silence. A placeholder for something later - for now only this talk.",
+    "partner": "milo",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:milo_island"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:milo_island"
+            },
+            "lines": [
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Oh. Look at that. You found the stone."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Congratulations. I've been standing on this little island since the very first second of the game."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Watching you walk in circles. Losing to slimes. Paying a man in a hood for a pistol."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Yes, I'm also standing by the fence. Don't think about it too hard. Nobody else does."},
+                {"who": "player", "pose": "serious", "text": "What is this place?"},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "This? This is content. Very mysterious, very deep lore. Glitching through walls with a glowing marble. Truly the peak of game design."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "You were hoping for a reward. A secret boss. An ending, maybe."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "There's nothing here yet. Somebody still has to make it mean something. Somebody is very busy."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "So go on. Back through your little stone. Tell everyone you found the island. They'll be thrilled."},
+                {"who": "milo", "pose": "smile", "text": "...Hey! Nice view from here, huh?"}
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {"who": "milo", "pose": "smile", "text": "Nice view, huh?"},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Still not finished. Come back after an update."},
+                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "You came all the way back here. For this. Incredible dedication."}
+            ]
+        }
+    }
+}

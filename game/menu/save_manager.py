@@ -36,8 +36,9 @@ class SaveManager:
         if nr in (1,2,3):
             save_data = {
                         "player": {
-                            "x": self.player.x,
-                            "y": self.player.y,
+                            # in the Pale World: saved as the normal world, where you came in (7.11)
+                            "x": self.map.pale_return[1][0] if getattr(self.map, "pale_return", None) else self.player.x,
+                            "y": self.map.pale_return[1][1] if getattr(self.map, "pale_return", None) else self.player.y,
                             "money": self.player.money,
                             "playtime" : self.player.play_time
                         },
@@ -52,7 +53,7 @@ class SaveManager:
                             # the world is rebuilt from the seed; only changes are stored, per level (surface / cellar)
                             "seed": self.map.seed,
                             "seed_text": self.seed_text,                # what was typed in the menu ("" = random)
-                            "level": self.map.level,                    # where the player is
+                            "level": self.map.pale_return[0] if getattr(self.map, "pale_return", None) else self.map.level,
                             "levels": self.map.levels_state(),          # collected loot, beaten bosses, seen tiles
                             "flags": sorted(self.map.flags),            # story switches (e.g. void_unlocked)
                         },

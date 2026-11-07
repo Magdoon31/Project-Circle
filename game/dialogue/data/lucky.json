@@ -1,7 +1,14 @@
 {
-    "_comment": "Lucky - the barker of the lunapark (smooth, fast, a bit sly). Wheel of fortune (minigame wheel_10 / 50 / 100, the number is the stake, gold only, ~90% comes back on average). Tells you about the Mascot in the big tent.",
+    "_comment": "Lucky - the barker of the lunapark (smooth, fast, a bit sly). Wheel of fortune (minigame wheel_10 / 50 / 100, the number is the stake, gold only, ~90% comes back on average). Tells you about the Mascot in the big tent. 7.11: the Coupon (Pale World, Tundra) -> the Golden Wheel for good (flag lucky:golden): stakes 50 / 100 / 500, ~104% comes back.",
     "partner": "lucky",
     "start": [
+        {
+            "if": {
+                "item": "Coupon",
+                "not_flag": "lucky:golden"
+            },
+            "goto": "coupon"
+        },
         {
             "if": {
                 "flag": "talked:lucky"
@@ -57,6 +64,9 @@
                             "lose": "lost",
                             "poor": "poor"
                         }
+                    },
+                    "if": {
+                        "not_flag": "lucky:golden"
                     }
                 },
                 {
@@ -75,6 +85,20 @@
                     "do": {
                         "minigame": {
                             "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 500$.",
+                    "if": {
+                        "flag": "lucky:golden"
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_500",
                             "win": "won",
                             "lose": "lost",
                             "poor": "poor"
@@ -124,6 +148,9 @@
                             "lose": "lost",
                             "poor": "poor"
                         }
+                    },
+                    "if": {
+                        "not_flag": "lucky:golden"
                     }
                 },
                 {
@@ -142,6 +169,20 @@
                     "do": {
                         "minigame": {
                             "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 500$.",
+                    "if": {
+                        "flag": "lucky:golden"
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_500",
                             "win": "won",
                             "lose": "lost",
                             "poor": "poor"
@@ -191,6 +232,9 @@
                             "lose": "lost",
                             "poor": "poor"
                         }
+                    },
+                    "if": {
+                        "not_flag": "lucky:golden"
                     }
                 },
                 {
@@ -209,6 +253,20 @@
                     "do": {
                         "minigame": {
                             "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 500$.",
+                    "if": {
+                        "flag": "lucky:golden"
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_500",
                             "win": "won",
                             "lose": "lost",
                             "poor": "poor"
@@ -344,6 +402,9 @@
                             "lose": "lost",
                             "poor": "poor"
                         }
+                    },
+                    "if": {
+                        "not_flag": "lucky:golden"
                     }
                 },
                 {
@@ -362,6 +423,20 @@
                     "do": {
                         "minigame": {
                             "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 500$.",
+                    "if": {
+                        "flag": "lucky:golden"
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_500",
                             "win": "won",
                             "lose": "lost",
                             "poor": "poor"
@@ -390,6 +465,35 @@
                     "text": "Come back soon! The wheel never sleeps! Unlike the Mascot."
                 }
             ]
+        },
+        "coupon": {
+            "do": {
+                "take": "Coupon",
+                "flag": "lucky:golden"
+            },
+            "lines": [
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "[You show Lucky the coupon.]"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "surprised",
+                    "text": "Where did you... these were never printed."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "I mean - of COURSE! The Golden Wheel! For our very special guests!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "pointing",
+                    "text": "Five hundred a spin. And between us? The odds are... generous. Don't tell the Mascot."
+                }
+            ],
+            "then": "again"
         }
     }
-}
+}

@@ -103,11 +103,14 @@ class Shop:
         inventory_full() -> bool, play_sfx(name)"""
         self.is_open = True
         self.stock, self.ctx = stock, ctx
-        if stock.refresh(ctx["flags"], ctx["owned"], ctx.get("luck", 0), ctx.get("wins")):
-            stock.rerolls += ctx.get("extra_rerolls", 0)          # Lucky Coin sigil
+        stock.refresh(ctx["flags"], ctx["owned"], ctx.get("luck", 0), ctx.get("wins"))
         self.note_timer = self.buy_cooldown = 0
         self.page = "buy"
         self.say(self.greeting())
+
+    def reroll_price(self):
+        """Grows with every reroll since the last boss (stock.py); the Lucky Coin sigil makes it cheaper."""
+        return S.reroll_price(self.ctx["flags"], self.stock.used, self.ctx.get("reroll_mult", 1.0))
 
     def close(self):
         self.is_open = False
@@ -222,10 +225,8 @@ class Shop:
                 self.sell(items[target[1]])
             return None
         if target == "reroll":
-            price = S.reroll_price(ctx["flags"])
-            if self.stock.rerolls <= 0:
-                self.show_note("No rerolls left - new stock after the next boss")
-            elif ctx["get_money"]() < price:
+            price = self.reroll_price()
+            if ctx["get_money"]() < price:
                 self.say(self.pick("poor"))
                 if not self.keeper_here:
                     self.show_note("Not enough money")
@@ -526,8 +527,8 @@ class Shop:
         self.screen.blit(tag, pos)
 
     def draw_buttons(self, sw, sh):
-        price = S.reroll_price(self.ctx["flags"])
-        buttons = [("reroll", f"Reroll {price}$  ({self.stock.rerolls} left)", self.stock.rerolls > 0),
+        price = self.reroll_price()
+        buttons = [("reroll", f"Reroll {price}$" if price else "Reroll FREE", True),
                    ("leave", "Leave", True)]
         if self.page == "sell":
             buttons = buttons[1:]

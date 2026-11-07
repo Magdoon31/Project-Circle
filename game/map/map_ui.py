@@ -66,7 +66,11 @@ class MapUI:
             text_color = (0, 0, 0) if self.player.biome in BRIGHT_BIOMES else (255, 255, 255)
             money_text = self.font_heavy["large"].render(f"{self.player.money}$", True, text_color)
             self.screen.blit(money_text, (self.screen.get_width()//50,self.screen.get_height()//50))
-            biome_text = self.font_heavy["mid"].render(self.player.biome.replace("_", " ").title(), True, text_color)
+            name = self.player.biome.replace("_", " ").title()
+            if getattr(self.player.map, "world", None) is not None and getattr(self.player.map.world, "pale", False):
+                from game.world.pale_world import distort      # Pale World: the name is a little broken
+                name = distort(name)
+            biome_text = self.font_heavy["mid"].render(name, True, text_color)
             self.screen.blit(biome_text, (self.screen.get_width()//50, self.screen.get_height()//50 + money_text.get_height()))
 
             self.draw_quest_list(menu_btn_rect, text_color)

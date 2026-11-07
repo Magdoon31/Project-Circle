@@ -16,6 +16,12 @@ CAN_RUN_FROM_BOSS = False
 DEATH_ATTACK_DELAY = 18      # frames (0.3 s) between a death and its death attack (warning ring)
 CLUSTER_DELAY = 8           # Atom: frames between its small explosions (0.13 s)
 SPREAD_MIN_FRAMES = 180     # Fire / Toxic Ring: a passed-on burn / poison lasts at least 3 s
+# Flavoured Candy: what it can do at the start of a fight (good / bad, 50:50)
+FLAVOURS_GOOD = ["strength", "speed", "regen", "invulnerable"]
+FLAVOURS_BAD = ["burn", "slow", "weakness", "confusion"]
+FLAVOUR_STRENGTH = {"strength": 0.3, "speed": 0.25, "slow": 0.3, "weakness": 0.3}
+INVULN_FLAVOUR = 180            # frames
+PHASE_FLASH = 18              # frames of the white flash when a boss changes phase
 FLAWLESS_GOLD = 1.2           # no damage taken in a normal fight: x1.2 gold (not in hard mode)     # bosses are only fought on purpose (you walk into them)
 
 
@@ -118,6 +124,8 @@ class Combat:
                 self.pending_explosions.remove(waiting)
                 self.explosion(waiting[1], waiting[2], None, waiting[3], waiting[4], True)
                 self.sfx.play("explosion")
+        if self.timer == 1 and "flavour" in self.player.trinket_effect:
+            self.flavoured_candy(self.player.trinket_effect["flavour"][0])
         if self.timer == 1 and "decoy" in self.player.trinket_effect and self.enemies:
             self.decoy = Decoy.drop(self.screen, self.player, self.enemies, self.player.trinket_effect["decoy"][0], self.decoy_image)
         if self.trying_to_run and not self.finished:
@@ -279,6 +287,11 @@ class Combat:
                 target.take_damage(enemy.contact_dmg)      # biting the plush
             self.enemy_projectiles.extend(proj)
             self.enemies.extend(enemies)
+            if enemy.phase_event:                           # a boss changed phase (7.11): a breath, a flash
+                enemy.phase_event = False
+                self.enemy_projectiles = []
+                self.phase_flash = PHASE_FLASH
+                self.sfx.play("boss_phase" if "boss_phase" in self.sfx.sfx else "overclock")
             if enemy.hp <= 0:    
                 self.kill_enemy(enemy)
 
@@ -333,6 +346,25 @@ class Combat:
                 self.player.x -= move_x * 0.5
                 self.player.y -= move_y * 0.5
            
+    def flavoured_candy(self, frames):
+        """Flavoured Candy (7.11, Shroom Mother's trinket): a random effect for `frames` at the start of the fight -
+        half good, half bad (the burn can kill you if you are already hurt)."""
+        p = self.player
+        good = random.random() < 0.5
+        kind = random.choice(FLAVOURS_GOOD if good else FLAVOURS_BAD)
+        if kind == "invulnerable":
+            p.imm_frames = max(p.imm_frames, INVULN_FLAVOUR)
+        elif kind == "regen":
+            p.effects["regen"] = [frames, p.max_hp * 0.03]               # +3% max HP a second
+        elif kind == "burn":
+            p.effects["burn"] = [frames, p.max_hp * 0.015]               # 40 ticks: 60% max HP over 10 s
+        elif kind == "confusion":
+            p.effects["confusion"] = [frames // 2, 1.0]
+        else:
+            p.effects[kind] = [frames, FLAVOUR_STRENGTH[kind]]
+        self.sfx.play("gain_effect")
+        self.flavour_note = [f"Flavoured Candy: {kind}", 150, good]
+
     def kill_enemy(self, enemy):
         # the ONE place where an enemy dies: sound, death attacks, item drop roll, removal
         if enemy not in self.enemies:
@@ -390,6 +422,17 @@ class Combat:
                 self.kill_enemy(enemy)
         
 
+        note = getattr(self, "flavour_note", None)           # Flavoured Candy: what it did this time
+        if note and note[1] > 0:
+            note[1] -= 1
+            label = self.font_heavy["small"].render(note[0], True, (40, 140, 60) if note[2] else (170, 40, 40))
+            self.screen.blit(label, label.get_rect(midbottom=(self.player.x, self.player.y - self.player.width - 22)))
+        if getattr(self, "phase_flash", 0) > 0:             # boss phase change: a white flash fading out
+            self.phase_flash -= 1
+            veil = pygame.Surface(self.screen.get_size())
+            veil.fill((255, 255, 255))
+            veil.set_alpha(int(200 * self.phase_flash / PHASE_FLASH))
+            self.screen.blit(veil, (0, 0))
         for zap_data in self.zapped_enemies[:]:
             if zap_data["duration"] > 0:
 

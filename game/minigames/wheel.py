@@ -11,6 +11,10 @@ from game.minigames.base import Minigame
 
 # the fields around the wheel, in order (20 fields -> expected return 18/20 = 0.9 of the stake)
 FIELDS = [0, 2, 0, 0.5, 1, 0, 0.5, 0, 3, 0, 1, 0.5, 0, 2, 0, 0.5, 1, 0, 6, 0]
+# THE GOLDEN WHEEL (7.11): after Lucky gets the Coupon from the Pale World (flag "lucky:golden") - 25 fields,
+# fewer zeros, the same jackpot: expected return 26/25 = 1.04 of the stake (the house loses, a little).
+GOLDEN_FIELDS = [0, 2, 0, 0.5, 1, 0, 3, 0, 2, 0, 1, 0.5, 0, 2, 0.5, 1, 0, 3, 0.5, 2, 1, 0, 6, 0, 0]
+GOLDEN_FLAG = "lucky:golden"
 SIGIL_FIELD = 9                # this x0 field is the "?" while the sigil isn't yours yet
 COLORS = {"?": (150, 90, 230), 0: (90, 80, 100), 0.5: (120, 170, 230), 1: (240, 240, 240), 2: (120, 220, 130), 3: (250, 200, 70), 6: (240, 90, 160)}
 SPIN_FRAMES = (150, 220)       # how long it spins
@@ -22,9 +26,12 @@ class Wheel(Minigame):
     use_countdown = False
     keep_music = True
 
-    def __init__(self, screen, background, stake=10, volume=1.0, sigil=None):
+    def __init__(self, screen, background, stake=10, volume=1.0, sigil=None, golden=False):
         super().__init__(screen, background, volume)
-        self.fields = list(FIELDS)
+        self.golden = golden
+        self.fields = list(GOLDEN_FIELDS if golden else FIELDS)
+        if golden:
+            self.title = "Lucky's Golden Wheel"
         self.sigil = sigil
         self.won_sigil = None
         if sigil:
@@ -117,7 +124,7 @@ class Wheel(Minigame):
             img = pygame.transform.rotate(img, -math.degrees(mid) - 90)
             pos = (cx + r * 0.72 * math.cos(mid), cy + r * 0.72 * math.sin(mid))
             self.screen.blit(img, img.get_rect(center=pos))
-        pygame.draw.circle(self.screen, (30, 25, 35), (cx, cy), r, 8)
+        pygame.draw.circle(self.screen, (230, 185, 60) if self.golden else (30, 25, 35), (cx, cy), r, 8)   # golden rim
         pygame.draw.circle(self.screen, (250, 210, 80), (cx, cy), r // 9)
         pygame.draw.circle(self.screen, (30, 25, 35), (cx, cy), r // 9, 4)
         # the pointer at the top

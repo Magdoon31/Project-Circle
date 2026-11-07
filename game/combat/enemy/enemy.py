@@ -5,6 +5,8 @@ CONTACT_KNOCKBACK = 45         # px the player is pushed away when an enemy touc
 TELEGRAPH_SPEED = 1.3          # a telegraphed (aimed) shot flies this much faster
 AIM_LOCK_SHARE = 0.35          # the last 35% of the aiming time the line doesn't follow you any more
 PULSE = [45, 15]               # pulsing ring: frames flying out, frames flying back ("3 steps forward, 1 back")
+POISON_FIRST = 30               # frames from putting poison on to its first hit (then every 60)
+PHASE_INVULN = 60               # frames a boss can't be hurt (and doesn't shoot) when it changes phase
 MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (the player runs 8)
 
 # ATTACK TYPES (the key in the enemy's attack dict decides what it does):
@@ -17,8 +19,24 @@ MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (
 #   wave      {"bullets", "every", "amp": px, "period": frames[, "double": True]}  a wobbling line (double = DNA)
 #   throw + "ring": {...children...}  the bomb throws out a full ring where it lands
 #   dash      {"dashes", "windup": frames, "distance": px, "dash_frames", "spiral": {bullets, damage, speed, width, range}}
+#             ["spiral_each": True - the ring at every stop, not only after the last dash; "spiral_on": [1, 2] - a ring
+#              only after these dashes; "show": True - a landing ring while it winds up]
 #   death_blast {"radius", "damage", "push": px}  on death: a blast that pushes everyone away, hurts only the player
+#   burst     {"bullets", "speed": [min, max], "decay", "min_speed"}  spores in random directions and speeds that
+#             slow down (Shroom Mother, like the mushroom in ETG)
+#   leap      {"up": frames, "air": frames, "land_damage", "burst": {...}}  flies up off the screen (can't be hit), its
+#             shadow grows where it will land (random spot), lands (hurts you if you stand there) and bursts there
+#   spawn + "corners": True  the spawned ones stand in random corners; + "guards": True  the spawner can't be hurt
+#             while one of them lives (a shield ring is drawn); "amount": [1, 2] = random; "after_death": s - new
+#             guards only this long after the last one died; "chase": speed - while shielded it walks at you
+#   wave + "bounce": n  the line bounces off the screen edges n times; + "opposite": True  a second one straight back
 # Any attack can also have "repeat": [times, gap in s] - a series (the cooldown starts after the last one).
+#
+# BOSS PHASES (7.11): EnemyDB.boss_info[name] = {"name": shown over the big HP bar, "phases": [{"at": 0.6, ...}]}.
+# When the HP drops to "at" x max HP the boss gets that phase: new "attacks" (replace the old ones; "hard": more
+# attacks added only in hard mode), and optionally
+# "speed", "movement", "color", "contact". Meanwhile PHASE_INVULN frames: it blinks, takes no damage, doesn't shoot;
+# Combat clears every enemy bullet, flashes the screen and plays a sound (phase_event).
 
 
 
@@ -61,7 +79,18 @@ class Enemy:
         self.attacks = attacks
         self.money = money
         self.color = (255,255,255)
+        self.boss_name = None          # bosses: the name over the big HP bar
+        self.phases = []               # bosses: the phases still to come (EnemyDB.boss_info), highest "at" first
+        self.phase_marks = []          # where the phase lines are drawn on the HP bar
+        self.invuln = 0                # frames left of a phase change (no damage, no shots, blinking)
+        self.airborne = False          # a "leap": up in the air (off the screen, can't be hit)
+        self.leap_shadow = None        # (x, y, 0..1) where it will land
+        self.guards = []               # enemies that shield this one while alive ("guards" spawn)
+        self.guards_gone_at = None     # attack_timer when the last guard died
+        self.guard_chase = 0           # speed while shielded (walks at the player, hurts by touch)
+        self.phase_event = False       # Combat: a phase just started (clear the bullets, flash, sound)
         self.effects = {}   
+        self.poison_age = None          # frames since the poison was put on (None = not poisoned)
         self.attack_timer = 0 
 
         self.sfx = sfx
@@ -76,7 +105,23 @@ class Enemy:
             locked = self.aiming.get("aim_left", 0) <= self.aiming["telegraph"] * AIM_LOCK_SHARE
             end = (self.x + math.cos(a) * 2500, self.y + math.sin(a) * 2500)
             pygame.draw.line(screen, (255, 40, 40) if locked else (255, 130, 130), (self.x, self.y), end, 3 if locked else 1)
-        pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
+        if getattr(self, "dash_preview", None):                   # a boss about to jump: where it lands
+            a, dist, k = self.dash_preview
+            lx, ly = self.x + math.cos(a) * dist, self.y + math.sin(a) * dist
+            if self.screen_size:
+                lx = min(self.screen_size[0] - self.width, max(self.width, lx))
+                ly = min(self.screen_size[1] - self.width, max(self.width, ly))
+            pygame.draw.circle(screen, (200, 60, 60), (lx, ly), self.width, 2 + int(k * 4))
+        if self.leap_shadow:                                      # where a leaping boss will come down
+            sx, sy, k = self.leap_shadow
+            r = self.width * (0.35 + 0.65 * k)
+            shade = pygame.Surface((int(r * 2), int(r * 1.2)), pygame.SRCALPHA)
+            pygame.draw.ellipse(shade, (0, 0, 0, int(60 + 90 * k)), shade.get_rect())
+            screen.blit(shade, shade.get_rect(center=(sx, sy + self.width * 0.3)))
+        if any(g.hp > 0 for g in self.guards):                    # shielded by its guards
+            pygame.draw.circle(screen, (120, 200, 255), (self.x, self.y), self.width + 10, 4)
+        if not (self.invuln and (self.invuln // 5) % 2):          # blinking while changing phase
+            pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
         self.hp_bar(screen)
         die = self.handle_effects()[1]  
         self.draw_effects(screen)
@@ -89,9 +134,14 @@ class Enemy:
             for effect_name, effect in self.effects.items():
                 if effect_name == "slow":
                     self.speed = self.og_speed * (1-effect[1])
-                elif effect_name == "poison" and effect[0] % 60 == 0:
-                    self.sfx.play("posion_effect")
-                    self.hp -= effect[1]
+                elif effect_name == "poison":
+                    # (7.11) the first poison hit comes POISON_FIRST frames after it is put on, then every 60
+                    # (hit......hit......end); putting it on again only refreshes it, the rhythm goes on
+                    if not check:
+                        self.poison_age = 0 if self.poison_age is None else self.poison_age + 1
+                        if self.poison_age % 60 == POISON_FIRST:
+                            self.sfx.play("posion_effect")
+                            self.hp -= effect[1]
                 elif effect_name == "weakness":
                     self.damage = self.og_damage * (1-effect[1])
                 elif effect_name == "glued":
@@ -115,6 +165,8 @@ class Enemy:
                     effect_del.append(effect_name)
 
             for name in effect_del:
+                if name == "poison":
+                    self.poison_age = None
                 if name == "slow":
                     self.speed = self.og_speed
                 elif name == "weakness":
@@ -128,6 +180,8 @@ class Enemy:
                 
 
     def take_damage(self, amount, effects = {}):
+        if self.invuln > 0 or self.airborne or any(g.hp > 0 for g in self.guards):
+            return [True]                     # changing phase / in the air / shielded: the bullet does nothing
         
              
 
@@ -150,6 +204,8 @@ class Enemy:
                     self.hp = 0
 
         self.hp -= amount * 100 / (100 + max(0, self.defence))     # % defence: def 100 = half damage
+        if self.phases and self.hp < self.max_hp * self.phases[0]["at"]:
+            self.hp = self.max_hp * self.phases[0]["at"]              # a phase is never skipped by one big hit
         if self.hp < 0:
                     self.hp = 0 
         if effects:
@@ -162,7 +218,13 @@ class Enemy:
 
     def move(self, target_x, target_y, screen):
         self.screen_size = screen.get_size()
-        if self.aiming:
+        if self.guard_chase and any(g.hp > 0 for g in self.guards):
+            d = math.hypot(target_x - self.x, target_y - self.y)       # shielded: walks straight at you
+            if d > 1:
+                self.x += (target_x - self.x) / d * self.guard_chase
+                self.y += (target_y - self.y) / d * self.guard_chase
+            return
+        if self.aiming or self.airborne:
             return                                        # stands still while aiming a fast shot
 
         confusion = "confusion" in self.handle_effects(True)[0]
@@ -295,10 +357,17 @@ class Enemy:
 
         projectiles = []
         enemies = []
+        self.check_phase()
+        if self.invuln > 0:
+            self.invuln -= 1
+            return projectiles, enemies                    # changing phase: no shots for a moment
         if not binded:
             self.attack_timer +=1*self.rate_of_fire
         
+        self._player = player
         for attack_name, attack_info in self.attacks.items():
+            if self.airborne and attack_name != "leap":
+                continue                                  # up in the air: only the leap goes on
             if attack_name == "death_spiral" and self.hp <= 0 and self.death_attacks[0] == 1:
                 self.death_attacks[0] = 0
                 bullets = attack_info.get("bullets", 12)
@@ -450,9 +519,12 @@ class Enemy:
                 elif name == "line":
                     projectiles.append(self.shot(a, info))
                 else:
-                    for sign in ((1, -1) if info.get("double") else (1,)):
+                    for a, sign in [(d, s) for d in ((a, a + math.pi) if info.get("opposite") else (a,))
+                                    for s in ((1, -1) if info.get("double") else (1,))]:
                         p = self.shot(a, info)
                         p.motion = {"kind": "wave", "amp": info["amp"], "period": info["period"], "sign": sign}
+                        if info.get("bounce"):
+                            p.motion.update(bounce=info["bounce"], bounds=self.screen_size or (1920, 1080))
                         projectiles.append(p)
             info["burst_t"] = t + 1
             length = info["duration"] * 60 if name == "sprinkler" else info["every"] * (info["bullets"] - 1) + 1
@@ -473,7 +545,10 @@ class Enemy:
             if t < info["windup"]:
                 self.glow = info["windup"] - t                   # standing and glowing
                 info["dash_angle"] = aim_angle
+                if info.get("show"):                             # (bosses) where it will land: a ring on the floor
+                    self.dash_preview = (aim_angle, info["distance"], t / info["windup"])
                 return projectiles, enemies, False
+            self.dash_preview = None
             if t < info["windup"] + info["dash_frames"]:
                 self.glow = 0
                 step = info["distance"] / info["dash_frames"]
@@ -485,12 +560,18 @@ class Enemy:
                 return projectiles, enemies, False
             info["dash_left"] -= 1
             info["dash_t"] = 0
+            sp = info["spiral"]
+            stop = info["dashes"] - info["dash_left"]          # which stop this is (1, 2, ...)
+            if "spiral_on" in info:
+                ring = stop in info["spiral_on"]                # a ring only after these dashes
+            else:
+                ring = info["dash_left"] == 0 or info.get("spiral_each")
+            if ring:
+                start = random.uniform(0, math.tau)
+                for i in range(sp["bullets"]):
+                    projectiles.append(self.shot(start + i * math.tau / sp["bullets"], {**sp, "type": sp.get("type", info["type"])}))
             if info["dash_left"] > 0:
                 return projectiles, enemies, False
-            sp = info["spiral"]
-            start = random.uniform(0, math.tau)
-            for i in range(sp["bullets"]):
-                projectiles.append(self.shot(start + i * math.tau / sp["bullets"], {**sp, "type": sp.get("type", info["type"])}))
             info["is_bursting"] = False
             info["last_used"] = self.attack_timer
 
@@ -520,11 +601,77 @@ class Enemy:
             info["last_used"] = self.attack_timer
 
         elif name == "spawn":
-            for i in range(info["amount"]):
+            if info.get("guards"):
+                if any(g.hp > 0 for g in self.guards):
+                    info["last_used"] = self.attack_timer      # the old guards still stand: no new ones yet
+                    return projectiles, enemies, True
+                if self.guards:                                # they all died: wait "after_death" s from then
+                    if self.guards_gone_at is None:
+                        self.guards_gone_at = self.attack_timer
+                    if self.attack_timer - self.guards_gone_at < info.get("after_death", 0) * 60:
+                        return projectiles, enemies, True
+                self.guards_gone_at = None
+                self.guard_chase = info.get("chase", 0)
+            corners = None
+            if info.get("corners") and self.screen_size:
+                w, h = self.screen_size
+                m = info.get("margin", 130)
+                corners = random.sample([(m, m + 60), (w - m, m + 60), (m, h - m), (w - m, h - m)], 4)
+            amount = info["amount"]
+            if isinstance(amount, (list, tuple)):
+                amount = random.randint(*amount)               # e.g. [1, 2]: one or two
+            for i in range(amount):
                 enemy = enemy_db.get_enemy(info["enemy_name"])
-                enemy.x = self.x + (-1)**i*20*i
-                enemy.y = self.y + (-1)**i*self.width
+                if corners:
+                    enemy.x, enemy.y = corners[i % 4]
+                else:
+                    enemy.x = self.x + (-1)**i*20*i
+                    enemy.y = self.y + (-1)**i*self.width
+                if info.get("color"):
+                    enemy.color = tuple(info["color"])
                 enemies.append(enemy)
+            if info.get("guards"):
+                self.guards = list(enemies)
+            info["last_used"] = self.attack_timer
+
+        elif name == "burst":
+            # SPORE BURST (7.11, Shroom Mother): bullets in random directions at random speeds, slowing down
+            projectiles += self.burst(info)
+            info["last_used"] = self.attack_timer
+
+        elif name == "leap":
+            # LEAP (7.11, like the pigeon in ETG): up (can't be hit), off the screen; its shadow grows on a random spot;
+            # down there: hurts you if you stand under it, then a spore burst
+            if not info.get("is_bursting"):
+                info["is_bursting"] = True
+                info["leap_t"] = 0
+                w, h = self.screen_size or (1920, 1080)
+                m = self.width + 80
+                info["leap_to"] = (random.uniform(m, w - m), random.uniform(m + 60, h - m))
+                info["leap_from"] = (self.x, self.y)
+                self.airborne = True
+            t = info["leap_t"]
+            info["leap_t"] = t + 1
+            up, air = info["up"], info["air"]
+            if t < up:                                         # going up: rises off the screen
+                fx, fy = info["leap_from"]
+                self.x, self.y = fx, fy - (t / up) ** 2 * 1400
+                return projectiles, enemies, False
+            if t < up + air:                                   # in the air: only its shadow
+                self.x, self.y = -5000, -5000
+                tx, ty = info["leap_to"]
+                self.leap_shadow = (tx, ty, (t - up) / air)
+                return projectiles, enemies, False
+            self.x, self.y = info["leap_to"]                   # down
+            self.leap_shadow = None
+            self.airborne = False
+            p = getattr(self, "_player", None)
+            if p is not None and math.dist((p.x, p.y), (self.x, self.y)) < self.width + p.width:
+                if p.take_damage(self.damage * info["land_damage"], {}):
+                    self.sfx.play("hit")
+            if info.get("burst"):
+                projectiles += self.burst(info["burst"])
+            info["is_bursting"] = False
             info["last_used"] = self.attack_timer
 
         elif name == "shotgun":
@@ -564,13 +711,67 @@ class Enemy:
 
         return projectiles, enemies, True
 
+    # --- boss phases (7.11) --------------------------------------------------------------------------------
+    def set_phases(self, info):
+        self.boss_name = info.get("name")
+        self.phases = sorted((dict(p) for p in info.get("phases", [])), key=lambda p: -p["at"])
+        self.phase_marks = [p["at"] for p in self.phases]
+
+    def check_phase(self):
+        if not self.phases or self.hp <= 0 or self.hp > self.max_hp * self.phases[0]["at"]:
+            return
+        phase = self.phases.pop(0)
+        if "attacks" in phase:
+            self.attacks = copy.deepcopy(phase["attacks"])
+            if getattr(self, "hard", False):
+                self.attacks.update(copy.deepcopy(phase.get("hard", {})))     # hard mode: extra attacks in this phase
+            for info in self.attacks.values():
+                info["last_used"] = self.attack_timer + info.get("last_used", 0)    # cooldowns start now
+        if "speed" in phase:
+            self.speed = self.og_speed = phase["speed"]
+        if "movement" in phase:
+            self.movement_type = phase["movement"]
+        if "color" in phase:
+            self.color = tuple(phase["color"])
+        if "contact" in phase:
+            self.contact_dmg = phase["contact"]
+        self.aiming = None
+        self.glow = 0
+        self.dash_preview = None
+        self.guards = []                                    # a new phase: old guards don't shield any more
+        self.guard_chase = 0
+        if self.airborne:                                   # (can't happen mid-air - no damage up there - but safe)
+            self.airborne, self.leap_shadow = False, None
+        self.invuln = PHASE_INVULN
+        self.phase_event = True
+
+    def burst(self, info):
+        """Spores flying out in random directions at random speeds, each slowing down."""
+        out = []
+        lo, hi = info["speed"]
+        for _ in range(info["bullets"]):
+            p = self.shot(random.uniform(0, math.tau), info, speed=random.uniform(lo, hi))
+            p.motion = {"kind": "slowdown", "decay": info.get("decay", 0.975), "min": info.get("min_speed", 1.5)}
+            out.append(p)
+        return out
+
     def hp_bar(self, screen):
         if self.type == "boss":
             bar_width = screen.get_width() // 1.5
             bar_height = screen.get_height() // 30
+            x0 = screen.get_width() // 2 - bar_width // 2
+            y0 = 20 if not self.boss_name else 20 + bar_height
             fill_width = int(bar_width * (self.hp/self.max_hp))
-            pygame.draw.rect(screen, (255, 0, 0), (screen.get_width() // 2 - bar_width // 2, 20, bar_width, bar_height))
-            pygame.draw.rect(screen, (0, 255, 0), (screen.get_width() // 2 - bar_width // 2, 20, fill_width, bar_height))
+            pygame.draw.rect(screen, (255, 0, 0), (x0, y0, bar_width, bar_height))
+            pygame.draw.rect(screen, (0, 255, 0), (x0, y0, fill_width, bar_height))
+            for at in self.phase_marks:                        # where the next phases start
+                mx = x0 + bar_width * at
+                pygame.draw.line(screen, (20, 20, 25), (mx, y0 - 3), (mx, y0 + bar_height + 2), 4)
+            if self.boss_name:
+                if not hasattr(Enemy, "_name_font"):
+                    Enemy._name_font = pygame.font.Font(None, int(bar_height * 1.3))
+                label = Enemy._name_font.render(self.boss_name, True, (30, 30, 35))
+                screen.blit(label, label.get_rect(midbottom=(screen.get_width() // 2, y0 - 2)))
 
     def draw_effects(self, screen):
         EFFECT_COLORS = {

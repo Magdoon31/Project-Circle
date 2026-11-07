@@ -1,412 +1,157 @@
 {
     "player": {
-        "x": 3112.5,
-        "y": 12242.5,
-        "money": 4434,
-        "playtime": 1428.5999999990295
+        "x": 8084.568162695069,
+        "y": 9731.951721909114,
+        "money": 1451,
+        "playtime": 2136.616666666261
     },
     "inventory": {
         "active_items": [
-            "AK-47",
-            "Viking Armor",
-            "Mascot Plush"
+            "Laser SMG",
+            "Samurai Jacket",
+            "Flavoured Candy"
         ],
         "active_trinket2": null,
         "items": [
-            "Ultra Blaster",
-            "Flower Gun",
-            "Combat Sniper",
-            "Toxic Gas",
-            "Cyber Armor",
-            "Hourglass",
-            "Power Bank"
+            "Simple Pistol",
+            "Shotgun S4",
+            "Martini",
+            "Glue Gun"
         ]
     },
     "map": {
-        "seed": 801044009,
+        "seed": 660828180,
         "seed_text": "",
         "level": "surface",
         "levels": {
             "surface": {
                 "collected": [
                     [
-                        27,
-                        124
+                        37,
+                        226
                     ],
                     [
-                        29,
-                        125
+                        39,
+                        228
                     ],
                     [
-                        30,
-                        126
+                        49,
+                        135
                     ],
                     [
-                        42,
-                        142
-                    ],
-                    [
-                        44,
-                        144
-                    ],
-                    [
-                        50,
-                        114
-                    ],
-                    [
-                        58,
-                        244
-                    ],
-                    [
-                        58,
-                        245
-                    ],
-                    [
-                        89,
-                        239
-                    ],
-                    [
-                        92,
-                        238
-                    ],
-                    [
-                        94,
-                        197
-                    ],
-                    [
-                        95,
-                        197
-                    ],
-                    [
-                        96,
+                        59,
                         171
                     ],
                     [
-                        97,
+                        60,
+                        69
+                    ],
+                    [
+                        61,
                         172
                     ],
                     [
-                        102,
-                        16
-                    ],
-                    [
-                        103,
-                        17
-                    ],
-                    [
-                        117,
-                        88
-                    ],
-                    [
-                        133,
-                        63
-                    ],
-                    [
-                        146,
-                        148
-                    ],
-                    [
-                        147,
-                        149
-                    ],
-                    [
-                        186,
-                        92
-                    ],
-                    [
-                        187,
-                        92
-                    ],
-                    [
-                        189,
-                        159
-                    ]
-                ],
-                "defeated": [
-                    [
-                        57,
-                        181
-                    ],
-                    [
-                        67,
-                        91
-                    ],
-                    [
-                        105,
-                        148
-                    ],
-                    [
-                        169,
-                        87
-                    ]
-                ],
-                "away": [],
-                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
-            },
-            "lunapark": {
-                "collected": [
-                    [
-                        29,
-                        12
-                    ],
-                    [
-                        33,
-                        12
-                    ],
-                    [
-                        37,
-                        12
-                    ]
-                ],
-                "defeated": [
-                    [
-                        33,
-                        9
-                    ]
-                ],
-                "away": [],
-                "explored": "eNpjYBjGgBEnoJsRjITAqBGjRowaMTyMIGQIw4gygmHUiKFkBMNgNQIAgG4Dng=="
-            },
-            "cellar": {
-                "collected": [
-                    [
-                        19,
-                        107
-                    ],
-                    [
-                        22,
-                        106
-                    ],
-                    [
-                        35,
-                        40
-                    ],
-                    [
-                        47,
-                        94
-                    ],
-                    [
-                        47,
-                        95
-                    ],
-                    [
-                        51,
-                        195
-                    ],
-                    [
-                        59,
-                        119
-                    ],
-                    [
-                        59,
-                        120
-                    ],
-                    [
-                        69,
-                        121
-                    ],
-                    [
-                        82,
-                        229
-                    ],
-                    [
-                        84,
-                        94
-                    ],
-                    [
-                        91,
-                        95
-                    ],
-                    [
-                        98,
-                        235
-                    ],
-                    [
-                        104,
-                        80
-                    ],
-                    [
-                        105,
-                        79
-                    ],
-                    [
-                        113,
-                        29
-                    ],
-                    [
-                        171,
-                        71
-                    ],
-                    [
-                        179,
-                        213
-                    ],
-                    [
-                        186,
+                        62,
                         173
                     ],
                     [
-                        272,
-                        137
+                        64,
+                        69
                     ],
                     [
-                        279,
-                        50
+                        80,
+                        229
+                    ],
+                    [
+                        83,
+                        228
+                    ],
+                    [
+                        86,
+                        168
+                    ],
+                    [
+                        90,
+                        169
+                    ],
+                    [
+                        91,
+                        169
+                    ],
+                    [
+                        105,
+                        187
+                    ],
+                    [
+                        105,
+                        188
+                    ],
+                    [
+                        119,
+                        207
+                    ],
+                    [
+                        120,
+                        208
+                    ],
+                    [
+                        122,
+                        78
+                    ],
+                    [
+                        136,
+                        154
+                    ],
+                    [
+                        137,
+                        155
+                    ],
+                    [
+                        196,
+                        150
                     ]
                 ],
                 "defeated": [
                     [
-                        70,
-                        61
+                        50,
+                        237
+                    ],
+                    [
+                        66,
+                        92
+                    ],
+                    [
+                        102,
+                        143
                     ]
                 ],
-                "away": [],
-                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
-            },
-            "core": {
-                "collected": [
+                "away": [
                     [
-                        13,
-                        98
+                        50,
+                        237
                     ],
                     [
-                        15,
-                        96
-                    ],
-                    [
-                        17,
-                        98
-                    ],
-                    [
-                        19,
-                        88
-                    ],
-                    [
-                        21,
-                        55
-                    ],
-                    [
-                        22,
-                        18
-                    ],
-                    [
-                        27,
-                        123
-                    ],
-                    [
-                        33,
-                        74
-                    ],
-                    [
-                        37,
-                        32
-                    ],
-                    [
-                        37,
-                        103
-                    ],
-                    [
-                        42,
-                        57
-                    ],
-                    [
-                        46,
-                        13
-                    ],
-                    [
-                        47,
-                        66
-                    ],
-                    [
-                        57,
-                        33
-                    ],
-                    [
-                        60,
-                        48
-                    ],
-                    [
-                        61,
-                        48
-                    ],
-                    [
-                        61,
-                        106
-                    ],
-                    [
-                        64,
-                        88
-                    ],
-                    [
-                        82,
-                        52
-                    ],
-                    [
-                        82,
-                        117
-                    ],
-                    [
-                        94,
-                        13
-                    ],
-                    [
-                        95,
-                        73
-                    ],
-                    [
-                        109,
-                        83
-                    ],
-                    [
-                        110,
-                        104
-                    ],
-                    [
-                        112,
-                        112
-                    ],
-                    [
-                        113,
-                        56
-                    ],
-                    [
-                        114,
-                        60
-                    ],
-                    [
-                        114,
-                        61
+                        102,
+                        143
                     ]
                 ],
-                "defeated": [],
-                "away": [],
-                "explored": "eNrtwTENAAAAw6DUv+nZ2AEUAAAAAAAAAAAAAAAAAAAAAAD8GCfkRxk="
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
             }
         },
         "flags": [
-            "asked_hook:bramble",
+            "asked_hook:dot",
             "boss:candy",
-            "boss:garden",
-            "boss:lunapark",
             "boss:rainbow_fields",
-            "boss:tundra",
             "boss:village",
-            "explained_price:bramble",
             "explained_price:dot",
-            "found:factory_hall",
-            "mascot:prize",
+            "gus:snapped",
             "path:tundra",
-            "quest_done:gardener",
+            "quest_done:gus",
             "quest_done:hook",
-            "talked:gardener",
-            "talked:lucky",
             "talked:milo_separated",
             "talked:milo_village",
-            "talked:oliver",
             "talked:wren",
-            "visited:core",
-            "visited:garden",
-            "visited:lunapark",
+            "visited:candy",
             "visited:separated",
             "wren_sigil"
         ]
@@ -415,89 +160,51 @@
     "counters": {
         "sigils": {
             "owned": [
-                "overflow",
-                "close_call",
-                "lucky_charm",
-                "vigor",
-                "might",
-                "swift",
-                "lucky_coin",
-                "haggler",
-                "bullet_time",
-                "steady_hands"
+                "overflow"
             ],
-            "active": {
-                "craft": "overflow",
-                "warden": "bullet_time",
-                "fortune": "lucky_charm",
-                "tribe": "might"
-            }
+            "active": {}
         },
         "shop": {
             "stage": [
-                "boss:candy",
-                "boss:garden",
                 "boss:rainbow_fields",
-                "boss:tundra",
                 "boss:village"
             ],
             "shelves": [
                 {
-                    "item": "Hourglass",
-                    "biome": "the_core",
-                    "sold": false
-                },
-                {
-                    "item": "Power Bank",
-                    "biome": "the_core",
-                    "sold": true
-                },
-                {
-                    "item": "Living Rifle",
-                    "biome": "underground_garden",
-                    "sold": false
-                },
-                {
-                    "item": "Medieval Armor II",
-                    "biome": "silverpine_tundra",
-                    "sold": false
-                },
-                {
-                    "item": "Bra",
+                    "item": "Laser SMG",
                     "biome": "sugarwood_grove",
                     "sold": true
+                },
+                {
+                    "item": "Book",
+                    "biome": "sugarwood_grove",
+                    "sold": false
                 },
                 {
                     "item": "Apprentice Armor",
                     "biome": "rainbow_fields",
                     "sold": false
+                },
+                {
+                    "item": "Vest",
+                    "biome": "village",
+                    "sold": false
                 }
             ],
-            "rerolls": 0,
+            "used": 1,
             "greeted": [
-                "boss:candy",
-                "boss:garden",
                 "boss:rainbow_fields",
-                "boss:tundra",
                 "boss:village"
             ]
         },
+        "memory_plays": 1,
+        "memory_wins": 1,
         "biome_wins": {
             "village": 1,
             "rainbow_fields": 2,
-            "silverpine_tundra": 4,
-            "underground_garden": 3,
-            "the_core": 3
+            "sugarwood_grove": 8
         },
-        "wheel_plays": 19,
-        "wheel_wins": 9,
-        "fishing_ready_at": 602.8500000000532,
-        "fishing_plays": 1,
-        "fishing_wins": 1,
-        "sudoku_plays": 1,
-        "sudoku_wins": 1,
-        "memory_plays": 1,
-        "memory_wins": 1
+        "gus_talks": 10
     },
     "game": {
         "hard_mode": false

@@ -22,7 +22,7 @@ COLUMNS = [
     {"id": "fortune", "name": "Fortune", "image": "fortune.png", "sigils": [
         {"id": "haggler", "name": "Haggler", "text": "Shop prices -15%.",
          "secret": True},
-        {"id": "lucky_coin", "name": "Lucky Coin", "text": "+1 shop reroll after every boss.\n+20% gold from fights.",
+        {"id": "lucky_coin", "name": "Lucky Coin", "text": "Shop rerolls -15%.\n+20% gold from fights.",
          "how": "Defeat a Firefly Queen\nduring her dash."},
         {"id": "lucky_charm", "name": "Lucky Charm", "text": "+1 luck.", "secret": True},
     ]},
@@ -52,7 +52,7 @@ COLUMN_OF = {s["id"]: c["id"] for c in COLUMNS for s in c["sigils"]}
 
 # the numbers
 HAGGLER_PRICE = 0.85
-LUCKY_COIN_REROLLS = 1
+LUCKY_COIN_REROLL = 0.85         # Lucky Coin: reroll price x this
 LUCKY_COIN_GOLD = 1.2
 LUCKY_CHARM_LUCK = 1            # see Game.luck()
 CLOSE_CALL_HP = 0.10            # Close Call: win a Tundra fight with this share of HP or less

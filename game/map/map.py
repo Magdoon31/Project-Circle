@@ -17,25 +17,38 @@ from game.world.cellar_map import CellarMap
 from game.world.core_map import CoreMap
 from game.world.void_map import VoidMap
 from game.world.lunapark_map import LunaparkMap
-from game.world.tiles import TILES, tile_color
+from game.world.tiles import TILES, tile_color, pale_color
+from game.world import pale_world as PALE
 from game.world import surface_layout as L
 
 TILES_ON_SCREEN_Y = 13          # start screen shows the fenced square + ~2 tiles (author's decision)
-BOSS_NAME = "boss1"             # TEMPORARY: every boss spot uses boss1 until real bosses exist
+BOSS_NAME = "boss1"             # TEMPORARY: boss spots without a real boss yet use boss1
+BOSS_OF_ZONE = {"village": "slime_king", "rainbow_fields": "prism", "candy": "shroom_mother"}    # the real bosses (7.11, one by one): gate "from" -> EnemyDB.bosses
 FOG_COLOR = (18, 18, 22)        # unexplored part of the world map
 CONVEYOR_ANIM_SPEED = 60        # pixels per second the chevrons on conveyor belts move (just looks)
 
 # LEVELS: separate maps of the world, all generated from the same seed.
 # The cellar is generated only when the player goes there for the first time.
 LEVELS = {"surface": SurfaceMap, "cellar": CellarMap, "core": CoreMap, "void": VoidMap, "lunapark": LunaparkMap}
-LEVEL_TITLES = {"surface": "Surface", "cellar": "Cellar", "core": "The Core", "void": "The Void", "lunapark": "Lunapark"}
+# PALE WORLD (7.11, game/world/pale_world.py): "pale_<level>" = the pale copy of that level (glitch stones lead there)
+for _base in PALE.PALE_ZONES:
+    LEVELS[PALE.PALE_PREFIX + _base] = (lambda b: lambda seed: PALE.PaleWorld(b, PALE.with_glitches(b, LEVELS[b](seed))))(_base)
+
+# below the pale Garden (the maze to ###): built from the cellar's maze stones
+LEVELS[PALE.NOWHERE] = lambda seed: PALE.NowhereMap(seed, PALE.NOWHERE, PALE.deep_targets(seed, LEVELS["cellar"]).get(PALE.NOWHERE))
+LEVELS[PALE.NOWHERE2] = lambda seed: PALE.NowhereMap(seed, PALE.NOWHERE2, PALE.deep_targets(seed, LEVELS["cellar"]).get(PALE.NOWHERE2))
+LEVELS[PALE.HASH] = PALE.HashMap
+LEVEL_TITLES = {"surface": "Surface", "cellar": "Cellar", "core": "The Core", "void": "The Void", "lunapark": "Lunapark",
+                "pale_surface": "Surf4ce", "pale_cellar": "C3llar", "pale_core": "The C0re",
+                PALE.NOWHERE: "N0wh3r3", PALE.NOWHERE2: "N0wh3r3", PALE.HASH: "###"}   # pale: a little broken
 # small side levels without their own world map (M): it shows this level instead (the lunapark -> the Surface)
 MAP_SHOWS = {"lunapark": "surface"}
 # levels where the world map (M) FORGETS: a seen place fades back into the fog after this many ms.
 # ("% explored" still counts everything you have ever seen.) Not saved: after loading the memory is empty.
 MAP_MEMORY_MS = {"void": 60_000}
 # screen overlay per level (drawn over the world and the player, under the UI, stretched to the screen)
-LEVEL_OVERLAYS = {"cellar": "assets/img/map/cellar_overlay.png", "void": "assets/img/map/cellar_overlay.png"}
+LEVEL_OVERLAYS = {"cellar": "assets/img/map/cellar_overlay.png", "void": "assets/img/map/cellar_overlay.png",
+                  "pale_cellar": "assets/img/map/cellar_overlay.png"}
 # how many times the overlay is layered in a biome (2 = darker). Changes smoothly when crossing biomes.
 BIOME_OVERLAY_STRENGTH = {"underground_garden": 2.0, "the_void": 3.0}
 OVERLAY_FADE = 0.03             # per frame
@@ -80,6 +93,9 @@ class Map:
         self.locked_portals = set()    # portal positions closed the same way
         self.lock_hit = False          # the player just bumped into such a closed way
         self.secret_hit = None         # the player just bumped into a closed secret way (its id)
+        self.glitch_hit = None         # the glitch stone the player is pushing into right now (tile)
+        self.orb_on = False            # the Pale Orb is equipped (glitch stones flicker) - set by Game
+        self.pale_return = None        # (level, (x, y) px) where the player came into the Pale World (for saving)
         self.confine = None            # (x, y, w, h) tiles the player may not leave (start fence before Milo) - set by Game
         self.confine_hit = False       # the player just bumped into that invisible border
         self.memory_bonus_ms = 0       # set by Game from the trinket (Eyeballs "map_memory") - longer memory in the Void
@@ -126,6 +142,8 @@ class Map:
     def _build_level(self, name):
         saved = self.saved_levels.get(name, {})
         world = LEVELS[name](self.seed)
+        if not PALE.is_pale(name):
+            PALE.add_glitches(name, world)            # glitch stones to the Pale World (own random, the rest stays)
         gate_of_cell = {}                  # which gate each "|" tile belongs to
         for gate in world.gates:
             for cell in gate["cells"]:
@@ -226,6 +244,8 @@ class Map:
                 self.confine_hit = True
                 return True
         char = self.world.tiles[ty][tx]
+        if char == "Q":
+            self.glitch_hit = (tx, ty)                 # pushing into a glitch stone (Game counts how long)
         if char == "|":
             gate = self.gate_of_cell[(tx, ty)]
             if tuple(gate["pos"]) in self.locked_gates:
@@ -256,6 +276,8 @@ class Map:
         return None
 
     def encounter_allowed(self, x, y):
+        if getattr(self.world, "pale", False):
+            return False                       # no fights in the Pale World (yet - its own enemies later)
         tx, ty = self.tile_at(x, y)
         return TILES[self.world.tiles[ty][tx]]["encounter"]
 
@@ -392,6 +414,8 @@ class Map:
         char = self.world.tiles[ty][tx]
         if char != "#" and (tx, ty) in self.hidden_cells():
             char = "#"
+        if getattr(self.world, "pale", False):
+            return pale_color(tile_color(char, self.world.biome_at(tx, ty)))
         if char == "|":
             char = "," if self.gate_open(self.gate_of_cell[(tx, ty)]) else "|"
         return tile_color(char, self.world.biome_at(tx, ty))
@@ -493,7 +517,8 @@ class Map:
     # --- looking at other levels on the world map --------------------------------------------
     def viewable_levels(self):
         """Levels the player has been to (built now, or visited in an earlier session), in world order."""
-        return [name for name in LEVELS if (name in self.levels or name in self.saved_levels) and name not in MAP_SHOWS]
+        return [name for name in LEVELS if (name in self.levels or name in self.saved_levels) and name not in MAP_SHOWS
+                and not PALE.is_pale(name)]
 
     def view(self, name):
         """A read-only look at any visited level for the world map (builds it first if needed, ~1 s)."""
@@ -636,6 +661,7 @@ class Map:
         last_x, last_y = int((cam_x + sw) // ts) + 1, int((cam_y + sh) // ts) + 1
         world = self.world
         hidden = self.hidden_cells()
+        pale = getattr(world, "pale", False)
 
         for ty in range(max(0, first_y), min(world.height, last_y + 1)):
             for tx in range(max(0, first_x), min(world.width, last_x + 1)):
@@ -652,7 +678,13 @@ class Map:
                         pygame.draw.rect(self.screen, (70, 70, 80), (sx + ts * 0.2, sy, ts * 0.15, ts + 1))
                         pygame.draw.rect(self.screen, (70, 70, 80), (sx + ts * 0.65, sy, ts * 0.15, ts + 1))
                 else:
-                    pygame.draw.rect(self.screen, tile_color(char, biome), (sx, sy, ts + 1, ts + 1))
+                    colour = tile_color(char, biome)
+                    if pale:
+                        colour = pale_color(colour)
+                    pygame.draw.rect(self.screen, colour, (sx, sy, ts + 1, ts + 1))
+                    if char == "Q" and self.orb_on:                # a glitch stone flickers while the Pale Orb is on
+                        if (pygame.time.get_ticks() // 90 + tx * 7 + ty * 3) % 9 < 2:
+                            pygame.draw.rect(self.screen, (235, 235, 245), (sx + ts * 0.15, sy + ts * 0.4, ts * 0.7, ts * 0.12))
                     push = TILES[char].get("push")
                     if push:
                         self._draw_conveyor(sx, sy, push)
@@ -663,6 +695,12 @@ class Map:
         def centre(pos):
             return (pos[0] + 0.5) * ts - cam_x, (pos[1] + 0.5) * ts - cam_y
 
+        for pos, text in getattr(world, "floor_text", []):          # e.g. "Not yet." in ### (pale_world.py)
+            if visible(pos):
+                if not hasattr(self, "floor_font"):
+                    self.floor_font = pygame.font.Font(None, int(ts * 0.9))
+                label = self.floor_font.render(text, True, (150, 150, 155))
+                self.screen.blit(label, label.get_rect(center=centre(pos)))
         for portal in world.portals:
             if visible(portal["pos"]):
                 sealed = not self.portal_open(portal)

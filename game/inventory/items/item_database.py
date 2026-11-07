@@ -599,6 +599,18 @@ class ItemDatabase:
                 {"gus":[1]}, "Bring this to Gus",
                 self.load_img("trinket/sugar_crystal.png")
             ),
+            "Flavoured Candy": Trinket("Flavoured Candy",
+                "A sweet from the Shroom Mother.\nEvery bite tastes different. Some bite back.",
+                "trinket",
+                {"flavour":[600]}, "Start of every fight: a random effect for 10 s (good or bad)",
+                self.load_img("trinket/flavoured_candy.png")
+            ),
+            "Coupon": Trinket("Coupon",
+                "A golden coupon for Lucky's wheel.\nThe print is pale, as if copied from somewhere else.",
+                "trinket",
+                {"coupon":[1]}, "Bring this to Lucky",
+                self.load_img("trinket/coupons.png")
+            ),
             "Mascot Plush": Trinket("Mascot Plush",
                 "A plush prize from the lunapark.\nIt's still warm. It has a sticker: WINNER.",
                 "trinket",

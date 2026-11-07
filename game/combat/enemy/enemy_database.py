@@ -85,6 +85,11 @@ class EnemyDB:
             "candy_shroom": [0,0,490,24,"enemy",0.8,59,20,25,"plant","random_normal",
                 {"sprinkler": {"damage": 44, "cooldown": 2.0, "last_used": 0, "width": 12, "speed": 7, "range": 3500, "streams": 3, "duration": 2.0, "every": 8, "turn": 9, "effects": {"poison":[185,15]}, "type":["spore"], "stop_move":[20,10]}}],
 
+            # Shroom Mother's guards (boss phase 2): stand in a corner, 2 spinning streams; not in normal fights
+            "shroom_guard": [0,0,490,30,"enemy",0,90,0,25,"mystical","random_normal",
+                {"sprinkler": {"damage": 70, "cooldown": 3.0, "last_used": -60, "width": 12, "speed": 7, "range": 5000,
+                               "streams": 2, "duration": 2.0, "every": 6, "turn": 9, "effects": {}, "type": ["spore"]}}],
+
             "toffee_runner": [0,0,86,18,"enemy",3.8,88,10,25,"animal","to_player_zigzag",{}],
 
             "sugar_caster": [0,0,220,25,"enemy",2.3,73,22,25,"mystical","away_player_normal",
@@ -210,11 +215,82 @@ class EnemyDB:
                 "wall": {"damage": 5610, "cooldown": 3.5, "last_used": -90, "width": 14, "speed": 7, "range": 4500, "bullets": 13, "spacing": 34, "gap": 3, "effects": {"slow":[120,0.8]}, "type":["flower_blue"]}}]
         }
             
+        # BOSSES (7.11): [x, y, hp, width, "boss", speed, contact dmg, gold, defence, species, movement, attacks (phase 1)]
+        # + boss_info below (name over the big HP bar, the later phases). Which boss stands where: BOSS_OF_ZONE.
+        # Fight length grows with the stage (village ~45 s at the biome's 1.0x weapon DPS: 12 -> ~500 HP).
         self.bosses = {
+            # SLIME KING (village, 3 phases: 100-80%, 80-40%, 40-0%): 1) hops at you (aimed, with a short wind-up,
+            # no warning) and leaves a small ring where it lands, 5-bullet shotgun. 2) slower, lobs slime that
+            # bursts into a ring, calls 2 small slimes. 3) a triple hop (like the Firefly Queen, no landing ring, 0.35 s
+            # between hops) with a ring after the 1st and 2nd hop + the shotgun + 1 small slime.
+            "slime_king": [960, 300, 600, 90, "boss", 2.4, 14, 40, 0, "mystical", "to_player",
+                {"dash": {"cooldown": 2.6, "last_used": -60, "dashes": 1, "windup": 40, "distance": 380, "dash_frames": 20,
+                          "type": ["normal_green"],
+                          "spiral": {"bullets": 8, "damage": 8, "speed": 6, "width": 14, "range": 3000, "effects": {}}},
+                 "shotgun": {"damage": 10, "cooldown": 3.4, "last_used": 0, "width": 14, "speed": 9, "range": 3000,
+                             "bullets": 5, "recoil": 50, "effects": {}, "type": ["normal_green"]}}],
+            # PRISM (rainbow fields, 3 phases: 100-80%, 80-40%, 40-0%): a hanging crystal that splits light (rainbow
+            # bullets). 1) a ball that bursts into 6 + a quick row at you (line). 2) drifts around, 4 spinning streams
+            # (sprinkler). 3) a pulsing rainbow ring + a wall with a gap + the bursting ball again.
+            # ~2000 HP = ~55 s at the Rainbow 1.0x weapon (36 DPS).
+            "prism": [960, 300, 2000, 52, "boss", 1.2, 30, 80, 0, "mystical", "random_normal",
+                {"split": {"damage": 30, "cooldown": 2.4, "last_used": -60, "width": 16, "speed": 8, "range": 3600, "effects": {},
+                           "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"],
+                           "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 20, "width": 11}},
+                 "line": {"damage": 25, "cooldown": 3.0, "last_used": 0, "width": 12, "speed": 14, "range": 3600, "bullets": 6,
+                          "every": 5, "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]}}],
+            # SHROOM MOTHER (candy / sugarwood, 3 phases: 100-80%, 80-47%, 47-0%): 1) spore bursts (48 spores, random directions and speeds,
+            # slowing down - like the mushroom in ETG) + leaps (up off the screen, a shadow, down somewhere else -
+            # hurts you under it - and bursts there). 2) two shroom guards in random corners (2 spinning streams, don't
+            # move; 1 or 2 at random); while one of them lives she can't be hurt; she walks at you the whole phase
+            # (hurts by touch); new ones at most every 19 s, once the old ones are dead. 3) leaps + bursts
+            # faster + two DNA lines (at you and straight back) that bounce off the walls. Guards that are still alive stay. Drops the Flavoured
+            # Candy (10%). 6000 HP = ~55 s of hitting at the Sugarwood 1.0x weapon (108 DPS) + killing the guards.
+            "shroom_mother": [960, 400, 6000, 80, "boss", 1.0, 90, 220, 0, "mystical", "random_normal",
+                {"burst": {**{"bullets": 48, "speed": [5, 11], "decay": 0.988, "min_speed": 1.5, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 3.5, "last_used": -120},
+                 "leap": {"cooldown": 6.0, "last_used": 0, "up": 30, "air": 70, "land_damage": 120, "burst": {"bullets": 48, "speed": [5, 11], "decay": 0.988, "min_speed": 1.5, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}}}],
             "boss1": [900, 900,10,40,"boss",4.2,5,200,0,"undead","to_player",{"basic" : {"damage": 3, "cooldown": 2.0, "last_used": 0, "width": 30, "speed": 9, "range": 2000, "effects" : {"homing":[2],"slow":[180,0.1]}, "type":["missile_blue"]}, 
                                                 "spiral1" : {"damage": 2, "cooldown": 3.2, "last_used": 0, "width": 24, "speed": 6, "range": 2000, "bullets": 12, "effects" : {"poison" : [600,2]}, "type":["normal_green"]},
                                                 "spiral2" : {"damage": 1, "cooldown": 2.8, "last_used": 0, "width": 8, "speed": 7, "range": 2000, "bullets": 36, "effects" : {"glued" : [60,0.5]}, "type":["normal_yellow"]},
                                                 "minigun": {"damage": 1,"cooldown": 2.5,"last_used": 0,"width": 8,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 0.03,"last_shot": 2500,"is_bursting": False, "range": 2000, "effects" : {"confusion" : [180,0.5]},"type":["bullet_blue"]}}]
+        }
+        self.boss_info = {
+            "shroom_mother": {"name": "Shroom Mother", "phases": [
+                {"at": 0.8, "speed": 2.2, "movement": "to_player", "color": [255, 170, 210], "attacks": {
+                    "spawn": {"enemy_name": "shroom_guard", "amount": [1, 2], "corners": True, "guards": True, "color": [230, 120, 170],
+                              "cooldown": 19.0, "last_used": -1140}}},
+                {"at": 0.47, "speed": 1.4, "color": [255, 120, 190], "attacks": {
+                    "burst": {**{"bullets": 32, "speed": [6, 13], "decay": 0.975, "min_speed": 2.0, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 2.6, "last_used": -60},
+                    "leap": {"cooldown": 4.5, "last_used": 0, "up": 24, "air": 55, "land_damage": 120, "burst": {"bullets": 32, "speed": [6, 13], "decay": 0.8, "min_speed": 2.0, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}},
+                    "wave": {"damage": 70, "cooldown": 3.0, "last_used": -90, "width": 13, "speed": 12, "range": 6000,
+                             "bullets": 10, "every": 4, "amp": 30, "period": 36, "double": True, "bounce": 2, "opposite": True,
+                             "effects": {}, "type": ["normal_red"]}}}]},
+            "prism": {"name": "Prism", "phases": [
+                {"at": 0.8, "speed": 2.0, "color": [230, 200, 255], "attacks": {
+                    "sprinkler": {"damage": 22, "cooldown": 3.2, "last_used": -90, "width": 12, "speed": 8, "range": 4000,
+                                  "streams": 4, "duration": 2.0, "every": 7, "turn": 7, "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]}},
+                    "hard": {"spiral": {"damage": 22, "cooldown": 2.6, "last_used": -30, "width": 13, "speed": 7, "range": 3600,
+                                        "bullets": 6, "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]}}},
+                {"at": 0.4, "speed": 1.6, "color": [255, 220, 240], "attacks": {
+                    "pulse": {"damage": 25, "cooldown": 3.0, "last_used": -60, "width": 13, "speed": 7, "range": 8000,
+                              "bullets": 14, "pulse": [45, 15], "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]},
+                    "wall": {"damage": 30, "cooldown": 4.0, "last_used": -120, "width": 14, "speed": 7, "range": 4500,
+                             "bullets": 15, "spacing": 34, "gap": 3, "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]},
+                    "split": {"damage": 30, "cooldown": 3.0, "last_used": 0, "width": 16, "speed": 8, "range": 3600, "effects": {},
+                              "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"], "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 20, "width": 11}}}}]},
+            "slime_king": {"name": "Slime King", "phases": [
+                {"at": 0.8, "speed": 1.6, "color": [150, 230, 150], "attacks": {
+                    "throw": {"radius": 70, "recoil": 120, "damage": 12, "width": 16, "exp_type": "", "cooldown": 2.8,
+                              "last_used": -90, "fly_time": 1.1, "effects": {}, "type": ["normal_green"],
+                              "ring": {"bullets": 8, "speed": 6, "damage": 8, "width": 12}},
+                    "spawn": {"enemy_name": "slime_small", "amount": 2, "cooldown": 6.0, "last_used": -120}}},
+                {"at": 0.4, "speed": 2.4, "color": [90, 200, 110], "attacks": {
+                    "dash": {"cooldown": 3.2, "last_used": -60, "dashes": 3, "windup": 21, "spiral_on": [1, 2],
+                             "distance": 300, "dash_frames": 16, "type": ["normal_green"],
+                             "spiral": {"bullets": 8, "damage": 8, "speed": 6, "width": 14, "range": 3000, "effects": {}}},
+                    "shotgun": {"damage": 10, "cooldown": 3.4, "last_used": 0, "width": 14, "speed": 9, "range": 3000,
+                                "bullets": 5, "recoil": 50, "effects": {}, "type": ["normal_green"]},
+                    "spawn": {"enemy_name": "slime_small", "amount": 1, "cooldown": 6.0, "last_used": -120}}}]},
         }
         # shared with the rest of the game when passed in (projectile images loaded once)
         self.bullet_type_info = bullet_type_info if bullet_type_info is not None else BulletTypes()
@@ -224,6 +300,7 @@ class EnemyDB:
         # (6.11 distribution, see BALANCE.md) - some of the best items come ONLY from here (loot weight 0).
         # An item you already have isn't dropped again. Luck: +25% chance per point (loot.LUCK_DROP).
         self.drops = {
+            "shroom_mother": [("Flavoured Candy", 0.10)],        # boss (7.11): farmed for its trinket
             "slime_small": [("Toy Rifle", 0.04)],
             "slime_big": [("Toy Rifle", 0.04)],
             "rainbow_guard": [("Rifle A2", 0.02)],
@@ -272,6 +349,8 @@ class EnemyDB:
         b = self.bosses[name]
         enemy = Enemy(*b[:-1],copy.deepcopy(b[-1]),self.sfx, self.bullet_type_info)
         enemy.name = name
+        if name in self.boss_info:
+            enemy.set_phases(self.boss_info[name])
         return enemy
 
     def roll_drops(self, enemy):
