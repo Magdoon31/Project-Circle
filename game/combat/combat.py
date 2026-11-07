@@ -54,11 +54,14 @@ class Combat:
         self.timer = 0
 
         self.segments = assets.zap_segments
+        self.poison_segments = assets.poison_zap_segments
         self.zapped_enemies = []
         self.explosion_img = assets.explosion_img
         self.nova_explosion_img = assets.nova_explosion_img
         self.explosions = []
         self.pending_explosions = []
+        self.near_misses = 0          # enemy bullets that flew right past the player (Bullet Time sigil)
+        self.feats = set()            # sigil feats done in this fight, e.g. "firefly_dash" (Game.after_fight_sigils)
         self.pending_bullets = []     # death attacks waiting to go off ([frames left, bullets, pos, size])  # Atom: small explosions waiting to go off ([frames left, pos, effect, type, effects])
         self.decoy = None             # Mascot Plush: dropped on the first frame (the enemies are known by then)
         self.decoy_image = getattr(assets, "decoy_img", None)
@@ -107,6 +110,8 @@ class Combat:
                 for p in waiting[1]:
                     p.shot_time = now                    # their range counts from now
                 self.enemy_projectiles.extend(waiting[1])
+                if len(waiting) > 4:
+                    self.death_blast(waiting[2], waiting[4])
         for waiting in self.pending_explosions[:]:
             waiting[0] -= 1
             if waiting[0] <= 0:
@@ -201,8 +206,17 @@ class Combat:
     
             target = self.target()
             projectile.update([target])
+            kids = projectile.split_now()               # (7.11) a splitting bullet bursts into smaller ones
+            if kids is not None:
+                self.slow_bullets(kids)
+                self.enemy_projectiles.extend(kids)
+                self.enemy_projectiles.remove(projectile)
+                continue
             proj_expire, effect = projectile.check_duration()
             if not proj_expire:
+                kids = projectile.land_children()       # (7.11) a thrown bomb throws out a ring where it lands
+                self.slow_bullets(kids)
+                self.enemy_projectiles.extend(kids)
                 if "explosion" in effect:
                     effect["explosion"].append(projectile.damage)
                     self.explosion((projectile.x,projectile.y), effect["explosion"],"player", effects=effect)
@@ -224,12 +238,14 @@ class Combat:
             if owner is not None and self.friendly_fire_hit(projectile, owner):
                 continue
 
-            if "close_call" in self.player.sigils and not getattr(projectile, "grazed", False) and \
+            if not getattr(projectile, "grazed", False) and \
                     self.player.width * 1.3 <= math.dist((projectile.x, projectile.y), (self.player.x, self.player.y)) \
                     < self.player.width * SG.CLOSE_CALL_DISTANCE:
-                projectile.grazed = True                     # Close Call sigil: a near miss reloads the weapon
-                self.player.reload_now()
-                self.sfx.play("gain_effect")
+                projectile.grazed = True                     # a near miss (counted for the Bullet Time sigil)
+                self.near_misses += 1
+                if "close_call" in self.player.sigils:       # Close Call sigil: it reloads the weapon
+                    self.player.reload_now()
+                    self.sfx.play("gain_effect")
 
             player_hit = projectile.deal_damage(self.player)
 
@@ -323,9 +339,17 @@ class Combat:
             return
         self.sfx.play("enemy_death")
         self.on_death_synergies(enemy)
+        dash = enemy.attacks.get("dash")
+        if enemy.name == "firefly_queen" and dash and dash.get("is_bursting") and \
+                dash["windup"] < dash.get("dash_t", 0) <= dash["windup"] + dash["dash_frames"]:
+            self.feats.add("firefly_dash")             # killed in the middle of a dash (Lucky Coin sigil)
         projectiles,enemies_spawn = enemy.attack(self.timer, enemy_db=self.enemy_db)
         self.slow_bullets(projectiles)
-        if projectiles:                  # its death attack: a short warning (pulsing ring) first, then the bullets
+        blast = enemy.attacks.get("death_blast")
+        if blast:                        # (7.11) a blast that pushes everyone away - comes with the same warning
+            blast = {**blast, "damage": blast["damage"] * enemy.damage}
+            self.pending_bullets.append([DEATH_ATTACK_DELAY, projectiles, (enemy.x, enemy.y), enemy.width, blast])
+        elif projectiles:                # its death attack: a short warning (pulsing ring) first, then the bullets
             self.pending_bullets.append([DEATH_ATTACK_DELAY, projectiles, (enemy.x, enemy.y), enemy.width])
         self.enemies.extend(enemies_spawn)
         self.enemies.remove(enemy)
@@ -354,7 +378,7 @@ class Combat:
             projectile.draw(self.screen)
         if self.decoy:
             self.decoy.draw(self.screen, self.timer)
-        for frames, _, pos, size in self.pending_bullets:  # warning before a death attack
+        for frames, _, pos, size, *blast in self.pending_bullets:  # warning before a death attack
             pulse = 1 + 0.25 * math.sin(frames * 0.9)
             pygame.draw.circle(self.screen, (255, 60, 60), pos, int((size + 6) * pulse), 3)
         if "frost" in self.player.armor_effect:
@@ -381,7 +405,7 @@ class Combat:
                 else:
                     end_pos = zap_data["last_end_pos"]
 
-                self.ZapEffect(start_pos, end_pos)
+                self.ZapEffect(start_pos, end_pos, self.poison_segments if zap_data.get("poison") else None)
                 zap_data["duration"] -= 1
                 if zap_data["duration"] <= 0:
                     self.zapped_enemies.remove(zap_data)
@@ -485,6 +509,23 @@ class Combat:
                     next_enemy = None
                     e.remove(last_enemy)
 
+    def death_blast(self, pos, blast):
+        """(7.11) Firefly Queen's death: everything within the radius is pushed away (enemies get no damage);
+        the player also takes the damage."""
+        r = blast["radius"]
+        self.explosions.append([r, pos, 24, "nova_"])
+        self.sfx.play("explosion")
+        sw, sh = self.screen.get_size()
+        for thing in [self.player] + self.enemies:
+            d = math.dist(pos, (thing.x, thing.y))
+            if d > r + thing.width:
+                continue
+            if thing is self.player:
+                self.player.take_damage(blast["damage"], {})
+            ux, uy = ((thing.x - pos[0]) / d, (thing.y - pos[1]) / d) if d > 1 else (1, 0)
+            thing.x = min(sw - thing.width, max(thing.width, thing.x + ux * blast["push"]))
+            thing.y = min(sh - thing.width, max(thing.width, thing.y + uy * blast["push"]))
+
     def slow_bullets(self, projectiles):
         """Bullet Time sigil: enemy bullets fly slower."""
         if "bullet_time" not in self.player.sigils:
@@ -538,7 +579,7 @@ class Combat:
                 if dist <= radius:
                     other = self.enemies[i]
                     other.effects["poison"] = [max(SPREAD_MIN_FRAMES, int(duration)), enemy.effects["poison"][1]]
-                    self.zapped_enemies.append({"start_enemy": enemy, "end_enemy": other, "duration": 8,
+                    self.zapped_enemies.append({"start_enemy": enemy, "end_enemy": other, "duration": 8, "poison": True,
                                                 "last_start_pos": (enemy.x, enemy.y), "last_end_pos": (other.x, other.y)})
 
     def explosion(self, pos, exp_effect, enemy_hit, type=None, effects=None, cluster=False):
@@ -589,7 +630,7 @@ class Combat:
 
 
     
-    def ZapEffect(self, start_pos, end_pos):
+    def ZapEffect(self, start_pos, end_pos, segments=None):
 
         dx = end_pos[0] - start_pos[0]
         dy = end_pos[1] - start_pos[1]
@@ -609,7 +650,7 @@ class Combat:
             x = start_pos[0] + dx * progress
             y = start_pos[1] + dy * progress
 
-            zap_img = random.choice(self.segments)
+            zap_img = random.choice(segments or self.segments)
             
             zap_img = pygame.transform.rotate(zap_img, angle)
 

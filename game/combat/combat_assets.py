@@ -38,6 +38,8 @@ class CombatAssets:
                            "giant" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",128),}
 
         self.zap_segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/zap{nr}.png"),(64,64)) for nr in range(1,5)]
+        # Toxic Ring passing poison on: green zaps (assets/img/combat/zap/poison_zap1-4.png)
+        self.poison_zap_segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/poison_zap{nr}.png"),(64,64)) for nr in range(1,5)]
         self.explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/boom{nr}.png") for nr in range(1,7)]
         self.nova_explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/nova_boom{nr}.png") for nr in range(1,7)]
         # the Mascot Plush on the battlefield (decoy.py): its own sprite, or a drawn placeholder if there is none

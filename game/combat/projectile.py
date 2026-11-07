@@ -2,6 +2,27 @@ import copy
 
 import pygame, math, random
 
+# ENEMY BULLET PATTERNS (7.11) - a bullet can get a "motion" (set by Enemy.fire, not by the data):
+#   {"kind": "pulse", "pulse": [out, back]}  flies outwards `out` frames, back `back` frames, again... (smooth, 3 forward 1 back)
+#   {"kind": "wave", "amp": px, "period": frames, "sign": 1/-1}  wobbles sideways (two with opposite signs = DNA)
+#   {"kind": "creep", "speed": px}  a mine that slowly crawls towards its target
+#   {"kind": "split", "after": frames, "children": spec}  bursts into smaller bullets after a while
+#   {"kind": "land_ring", "children": spec}  a thrown bomb that throws out a ring of bullets where it lands
+# spec (children) = {"bullets", "speed", "damage" (final), "width", "range", "type", "effects", "start" (degrees)}
+
+
+def ring_of(x, y, spec, base_angle, bullet_type_info):
+    """A full ring of bullets around (x, y); the first one at base_angle + spec["start"] (radians / degrees)."""
+    out = []
+    n = max(1, spec["bullets"])
+    for i in range(n):
+        a = base_angle + math.radians(spec.get("start", 0)) + i * math.tau / n
+        out.append(projectile(x, y, x + math.cos(a) * 1000, y + math.sin(a) * 1000, spec["speed"], spec["damage"],
+                              "enemy", spec["width"], spec["range"], bullet_type_info, spec["type"],
+                              effects=copy.deepcopy(spec.get("effects", {}))))
+    return out
+
+
 class projectile:
     def __init__(self, x, y, target_x, target_y, speed, damage, type, width, range, bullet_type_info, bullet_type , effects = None):
         self.x = x
@@ -37,7 +58,12 @@ class projectile:
 
         self.base_image = pygame.transform.scale(self.bullet_type_info.img.get(img),(self.width*2,self.width*2))
 
+        self.age = 0                # frames since it was fired (bullet patterns)
+        self.motion = None          # see the top of this file
         self.set_velocity()
+        length = math.hypot(self.target_x - self.x, self.target_y - self.y) or 1
+        self.dir_x, self.dir_y = (self.target_x - self.x) / length, (self.target_y - self.y) / length
+        self.base_x, self.base_y = self.x, self.y
 
     def set_velocity(self):
         dx = self.target_x - self.x
@@ -57,9 +83,54 @@ class projectile:
         # copy: callers append dmg to the explosion list, it must not grow on the weapon itself
         return False, copy.deepcopy(self.effects)
         
-    def update(self,enemies):
+    def split_now(self):
+        """The bullets it bursts into right now (split), or None."""
+        m = self.motion
+        if m and m["kind"] == "split" and self.age >= m["after"]:
+            return ring_of(self.x, self.y, m["children"], math.atan2(self.vy, self.vx), self.bullet_type_info)
+        return None
 
-        
+    def land_children(self):
+        """The ring a thrown bomb throws out where it lands ([] for other bullets)."""
+        m = self.motion
+        if m and m["kind"] == "land_ring":
+            return ring_of(self.x, self.y, m["children"], random.uniform(0, math.tau), self.bullet_type_info)
+        return []
+
+    def move_pattern(self, enemies):
+        """Bullet patterns: sets vx / vy for this frame. True if it moved by a pattern."""
+        m = self.motion
+        kind = m["kind"]
+        if kind == "pulse":
+            # smooth: speeds up and slows down (sine) - out for `out` frames, then back for `back` frames;
+            # the distance goes with the time, so [45, 15] = 3 steps forward, 1 back
+            out, back = m["pulse"]
+            t = self.age % (out + back)
+            v = math.sin(math.pi * t / out) if t < out else -math.sin(math.pi * (t - out) / back)
+            self.vx, self.vy = self.dir_x * self.speed * v, self.dir_y * self.speed * v
+            return True
+        if kind == "wave":
+            self.base_x += self.dir_x * self.speed
+            self.base_y += self.dir_y * self.speed
+            off = m["amp"] * math.sin(math.tau * self.age / m["period"]) * m["sign"]
+            self.vx = self.base_x - self.dir_y * off - self.x
+            self.vy = self.base_y + self.dir_x * off - self.y
+            return True
+        if kind == "creep" and enemies:
+            t = enemies[0]
+            d = math.hypot(t.x - self.x, t.y - self.y)
+            if d > 1:
+                self.vx, self.vy = (t.x - self.x) / d * m["speed"], (t.y - self.y) / d * m["speed"]
+            return True
+        return False
+
+    def update(self,enemies):
+        self.age += 1
+        if self.motion and self.move_pattern(enemies):
+            self.x += self.vx
+            self.y += self.vy
+            return
+
         if self.effects:
             for effect_name, effect in self.effects.items():
 

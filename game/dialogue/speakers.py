@@ -36,6 +36,7 @@ SPEAKERS = {
     "gardener": {"name": "Gardener", "sound": "talksound_NPC2.ogg", "color": (120, 170, 110)},
     "whisper": {"name": "...", "sound": "talksound_player.wav", "color": (230, 230, 235)},   # the voice in the mushroom ring
     "lucky":  {"name": "Lucky", "sound": "talksound_NPC1.ogg", "color": (240, 80, 120)},
+    "ferris": {"name": "Ferris", "sound": "talksound_NPC2.ogg", "color": (200, 165, 110)},   # the courier (shortcuts)
     "npc1":   {"name": "???", "sound": "talksound_NPC1.ogg", "color": (120, 200, 140)},
     "npc2":   {"name": "???", "sound": "talksound_NPC2.ogg", "color": (200, 140, 110)},
     "girl":   {"name": "???", "sound": "talksound_girl1.wav", "color": (240, 140, 190)},
@@ -69,6 +70,7 @@ NPC_DIALOGUES = {
     "clue_lab": "clue_lab",
     "gardener": "gardener",
     "lucky": "lucky",                   # the lunapark barker (wheel of fortune)
+    "ferris": "ferris",                 # the courier in the Village: shortcuts (game/story/ferris.py)
     "pier_water": "pier_water",         # the end of the sunken pier (Gardener's quest)
     "ring_voice": "ring_voice",         # the whisper in the mushroom ring (riddle about the Pale Orb)
     "antenna_1": "antenna_1",        # Hal's three antennas (prefabs antenna_a / _b / _c)

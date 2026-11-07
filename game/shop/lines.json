@@ -1,5 +1,5 @@
 {
-    "_comment": "The shopkeeper (no name). Text only, no talk sound. Voice: assets/sfx/shop/<id>.mp3/.wav/.ogg (optional). kind: greet (opening the shop), buy, poor (not enough money), rare (small chance instead of a greeting, any mood; 'flag' = only once that story flag is set), boss (the FIRST greeting after beating a boss). moods: happy (start) -> calm (from Separated Village / the lunapark) -> neutral (from the Garden / the Core).",
+    "_comment": "The shopkeeper (no name). Text only, no talk sound. Voice: assets/sfx/shop/<id>.mp3/.wav/.ogg (optional). kind: greet (opening the shop), buy, poor (not enough money), rare (small chance instead of a greeting, any mood; 'flag' = only once that story flag is set), boss (the FIRST greeting after beating a boss). moods: happy (start) -> calm (from Separated Village / the lunapark) -> neutral (from the Garden / the Core). (7.11) The BUYER on the Sell page (another person, no mood): kind sell_common / sell_medium / sell_rare = what he says when you sell an item of that rarity (loot weight 10 / 5 / 2 or drop-only). (7.11) pose: which shopkeeper picture is shown while he says it - normal / happy (assets/img/shopkeeper/shopkeeper_<pose>.png).",
     "lines": [
         {
             "id": "greet_happy_1",
@@ -7,7 +7,8 @@
             "text": "What a lovely surprise! I was just beginning to miss having someone to talk to.",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "greet_happy_2",
@@ -15,7 +16,8 @@
             "text": "Well, well! Look what the world dragged in! Come on, take a look around!",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "greet_calm_1",
@@ -23,7 +25,8 @@
             "text": "Oh! Hello there! Always nice to see a familiar face. Or any face, really.",
             "moods": [
                 "calm"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "greet_calm_2",
@@ -31,7 +34,8 @@
             "text": "Well, fancy seeing you again! The road treating you kindly?",
             "moods": [
                 "calm"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "greet_neutral_1",
@@ -39,7 +43,8 @@
             "text": "Take your time. There's no rush.",
             "moods": [
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "greet_neutral_2",
@@ -47,7 +52,8 @@
             "text": "Everything's where it should be. More or less.",
             "moods": [
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "buy_happy_1",
@@ -55,7 +61,8 @@
             "text": "Excellent choice! I'm sure it'll serve you well.",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "buy_happy_2",
@@ -63,7 +70,8 @@
             "text": "There we go! A happy customer and a slightly heavier purse. Well, mine at least!",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "buy_calm_1",
@@ -71,7 +79,8 @@
             "text": "Pleasure doing business. I do hope we'll meet again.",
             "moods": [
                 "calm"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "buy_calm_2",
@@ -79,7 +88,8 @@
             "text": "There you are. Try to make it last, won't you?",
             "moods": [
                 "calm"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "buy_neutral_1",
@@ -87,7 +97,8 @@
             "text": "I hope it proves useful.",
             "moods": [
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "buy_neutral_2",
@@ -95,7 +106,8 @@
             "text": "Take care of your new purchase. Things have a way of disappearing.",
             "moods": [
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "poor_happy_1",
@@ -103,7 +115,8 @@
             "text": "Ahaha! Your ambition is admirable, but your wallet disagrees!",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "poor_happy_2",
@@ -111,7 +124,8 @@
             "text": "A little short, are we? Well, every great adventure needs a financial struggle!",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "poor_calm_1",
@@ -119,7 +133,8 @@
             "text": "Almost! I do appreciate the optimism, though.",
             "moods": [
                 "calm"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "poor_calm_2",
@@ -127,7 +142,8 @@
             "text": "Well, that's unfortunate. I suppose you'll have to find another way.",
             "moods": [
                 "calm"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "poor_neutral_1",
@@ -135,7 +151,8 @@
             "text": "I'm afraid that's not sufficient.",
             "moods": [
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "poor_neutral_2",
@@ -143,28 +160,33 @@
             "text": "No money, no merchandise. Simple arrangement.",
             "moods": [
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "rare_1",
             "kind": "rare",
-            "text": "You know, some things are better left untouched. But then again, untouched things tend to get lonely."
+            "text": "You know, some things are better left untouched. But then again, untouched things tend to get lonely.",
+            "pose": "normal"
         },
         {
             "id": "rare_2",
             "kind": "rare",
-            "text": "Careful where you leave your memories. Some places have a habit of keeping them."
+            "text": "Careful where you leave your memories. Some places have a habit of keeping them.",
+            "pose": "normal"
         },
         {
             "id": "rare_3",
             "kind": "rare",
             "text": "I wonder… if the Pale World remembers us the way we remember it?",
-            "flag": "visited:pale_world"
+            "flag": "visited:pale_world",
+            "pose": "normal"
         },
         {
             "id": "rare_4",
             "kind": "rare",
-            "text": "If you ever hear someone calling your name there… do be polite. But don't answer."
+            "text": "If you ever hear someone calling your name there… do be polite. But don't answer.",
+            "pose": "normal"
         },
         {
             "id": "boss_1",
@@ -173,7 +195,8 @@
             "moods": [
                 "calm",
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "boss_2",
@@ -182,7 +205,8 @@
             "moods": [
                 "calm",
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "boss_3",
@@ -191,7 +215,8 @@
             "moods": [
                 "calm",
                 "neutral"
-            ]
+            ],
+            "pose": "normal"
         },
         {
             "id": "boss_4",
@@ -199,7 +224,8 @@
             "text": "Nice clutch during that boss battle, congrats.",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "boss_5",
@@ -207,7 +233,8 @@
             "text": "At least give these bosses a chance!",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
         },
         {
             "id": "boss_6",
@@ -215,7 +242,43 @@
             "text": "Nothing's better than smooth victory.",
             "moods": [
                 "happy"
-            ]
+            ],
+            "pose": "happy"
+        },
+        {
+            "id": "sell_common_1",
+            "kind": "sell_common",
+            "text": "Hm. I've got a box of these already."
+        },
+        {
+            "id": "sell_common_2",
+            "kind": "sell_common",
+            "text": "Fine. It's worth a coin or two."
+        },
+        {
+            "id": "sell_common_3",
+            "kind": "sell_common",
+            "text": "Another one for the pile."
+        },
+        {
+            "id": "sell_medium_1",
+            "kind": "sell_medium",
+            "text": "Not bad. Not bad at all."
+        },
+        {
+            "id": "sell_medium_2",
+            "kind": "sell_medium",
+            "text": "Someone out there will want this."
+        },
+        {
+            "id": "sell_rare_1",
+            "kind": "sell_rare",
+            "text": "Careful. I almost looked impressed."
+        },
+        {
+            "id": "sell_rare_2",
+            "kind": "sell_rare",
+            "text": "I'll pretend this isn't worth more."
         }
     ]
-}
+}

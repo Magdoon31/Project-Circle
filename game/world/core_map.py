@@ -30,6 +30,8 @@ CHAMBER = "core_chamber"            # the fixed last section
 VOID_SEAL = "void_unlocked"         # flag (saved) that opens the portal to the Void
 CUTTABLE = {"m", "k", "p"}          # clutter that may be removed when something must be made reachable
 MARGIN = 3
+VAULT = (7, 6)                      # Steady Hands sigil: secret room behind a corridor wall (inside size)
+VAULT_FLAG = "open:core_vault"      # set by Game when all the Core's gold is picked up - the wall lets you through
 
 
 class CoreMap:
@@ -56,6 +58,8 @@ class CoreMap:
         self._set_zones()
         self.paths_cut = self._ensure_reachable()
         self.player_start = self.arrivals["cellar:garden"]
+        self.hidden, self.locked = {}, {}  # secret places (Map): drawn as wall until found / closed until opened
+        self._gold_vault()
 
     def biome_at(self, x, y):
         zone = self.zones[y][x]
@@ -308,6 +312,67 @@ class CoreMap:
                     self.tiles[y][x] = "m"                       # machine blocks in the middle of halls
                 elif open8 == 9 and self.rnd.random() < 0.012:
                     self.tiles[y][x] = "k"
+
+    # --- the gold vault (7.11, Steady Hands): own random generator, after the reachability fix -------------
+    def _gold_vault(self):
+        """A golden cable runs across a corridor from wall to wall; behind the wall at one end there is a hidden
+        room with the sigil. The wall lets you through only once all the gold in the Core is picked up."""
+        rnd = random.Random(f"vault-{self.seed}")
+        iw, ih = VAULT
+        floor = lambda x, y: self.walkable(x, y) and (x, y) not in self.prefab_cells
+        solid = lambda x, y: self.inside(x, y, 2) and not self.walkable(x, y) and (x, y) not in self.structure_cells \
+            and (x, y) not in self.prefab_cells and not self._in_chamber(x, y, 3)
+        taken = {tuple(p["pos"]) for p in self.pickups}
+        cells = [(x, y) for y in range(HEIGHT) for x in range(WIDTH) if floor(x, y) and (x, y) not in taken]
+        rnd.shuffle(cells)
+        for cx, cy in cells[:4000]:
+            for dx, dy in rnd.sample([(1, 0), (0, 1)], 2):
+                # the corridor across this cell: from wall to wall, 2-5 tiles, same width one tile to each side
+                def run(x, y):
+                    a = b = 0
+                    while floor(x - dx * (a + 1), y - dy * (a + 1)):
+                        a += 1
+                    while floor(x + dx * (b + 1), y + dy * (b + 1)):
+                        b += 1
+                    return a, b
+                a, b = run(cx, cy)
+                if not 2 <= a + b + 1 <= 5:
+                    continue
+                if any(sum(run(cx + dy * k, cy + dx * k)) != a + b for k in (-1, 1)):
+                    continue
+                line = [(cx + dx * k, cy + dy * k) for k in range(-a, b + 1)]
+                if any(c in taken for c in line):
+                    continue
+                for side in rnd.sample([1, -1], 2):
+                    ex, ey = line[-1] if side > 0 else line[0]
+                    for length in (1, 2, 3):
+                        passage = [(ex + dx * side * k, ey + dy * side * k) for k in range(1, length + 1)]
+                        if not all(solid(*c) for c in passage):
+                            break
+                        fx, fy = passage[-1][0] + dx * side, passage[-1][1] + dy * side     # first room tile
+                        if dx:
+                            rx, ry = (fx if side > 0 else fx - iw + 1), fy - ih // 2
+                        else:
+                            rx, ry = fx - iw // 2, (fy if side > 0 else fy - ih + 1)
+                        ring = [(x, y) for y in range(ry - 2, ry + ih + 2) for x in range(rx - 2, rx + iw + 2)]
+                        if not all(solid(*c) for c in ring if c not in passage):
+                            continue
+                        inside = [(x, y) for y in range(ry, ry + ih) for x in range(rx, rx + iw)]
+                        for x, y in inside:
+                            self.tiles[y][x] = "g"
+                        for x, y in passage:
+                            self.tiles[y][x] = "g"
+                        for x, y in ring:
+                            self.zones[y][x] = "core"
+                            if self.tiles[y][x] == "M":
+                                self.tiles[y][x] = "#"
+                        for x, y in line:
+                            self.tiles[y][x] = "E"                    # the golden cable across the corridor
+                        self.hidden["core_vault"] = set(passage) | set(inside)
+                        self.locked["core_vault"] = set(passage)
+                        self.vault_entry = passage[0]
+                        self.pickups.append({"pos": (rx + iw // 2, ry + ih // 2), "type": "sigil", "sigil": "steady_hands"})
+                        return
 
     # --- gold -------------------------------------------------------------------------------
     def _place_gold(self):

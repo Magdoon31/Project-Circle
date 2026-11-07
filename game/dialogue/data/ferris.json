@@ -1,0 +1,56 @@
+{
+    "_comment": "Ferris - a tired courier with a huge backpack (Village, after the Rainbow Fields boss). Knows shortcuts nobody else sees and won't say how they work. Short sentences, counts money out loud, complains about the road. Every talk ends with the shortcut map (\"open\": \"shortcuts\").",
+    "partner": "ferris",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:ferris"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:ferris"
+            },
+            "lines": [
+                {
+                    "who": "ferris",
+                    "pose": "neutral",
+                    "text": "Name's Ferris. I move people. Fast. Not cheap."
+                },
+                {
+                    "who": "ferris",
+                    "pose": "neutral",
+                    "text": "Show me where you've been and I'll take you back there. Places I haven't seen, I don't do.",
+                    "do": {
+                        "open": "shortcuts"
+                    }
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "ferris",
+                    "pose": "neutral",
+                    "text": "Where to?",
+                    "do": {
+                        "open": "shortcuts"
+                    }
+                },
+                {
+                    "who": "ferris",
+                    "pose": "neutral",
+                    "text": "Back again? The road misses you.",
+                    "do": {
+                        "open": "shortcuts"
+                    }
+                }
+            ]
+        }
+    }
+}

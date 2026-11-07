@@ -8,7 +8,12 @@
 # Shelves: the NEWEST biome gets 2, every older one 1, at most 6 - the oldest falls off:
 #   VV -> RRV -> SSRV -> FFSRV -> GGFSRV -> (tundra boss) GGFTSR -> ...
 # New stock after every boss (rolled the first time the shop is opened after it). A bought shelf stays SOLD.
-# 2 rerolls per boss (fixed price), after a reroll every shelf has a different item than before.
+# 2 rerolls per boss, after a reroll every shelf has a different item than before.
+# PRICES (7.11): price = how many fights in the item's biome it is worth x the average gold of one fight there
+#   (FIGHT_GOLD: enemies' money + the biome's gold on the map spread over ~15 fights). Common (weight 10) = 4 fights,
+#   medium (5) = 8, rare (2) = 16. A reroll = 1 fight of the newest biome. All rounded to 10.
+# RARE items (weight 2) of a biome come up only after its boss is beaten - before that only through a REROLL and
+#   only once you have won RARE_WINS fights in that biome (Game.counters["biome_wins"]). A restock never brings them.
 # Never: items the player already has, story / quest items (loot.NOT_RANDOM, items outside the biome pools).
 
 import random
@@ -18,9 +23,15 @@ SHELVES = 6
 TIERS = {"village": 1, "rainbow_fields": 2, "sugarwood_grove": 3, "toy_factory": 4, "silverpine_tundra": 4,
          "underground_garden": 5, "the_core": 6}
 PATHS = {"factory": "toy_factory", "tundra": "silverpine_tundra"}
-PRICE_PER_TIER = 100        # TEMPORARY: price = 100$ x the tier of the item's biome (balance later)
 REROLLS_PER_STAGE = 2
-REROLL_PRICE_PER_TIER = 50  # reroll = 50$ x the newest tier
+# average gold of one normal fight in the biome, map gold included (7.11 simulation: 3000 fights, 5 worlds)
+FIGHT_GOLD = {"village": 21, "rainbow_fields": 41, "sugarwood_grove": 108, "toy_factory": 190, "silverpine_tundra": 181,
+              "underground_garden": 654, "the_core": 857, "the_void": 1702}
+FIGHTS_FOR = ((10, 4), (5, 8), (0, 16))     # loot weight >= ... -> worth this many fights (common / medium / rare)
+RARE_WEIGHT = 2             # weight <= this = rare
+RARE_WINS = 5               # won fights in a biome before its rare items can come up in a reroll (boss not beaten yet)
+BOSS_OF = {"village": "village", "rainbow_fields": "rainbow_fields", "sugarwood_grove": "candy", "toy_factory": "factory",
+           "silverpine_tundra": "tundra", "underground_garden": "garden", "the_core": "core"}
 # the Foreman's Meter: an extra (7th) item on the counter while his quest is running
 COUNTER_ITEMS = [{"item": "Meter", "quest": "foreman", "price": 400}]
 STAGE_BOSSES = ("village", "rainbow_fields", "candy", "factory", "tundra", "garden", "core", "void")
@@ -73,21 +84,39 @@ def newest_tier(flags):
     return open_biomes(flags)[0][1]
 
 
-def price_of(biome):
-    return PRICE_PER_TIER * TIERS.get(biome, 1)
+def round10(value):
+    return max(10, int(value / 10 + 0.5) * 10)
+
+
+def price_of(item, biome):
+    """The price of an item on a shelf of this biome (before the Haggler sigil)."""
+    w = loot.weight(item)
+    fights = next(f for limit, f in FIGHTS_FOR if w >= limit)
+    return round10(FIGHT_GOLD.get(biome, 100) * fights)
 
 
 def reroll_price(flags):
-    return REROLL_PRICE_PER_TIER * newest_tier(flags)
+    """A reroll = the gold of one fight in the newest open biome."""
+    biomes = open_biomes(flags)
+    return round10(max(FIGHT_GOLD.get(b, 100) for b, t in biomes if t == biomes[0][1]))
 
 
-def roll(flags, owned, avoid=(), rnd=random, luck=0):
+def rare_allowed(biome, flags, wins, reroll):
+    """Can a rare item of this biome come up now? (its boss beaten / a reroll after RARE_WINS won fights there)"""
+    if f"boss:{BOSS_OF.get(biome)}" in flags:
+        return True
+    return reroll and (wins or {}).get(biome, 0) >= RARE_WINS
+
+
+def roll(flags, owned, avoid=(), rnd=random, luck=0, wins=None, reroll=False):
     """New shelves: [{"item", "biome", "sold"}]. avoid = items that must not come back (reroll)."""
     shelves, taken = [], set(owned) | set(avoid)
     for biome in shelf_biomes(flags):
-        pool = [n for n in loot.random_pool(biome) if n not in taken]
+        rare_ok = rare_allowed(biome, flags, wins, reroll)
+        can = [n for n in loot.random_pool(biome) if rare_ok or loot.weight(n) > RARE_WEIGHT]
+        pool = [n for n in can if n not in taken]
         if not pool:                                   # nothing new left: an older item is better than nothing
-            pool = [n for n in loot.random_pool(biome) if n not in owned and n not in {s["item"] for s in shelves}]
+            pool = [n for n in can if n not in owned and n not in {s["item"] for s in shelves}]
         item = loot.pick(pool, rnd, luck)        # by weight (rare items less often, luck helps)
         if item:
             taken.add(item)
@@ -108,20 +137,21 @@ class ShopStock:
     def to_dict(self):
         return {"stage": self.stage, "shelves": self.shelves, "rerolls": self.rerolls, "greeted": self.greeted}
 
-    def refresh(self, flags, owned, luck=0):
+    def refresh(self, flags, owned, luck=0, wins=None):
         """New stock if a boss was beaten since the last roll. True if it was rolled now."""
         key = stage_key(flags)
         if self.stage == key and self.shelves:
             return False
         self.stage, self.rerolls = key, REROLLS_PER_STAGE
-        self.shelves = roll(flags, owned, luck=luck)
+        self.shelves = roll(flags, owned, luck=luck, wins=wins)
         return True
 
-    def reroll(self, flags, owned, luck=0):
+    def reroll(self, flags, owned, luck=0, wins=None):
         if self.rerolls <= 0:
             return False
         self.rerolls -= 1
-        self.shelves = roll(flags, owned, avoid=[s["item"] for s in self.shelves if s["item"]], luck=luck)
+        self.shelves = roll(flags, owned, avoid=[s["item"] for s in self.shelves if s["item"]], luck=luck,
+                            wins=wins, reroll=True)
         return True
 
     def counter_items(self, active_quests, owned):

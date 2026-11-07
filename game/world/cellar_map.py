@@ -39,6 +39,9 @@ QUEST_SPROUTS = 2                      # Glowing Sprouts on the floor of far par
 GARDEN_STRUCTURES = 12                  # atmosphere structures (prefabs with @biomes underground_garden)
 GARDEN_ITEMS = 0                        # loose items in the cave: none - items are only in structures
 GARDEN_GOLD = 10                        # loose gold piles in the cave
+SHRINES = ["vigor", "swift", "might"]   # sigil shrines hidden in the Garden (dead ends, far from everything)
+SHRINE_DISTANCE = 60                    # shrines at least this far from each other
+HIDDEN_HALL = (9, 7)                    # the Factory's secret hall (Lucky Charm): inside size, no doors
 EXIT_MIN_DISTANCE = 45                  # the Core exit is random, but at least this far from both entrances
 
 CUTTABLE = {"T", "r", "~", "m", "k", "x", "*"}   # removable when something must be made reachable
@@ -71,6 +74,8 @@ class CellarMap:
         self._garden_secrets()
         self.paths_cut = self._ensure_reachable()
         self.player_start = self.arrivals["surface:separated"]
+        self.hidden = {}                   # secret id -> cells drawn as wall until the player steps in (Map)
+        self._sigil_secrets()
 
     def biome_at(self, x, y):
         zone = self.zones[y][x]
@@ -605,6 +610,83 @@ class CellarMap:
             best = max(sample, key=lambda c: min(math.dist(c, o) for o in [hut] + chosen))   # far from the hut + each other
             chosen.append(best)
             self.pickups.append({"pos": best, "type": "item", "item": "Glowing Sprout", "quest": "gardener"})
+
+    # --- sigils (7.11) - own random generator and AFTER the reachability fix, so the rest of the cellar
+    # stays exactly the same for a seed (old saves too) ---------------------------------------------
+    def _sigil_secrets(self):
+        rnd = random.Random(f"sigils-{self.seed}")
+        self._sigil_shrines(rnd)
+        self._hidden_hall(rnd)
+
+    def _sigil_shrines(self, rnd):
+        """3 shrines (a pedestal with a sigil) in enclosed dead ends of the Garden, far from paths and each other."""
+        reach = self.flood(self.arrivals["surface:separated"])
+        busy = self.important_points() + list(self.prefab_cells)[::7]
+        def open_around(c):
+            x, y = c
+            return sum(1 for dy in range(-4, 5) for dx in range(-4, 5)
+                       if 0 <= x + dx < WIDTH and 0 <= y + dy < HEIGHT and not TILES[self.tiles[y + dy][x + dx]]["solid"])
+        floor = [c for c in reach if self.zones[c[1]][c[0]] == "garden" and self.tiles[c[1]][c[0]] == "."
+                 and not self.in_factory_block(c[0], c[1], 3)]
+        if not floor:
+            return
+        chosen = []
+        for sigil in SHRINES:
+            sample = [rnd.choice(floor) for _ in range(900)]
+            sample = [c for c in sample if all(math.dist(c, o) >= SHRINE_DISTANCE for o in chosen)
+                      and all(math.dist(c, b) >= 18 for b in busy)]
+            if not sample:
+                continue
+            best = min(sample, key=open_around)            # the most closed-in spot = a dead end
+            chosen.append(best)
+            self.pickups.append({"pos": best, "type": "sigil", "sigil": sigil})
+
+    def _hidden_hall(self, rnd):
+        """Lucky Charm: a hall inside the Factory's walls with no door. A short conveyor in a hall runs into the
+        wall and carries you through it; the passage and the hall look like wall until you step in."""
+        iw, ih = HIDDEN_HALL
+        fx, fy, fw, fh = FACTORY_RECT
+        wall = lambda x, y: fx < x < fx + fw - 1 and fy < y < fy + fh - 1 and self.tiles[y][x] == "#" \
+            and (x, y) not in self.prefab_cells
+        rooms = [i for i in range(len(self.rooms)) if i not in (self.boss_room, self.entry_room)]
+        rnd.shuffle(rooms)
+        sides = [(1, 0, ">"), (-1, 0, "<"), (0, 1, "v"), (0, -1, "A")]
+        for i in rooms:
+            x, y, w, h = self.rooms[i]
+            rnd.shuffle(sides)
+            for dx, dy, belt in sides:
+                # floor tiles along this side of the hall, the belt starts 3 tiles inside
+                if dx:
+                    edge_x = x + w - 1 if dx > 0 else x
+                    starts = [(edge_x, ty) for ty in range(y + 2, y + h - 2)]
+                else:
+                    edge_y = y + h - 1 if dy > 0 else y
+                    starts = [(tx, edge_y) for tx in range(x + 2, x + w - 2)]
+                rnd.shuffle(starts)
+                for sx, sy in starts:
+                    for length in (2, 3, 4):            # wall tiles the belt goes through
+                        passage = [(sx + dx * k, sy + dy * k) for k in range(1, length + 1)]
+                        if not all(wall(*c) for c in passage):
+                            break
+                        ex, ey = passage[-1][0] + dx, passage[-1][1] + dy          # first tile of the hall
+                        if dx:
+                            hx, hy = (ex if dx > 0 else ex - iw + 1), ey - ih // 2
+                        else:
+                            hx, hy = ex - iw // 2, (ey if dy > 0 else ey - ih + 1)
+                        ring = [(tx, ty) for ty in range(hy - 1, hy + ih + 1) for tx in range(hx - 1, hx + iw + 1)]
+                        if not all(wall(*c) or (c in passage[-1:]) for c in ring if c not in passage):
+                            continue
+                        inside = [(tx, ty) for ty in range(hy, hy + ih) for tx in range(hx, hx + iw)]
+                        visible_belt = [(sx - dx * k, sy - dy * k) for k in range(0, 3)]
+                        if not all(self.tiles[cy][cx] == "g" for cx, cy in visible_belt):
+                            continue
+                        for cx, cy in inside:
+                            self.tiles[cy][cx] = "g"
+                        for cx, cy in visible_belt + passage:
+                            self.tiles[cy][cx] = belt
+                        self.hidden["factory_hall"] = set(passage) | set(inside)
+                        self.pickups.append({"pos": (hx + iw // 2, hy + ih // 2), "type": "sigil", "sigil": "lucky_charm"})
+                        return
 
     # --- garden decoration + loose loot ---------------------------------------------------------
     def _decorate_garden(self):

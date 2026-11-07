@@ -51,7 +51,7 @@ class DialogueContext:
     def __init__(self, has_flag, set_flag, clear_flag, has_item, give_item, take_item,
                  quests=None, add_gold_piles=None, seed_choice=None, on_new_quest=None, on_quest_done=None,
                  format_text=None, reveal_zone=None, get_money=None, pay=None, drop_quest=None,
-                 get_counter=None, add_counter=None, count_item=None):
+                 get_counter=None, add_counter=None, count_item=None, give_sigil=None, open_screen=None):
         self.has_flag, self.set_flag, self.clear_flag = has_flag, set_flag, clear_flag
         self.has_item, self.give_item, self.take_item = has_item, give_item, take_item
         self.quests = quests                    # QuestLog
@@ -66,6 +66,8 @@ class DialogueContext:
         self.get_counter = get_counter or (lambda name: 0)     # saved numbers, e.g. how many times you talked to Gus
         self.add_counter = add_counter
         self.count_item = count_item or (lambda name: 1 if has_item(name) else 0)
+        self.give_sigil = give_sigil            # sigil id -> the player gets that sigil
+        self.open_screen = open_screen          # name -> a screen opens after the talk (e.g. Ferris: "shortcuts")
 
     def check(self, cond):
         """All must be true (values may be lists):
@@ -107,7 +109,7 @@ class DialogueContext:
         return ok
 
     def apply(self, effects):
-        """flag / clear_flag, give / take (items), gold_piles: n,
+        """flag / clear_flag, give / take (items), sigil (id), open (screen after the talk), gold_piles: n,
            quest: {"start": id} | {"step": [id, step]} | {"finish": id}   (values may be lists)."""
         if not effects:
             return
@@ -119,6 +121,12 @@ class DialogueContext:
             self.give_item(i)
         for i in as_list(effects.get("take", [])):
             self.take_item(i)
+        for name in as_list(effects.get("open", [])):           # "open": "shortcuts" - after the talk
+            if self.open_screen:
+                self.open_screen(name)
+        for sigil in as_list(effects.get("sigil", [])):         # "sigil": "overflow"
+            if self.give_sigil:
+                self.give_sigil(sigil)
         for name in as_list(effects.get("count", [])):           # counter +1 (saved)
             if self.add_counter:
                 self.add_counter(name)

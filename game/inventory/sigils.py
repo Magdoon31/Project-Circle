@@ -7,36 +7,56 @@
 # inventory (Spare Pocket = 2nd trinket slot), Shooter (Steady Hands, Overflow, Vigor, Might, Swift),
 # Combat (Headstart, Bullet Time, Close Call).
 
+# HOW THEY ARE FOUND (7.11, see the project's SIGILS.md): "how" = shown on a locked card instead of what it does;
+# "secret" = a locked card shows only ??? (the better ones). Given by Game.award_sigil().
+#   Overflow - Wren (Separated Village, the first one; the Sigils page shows up only after it)
+#   Close Call - win a Tundra fight with <= 10% HP | Lucky Charm - secret hall in the Factory (conveyor through a wall)
+#   Vigor / Swift / Might - shrines in the Garden | Haggler - the "?" field on Lucky's wheel (secret) | Lucky Coin - Firefly Queen in a dash
+#   Headstart / Spare Pocket - Pale World (not made yet) | Steady Hands - the Core's gold vault (opens once all its gold is picked up)
+#   Bullet Time - 30 near misses in one Core fight
+SHRINE_HOW = "Find a shrine hidden\nin the Underground Garden."
+COLUMN_COLOURS = {"fortune": (236, 178, 104), "craft": (120, 200, 220), "warden": (130, 140, 255), "tribe": (196, 120, 255)}
+NAMES = {}          # sigil id -> name (filled below)
+
 COLUMNS = [
     {"id": "fortune", "name": "Fortune", "image": "fortune.png", "sigils": [
-        {"id": "haggler", "name": "Haggler", "text": "Shop prices -15%."},
-        {"id": "lucky_coin", "name": "Lucky Coin", "text": "+1 shop reroll after every boss.\n+20% gold from fights."},
-        {"id": "lucky_charm", "name": "Lucky Charm", "text": "+1 luck."},
+        {"id": "haggler", "name": "Haggler", "text": "Shop prices -15%.",
+         "secret": True},
+        {"id": "lucky_coin", "name": "Lucky Coin", "text": "+1 shop reroll after every boss.\n+20% gold from fights.",
+         "how": "Defeat a Firefly Queen\nduring her dash."},
+        {"id": "lucky_charm", "name": "Lucky Charm", "text": "+1 luck.", "secret": True},
     ]},
     {"id": "craft", "name": "Craft", "image": "craft.png", "sigils": [
-        {"id": "spare_pocket", "name": "Spare Pocket", "text": "A second trinket slot."},
-        {"id": "steady_hands", "name": "Steady Hands", "text": "Your weapon has no recoil."},
-        {"id": "overflow", "name": "Overflow", "text": "Shotguns fire +1 pellet."},
+        {"id": "spare_pocket", "name": "Spare Pocket", "text": "A second trinket slot.", "secret": True},
+        {"id": "steady_hands", "name": "Steady Hands", "text": "Your weapon has no recoil.", "secret": True},
+        {"id": "overflow", "name": "Overflow", "text": "Shotguns fire +1 pellet.", "how": "Talk to Wren."},
     ]},
     {"id": "warden", "name": "Warden", "image": "warden.png", "sigils": [
-        {"id": "headstart", "name": "Headstart", "text": "Enemies don't move or shoot\nfor the first 1.5 s of a fight."},
-        {"id": "bullet_time", "name": "Bullet Time", "text": "Enemy bullets fly 15% slower."},
-        {"id": "close_call", "name": "Close Call", "text": "An enemy bullet flying right past you\nreloads your weapon instantly."},
+        {"id": "headstart", "name": "Headstart", "text": "Enemies don't move or shoot\nfor the first 1.5 s of a fight.",
+         "secret": True},
+        {"id": "bullet_time", "name": "Bullet Time", "text": "Enemy bullets fly 15% slower.",
+         "how": "In one fight in The Core,\nlet 30 bullets fly right past you."},
+        {"id": "close_call", "name": "Close Call", "text": "An enemy bullet flying right past you\nreloads your weapon instantly.",
+         "how": "Win a fight in the Silverpine Tundra\nwith 10% HP or less."},
     ]},
     {"id": "tribe", "name": "Tribe", "image": "tribe.png", "sigils": [
-        {"id": "vigor", "name": "Vigor", "text": "+15% max HP in fights."},
-        {"id": "might", "name": "Might", "text": "+10% damage."},
-        {"id": "swift", "name": "Swift", "text": "+10% movement speed in fights."},
+        {"id": "vigor", "name": "Vigor", "text": "+15% max HP in fights.", "how": SHRINE_HOW},
+        {"id": "might", "name": "Might", "text": "+10% damage.", "how": SHRINE_HOW},
+        {"id": "swift", "name": "Swift", "text": "+10% movement speed in fights.", "how": SHRINE_HOW},
     ]},
 ]
 ALL_SIGILS = [s["id"] for c in COLUMNS for s in c["sigils"]]
+NAMES.update({s["id"]: s["name"] for c in COLUMNS for s in c["sigils"]})
+IMAGE_OF = {s["id"]: c["image"] for c in COLUMNS for s in c["sigils"]}
 COLUMN_OF = {s["id"]: c["id"] for c in COLUMNS for s in c["sigils"]}
 
 # the numbers
 HAGGLER_PRICE = 0.85
 LUCKY_COIN_REROLLS = 1
 LUCKY_COIN_GOLD = 1.2
-LUCKY_CHARM_LUCK = 1            # (luck isn't used by anything yet - see Game.luck())
+LUCKY_CHARM_LUCK = 1            # see Game.luck()
+CLOSE_CALL_HP = 0.10            # Close Call: win a Tundra fight with this share of HP or less
+NEAR_MISSES = 30                # Bullet Time: near misses in one Core fight
 HEADSTART_FRAMES = 90           # 1.5 s
 BULLET_TIME_SPEED = 0.85
 CLOSE_CALL_DISTANCE = 2.6       # x the player's radius: closer than this (but no hit) = a close call

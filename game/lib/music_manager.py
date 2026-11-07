@@ -4,8 +4,7 @@ import pygame
 # OPTIONAL music: loaded only if the file exists (placeholders for music that isn't made yet)
 # a list = the first file that exists
 OPTIONAL_MUSIC = {"dialogue": "assets/music/dialogue/dialogue.mp3",
-                  "minigame": ["assets/music/minigames/minigame.mp3", "assets/sfx/minigames/minigame_music.mp3",
-                               "assets/sfx/minigames/minigme_music.mp3"],     # music while playing a minigame
+                  "minigame": ["assets/music/minigame.mp3", "assets/music/minigames/minigame.mp3"],   # while playing a minigame
                   "lunapark": "assets/music/biomes/lunapark.mp3"}
 # PLACEHOLDER: music that isn't there yet -> this one plays instead
 MUSIC_FALLBACK = {"lunapark": "sugarwood_grove"}
@@ -85,6 +84,12 @@ class MusicManager:
             if direction == "in" and p >= 1.0:
                 self.channel.pause()                 # waits here until fade_back
         self.fade = None if p >= 1.0 else [direction, done, total]
+    def fade_out(self, ms):
+        """The music playing now goes quiet over `ms` and stops (e.g. before a minigame's countdown)."""
+        if self.current in self.music:
+            self.music[self.current].fadeout(ms)
+        self.current = self.channel = None
+
     def stop(self, name=None):
         if name in self.music:
             self.music[name].stop()

@@ -150,8 +150,8 @@ Obecnie boss to zwykły `Enemy` z kilkoma atakami na cooldownach (`boss1` jest t
 ---
 
 ## 8b. Walka — do zrobienia (6.11)
-- [ ] **Lepsze ataki przeciwników** w stylu Enter the Gungeon: np. rosnące koło pocisków, które rozszerza się falami „2 kroki do przodu, 1 do tyłu”; więcej wzorów do czytania i unikania zamiast pocisków lecących prosto w gracza.
-- [ ] Ataki, których nie da się uniknąć — przejrzeć i poprawić (za szybkie / za gęste / bez przerw).
+- [x] *(7.11: split, pulse, wall, sprinkler, line, wave, `repeat`, throw + pierścień, pełzające miny — opis typów na górze `enemy.py`, tabela w BALANCE.md)* **Lepsze ataki przeciwników** w stylu Enter the Gungeon: np. rosnące koło pocisków, które rozszerza się falami „2 kroki do przodu, 1 do tyłu”; więcej wzorów do czytania i unikania zamiast pocisków lecących prosto w gracza.
+- [x] *(7.11: test z botem unikającym — nowe wzory do uniknięcia; zostają: dotyk biegaczy, granat robo-bombera, miny scrap_beetle)* Ataki, których nie da się uniknąć — przejrzeć i poprawić (za szybkie / za gęste / bez przerw).
 - [ ] Zbroje + HP gracza + obrażenia wrogów („za szybko umieram”).
 - [ ] Bossy (teraz wszędzie boss1, 900 HP).
 - [ ] Sekrety, które dają Sigile (11 sztuk).

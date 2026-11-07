@@ -3,6 +3,46 @@ from game.world.loot import LUCK_DROP
 from game.combat.bullet_types import BulletTypes
 import copy, random, math
 
+# SPAWNS (7.11): biome : [[lower, upper] number of enemies, {enemy: weight}]
+# WEIGHT = how heavy an enemy is (1 weak, e.g. fly ... 5 heavy, lots of bullets). A fight gets
+# POINTS = random number of enemies (lower..upper; hard mode: lower + 1) x the biome's average weight;
+# then random enemies are added (each takes its weight) until the points are <= 0 (the last one may go below 0).
+# At most MAX_ENEMIES, on spawn points in a ring around the player.
+SPAWNS = {
+    "village": [[1,3], {"slime_small": 1, "slime_big": 2, "shooter": 2}],
+    "rainbow_fields": [[1,4], {"rainbow_slime": 2, "flower_spitter": 2, "rainbow_guard": 3}],
+    "sugarwood_grove": [[2,4], {"toffee_runner": 1, "gum_goblin": 2, "sugar_caster": 3, "candy_shroom": 4}],
+    "toy_factory": [[3,5], {"toy_soldier": 2, "scrap_beetle": 2, "robo-tesla": 3, "robo-bomber": 3, "portable_factory": 5}],
+    "silverpine_tundra": [[3,5], {"frost_wolf": 2, "ice_shooter": 3, "frozen_orb": 4, "tundra_watcher": 4}],
+    "underground_garden": [[3,6], {"rainbow_pixie": 3, "pixie": 3, "inferno_flower": 3, "frost_flower": 3, "toxic_flower": 3,
+                                   "poison_skeleton": 4, "firefly_queen": 4}],
+    "the_core": [[3,6], {"skeleton": 1, "fly": 1, "guard": 3, "generator": 4, "liche": 5}],
+    "the_void": [[4,6], {"voidling": 3, "blue_crystal": 4, "red_crystal": 5, "purple_crystal": 5}],
+}
+MAX_ENEMIES = 15                # = spawn points around the player
+SPAWN_RING = (0.42, 0.40)       # the ring of spawn points: share of the screen width / height from the centre
+
+
+def fight_points(biome, hard_mode, rnd=random):
+    """How many points of enemies this fight gets."""
+    (low, high), weights = SPAWNS[biome]
+    avg = sum(weights.values()) / len(weights)
+    count = rnd.randint(min(high, low + (1 if hard_mode else 0)), high)
+    return round(count * avg)
+
+
+def spawn_points(w, h, rnd=random):
+    """MAX_ENEMIES points in a ring around the centre of the screen (where the player starts), in random order."""
+    turn = rnd.uniform(0, math.tau)
+    pts = []
+    for i in range(MAX_ENEMIES):
+        a = turn + i * math.tau / MAX_ENEMIES
+        pts.append((min(w - 90, max(90, w / 2 + math.cos(a) * w * SPAWN_RING[0])),
+                    min(h - 90, max(90, h / 2 + math.sin(a) * h * SPAWN_RING[1]))))
+    rnd.shuffle(pts)
+    return pts
+
+
 class EnemyDB:
     def __init__(self, sfx, bullet_type_info=None):
         self.enemies = {
@@ -12,6 +52,8 @@ class EnemyDB:
             # DAMAGE (6.11): every attack + touching scaled so the biome's average hit = 10 x 3^(level-1)
             # (village 10, rainbow 30, sugarwood 90, factory/tundra 270, garden 810, core 2430, void 7290); minigun bursts
             # x0.5 per bullet. "telegraph": frames of the aiming line before a fast shot (the shot is then x1.3 faster).
+            # PATTERNS (7.11): split / pulse / wall / sprinkler / line / wave, "repeat" series, throw "ring", creeping
+            # mines - all described at the top of enemy.py.
              # --- VILLAGE ---
 
             "slime_small": [0,0,12,18,"enemy",3.4,6.9,4,0,"mystical","to_player_jump",{}],
@@ -28,94 +70,106 @@ class EnemyDB:
                 {"death_spiral": {"bullets":4,"damage": 40, "width": 13, "speed": 6, "range": 4000, "effects": {}, "type":["normal_yellow","normal_red","normal_green","normal_blue"]}}],
 
             "flower_spitter": [0,0,90,23,"enemy",1.0,14,10,0,"animal","away_player_normal",
-                {"basic": {"damage": 50, "cooldown": 2.2, "last_used": 0, "width": 12, "speed": 8, "range": 3600, "effects": {"slow":[45,0.15],"homing":[0.4]}, "type":["flower_pink"]}}],
+                {"split": {"damage": 50, "cooldown": 2.2, "last_used": 0, "width": 12, "speed": 8, "range": 3600, "effects": {"slow":[45,0.15],"homing":[0.25]}, "type":["flower_pink"],
+                           "split": {"after": 60, "bullets": 4, "start": 0, "speed": 7, "damage": 30, "width": 9}}}],
 
-            "rainbow_guard": [0,0,162,30,"enemy",2.1,32,14,25,"human","to_player_normal",
-                {"basic": {"damage": 27, "cooldown": 1.0, "last_used": 0, "width": 16, "speed": 14, "range": 750, "effects": {}, "type":["nail"]}}],
+            "rainbow_guard": [0,0,160,30,"enemy",2.1,32,14,25,"human","to_player_normal",
+                {"shotgun": {"damage": 27, "cooldown": 2.2, "last_used": 0, "width": 16, "speed": 14, "range": 750, "recoil": 30, "bullets": 3, "repeat": [2, 0.3], "effects": {}, "type":["nail"]}}],
 
 
             # --- SUGARWOOD GROVE ---
 
             "gum_goblin": [0,0,270,26,"enemy",4.8,29,16,0,"animal","to_player_distance",
-                {"basic": {"damage": 117, "cooldown": 1.6, "last_used": 0, "width": 13, "speed": 16, "range": 1800, "effects": {"glued":[60,0.25]}, "type":["normal_green"]}}],
+                {"basic": {"damage": 120, "cooldown": 1.6, "last_used": 0, "width": 13, "speed": 16, "range": 1800, "effects": {"glued":[60,0.25]}, "type":["normal_green"]}}],
 
             "candy_shroom": [0,0,490,24,"enemy",0.8,59,20,25,"plant","random_normal",
-                {"spiral": {"damage": 44, "cooldown": 1.2, "last_used": 0, "width": 12, "speed": 8, "range": 3500, "bullets": 12, "effects": {"poison":[185,15]}, "type":["spore"], "stop_move":[30,15]}}],
+                {"sprinkler": {"damage": 44, "cooldown": 2.0, "last_used": 0, "width": 12, "speed": 7, "range": 3500, "streams": 3, "duration": 2.0, "every": 8, "turn": 9, "effects": {"poison":[185,15]}, "type":["spore"], "stop_move":[20,10]}}],
 
             "toffee_runner": [0,0,86,18,"enemy",3.8,88,10,25,"animal","to_player_zigzag",{}],
 
             "sugar_caster": [0,0,220,25,"enemy",2.3,73,22,25,"mystical","away_player_normal",
-                {"throw": {"radius": 90, "recoil":150, "damage": 220, "width":15, "exp_type":"nova_", "cooldown": 0.75, "last_used": 0, "fly_time": 1.5, "effects": {"speed":[60,0.25]},"stop_move":[48,12], "type":["flower_white"]}}],
+                {"throw": {"radius": 90, "recoil":150, "damage": 220, "width":15, "exp_type":"nova_", "cooldown": 2.0, "last_used": 0, "fly_time": 1.5, "effects": {"speed":[60,0.25]},"stop_move":[24,8], "type":["flower_white"],
+                           "ring": {"bullets": 8, "speed": 6, "damage": 90, "width": 11, "effects": {}}}}],
 
 
             # --- TOY FACTORY ---
 
-            "toy_soldier": [0,0,810,20,"enemy",1.8,136,25,0,"mechanical","to_player_normal",
-                {"basic": {"damage": 407, "cooldown": 1.4, "last_used": 0, "width": 16, "speed": 14, "range": 3500, "effects": {}, "type":["bullet_red"]}}],
+            "toy_soldier": [0,0,810,20,"enemy",1.8,140,25,0,"mechanical","to_player_normal",
+                {"basic": {"damage": 410, "cooldown": 2.2, "last_used": 0, "width": 16, "speed": 14, "range": 3500, "repeat": [3, 0.15], "effects": {}, "type":["bullet_red"]}}],
 
             "portable_factory": [0,0,1820,40,"enemy",0,14,50,0,"mechanical","random_normal",
                 {"spawn": {"enemy_name":"toy_soldier","amount" : 1,"cooldown": 7.5, "last_used": 0},
-                "spiral": {"damage": 217, "cooldown": 3.5, "last_used": 0, "width": 12, "speed": 6, "range": 3800, "bullets": 14, "effects": {}, "type":["normal_red"]}}],
+                "spiral": {"damage": 220, "cooldown": 3.5, "last_used": 0, "width": 12, "speed": 6, "range": 3800, "bullets": 14, "effects": {}, "type":["normal_red"]}}],
 
-            "robo-tesla": [0,0,650,23,"enemy",1.8,136,30,25,"mechanical","random_normal",
-                           {"spiral": {"damage": 298, "cooldown": 1.0, "last_used": 0, "width": 5, "speed": 11, "range": 1800, "bullets": 18, "effects": {"weakness":[120,0.2]}, "type":["normal_blue"]}}],
+            "robo-tesla": [0,0,650,23,"enemy",1.8,140,30,25,"mechanical","random_normal",
+                           {"wave": {"damage": 300, "cooldown": 1.5, "last_used": 0, "width": 8, "speed": 13, "range": 2600, "bullets": 8, "every": 4, "amp": 28, "period": 36, "double": True, "effects": {"weakness":[120,0.2]}, "type":["normal_blue"]},
+                            "spiral": {"damage": 300, "cooldown": 1.0, "last_used": 0, "width": 5, "speed": 11, "range": 1800, "bullets": 16, "effects": {"weakness":[120,0.2]}, "type":["normal_blue"]}}],
 
-            "robo-bomber": [0,0,650,23,"enemy",1.8,136,30,25,"mechanical","random_normal",
-                            {"throw": {"radius": 180, "recoil":250, "damage": 475, "width":15, "exp_type":"", "cooldown": 3.2, "last_used": 0, "fly_time": 0.8, "effects": {"burn":[60,27]}, "type":["grenade_red"]}}],
+            "robo-bomber": [0,0,650,23,"enemy",1.8,140,30,25,"mechanical","random_normal",
+                            {"throw": {"radius": 180, "recoil":250, "damage": 480, "width":15, "exp_type":"", "cooldown": 3.2, "last_used": 0, "fly_time": 0.8, "effects": {"burn":[60,27]}, "type":["grenade_red"]}}],
                            
-            "scrap_beetle": [0,0,260,14,"enemy",5.2,271,20,25,"mechanical","to_player_normal",
-                {"mine": {"damage": 611, "radius": 80, "cooldown": 1.0, "last_used": 0, "width": 18, "exp_time": 3.5, "effects": {}, "type": ["mine_red"]}}],
+            "scrap_beetle": [0,0,260,14,"enemy",5.2,270,20,25,"mechanical","to_player_normal",
+                {"mine": {"damage": 610, "radius": 80, "cooldown": 1.5, "last_used": 0, "width": 18, "exp_time": 3.5, "effects": {}, "type": ["mine_red"]}}],
 
 
             # --- SILVERPINE TUNDRA ---
 
-            "frost_wolf": [0,0,650,26,"enemy",3.4,415,30,25,"animal","to_player_normal",{}],
+            "frost_wolf": [0,0,650,26,"enemy",3.4,420,30,25,"animal","to_player_normal",{}],
 
-            "ice_shooter": [0,0,810,26,"enemy",1.1,208,32,0,"human","away_player_normal",
-                {"basic": {"telegraph": 30, "damage": 222, "cooldown": 1.4, "last_used": 0, "width": 12, "speed": 24, "range": 4500, "effects": {"slow":[45,0.55]}, "type":["arrow_blue"]}}],
+            "ice_shooter": [0,0,810,26,"enemy",1.1,210,32,0,"human","away_player_normal",
+                {"basic": {"telegraph": 30, "damage": 220, "cooldown": 1.4, "last_used": 0, "width": 12, "speed": 30, "range": 4500, "effects": {"slow":[45,0.55]}, "type":["arrow_blue"]}}],
 
-            "frozen_orb": [0,0,1220,28,"enemy",0.8,166,30,50,"mystical","random_normal",
-                {"spiral": {"damage": 305, "cooldown": 2.4, "last_used": 0, "width": 14, "speed": 8, "range": 4000, "bullets": 8, "effects": {"slow":[60,0.55],"homing":[0.34]}, "type":["normal_blue"]},
-                 "death_spiral": {"damage": 305, "cooldown": 0, "last_used": 0, "width": 14, "speed": 8, "range": 4000, "bullets": 16, "effects": {"slow":[60,0.55],"homing":[0.34]}, "type":["normal_blue"]}}],
+            "frozen_orb": [0,0,1220,28,"enemy",0.8,170,30,50,"mystical","random_normal",
+                {"pulse": {"damage": 310, "cooldown": 2.6, "last_used": 0, "width": 14, "speed": 6, "range": 9000, "bullets": 10, "pulse": [45, 15], "effects": {"slow":[60,0.55]}, "type":["normal_blue"]},
+                 "death_spiral": {"damage": 310, "cooldown": 0, "last_used": 0, "width": 14, "speed": 8, "range": 4000, "bullets": 16, "effects": {"slow":[60,0.55],"homing":[0.34]}, "type":["normal_blue"]}}],
 
-            "tundra_watcher": [0,0,900,35,"enemy",1.2,20,45,4,"human","random_normal",
-                {"shotgun":{"damage": 20, "cooldown": 2.4, "last_used": 0, "width": 16, "speed": 20, "range": 4000, "recoil": 60, "bullets": 5, "effects": {"slow":[50,0.3]}, "type":["laser_blue"]},
-                "basic": {"damage": 35, "cooldown": 1.4, "last_used": 0, "width": 20, "speed": 20, "range": 4000, "effects": {}, "type":["laser_blue"]}}],
+            "tundra_watcher": [0,0,1820,35,"enemy",1.2,210,45,25,"human","random_normal",
+                {"shotgun":{"damage": 220, "cooldown": 3.5, "last_used": 0, "width": 16, "speed": 15, "range": 4000, "recoil": 60, "bullets": 5, "effects": {"slow":[50,0.3]}, "type":["laser_blue"]},
+                "line": {"damage": 200, "cooldown": 1.6, "last_used": 0, "width": 16, "speed": 20, "range": 4000, "bullets": 5, "every": 3, "effects": {}, "type":["laser_blue"]}}],
 
 
             # --- UNDERGROUND GARDEN ---
 
-            "pixie": [0,0,1940,20,"enemy",2.8,953,70,25,"mystical","random_jump",
-                {"minigun": {"damage": 298,"cooldown": 1.5,"last_used": 0,"width": 18,"speed": 10,"burst_count": 0,"burst_max": 10,"burst_delay": 0.05,"last_shot": 0,"is_bursting": False, "spread": 360, "range": 3000, "effects" : {"confusion":[120,0.75],"slow":[180,0.25]},"type":["normal_yellow"]}}],
+            "pixie": [0,0,1940,20,"enemy",2.8,950,70,25,"mystical","random_jump",
+                {"minigun": {"damage": 300,"cooldown": 1.5,"last_used": 0,"width": 18,"speed": 10,"burst_count": 0,"burst_max": 10,"burst_delay": 0.05,"last_shot": 0,"is_bursting": False, "spread": 360, "range": 3000, "effects" : {"confusion":[120,0.75],"slow":[180,0.25]},"type":["normal_yellow"]}}],
 
-            "rainbow_pixie": [0,0,970,20,"enemy",1.5,953,200,0,"mystical","random_jump",
-                              {"death_spiral": {"damage": 953, "cooldown": 0, "last_used": 0, "width": 18, "speed": 10, "range": 3000, "bullets": 18, "effects": {"confusion":[120,0.75],"slow":[180,0.25]}, "type":["normal_yellow","normal_green","normal_blue","normal_red"]},
+            "rainbow_pixie": [0,0,970,20,"enemy",1.5,950,200,0,"mystical","random_jump",
+                              {"death_spiral": {"damage": 950, "cooldown": 0, "last_used": 0, "width": 18, "speed": 10, "range": 3000, "bullets": 18, "effects": {"confusion":[120,0.75],"slow":[180,0.25]}, "type":["normal_yellow","normal_green","normal_blue","normal_red"]},
                               "death_spawn": {"amount": 2, "enemy_name":"pixie"}}],
 
-            "poison_skeleton": [0,0,5470,28,"enemy",3.1,953,85,0,"undead","away_player_normal",
-                                {"basic": {"telegraph": 30, "damage": 953, "cooldown": 1.8, "last_used": 0, "width": 22, "speed": 24, "range": 3800, "effects": {"poison":[240,143]}, "type":["arrow_red"]}}],
+            "poison_skeleton": [0,0,5470,28,"enemy",3.1,950,85,0,"undead","away_player_normal",
+                                {"basic": {"telegraph": 30, "damage": 950, "cooldown": 1.8, "last_used": 0, "width": 22, "speed": 32, "range": 3800, "effects": {"poison":[240,143]}, "type":["arrow_red"]}}],
 
-            "inferno_flower": [0,0,1940,26,"enemy",0.6,953,85,25,"mystical","random_normal",
-                               {"shotgun":{"damage": 596, "cooldown": 2.5, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "recoil": 40, "bullets": 7, "effects": {"burn":[120,71]}, "type":["flower_orange"]},
-                                "basic": {"damage": 715, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"burn":[120,71]}, "type":["flower_orange"]}}],
+            "inferno_flower": [0,0,1940,26,"enemy",0.6,950,85,25,"mystical","random_normal",
+                               {"shotgun":{"damage": 600, "cooldown": 3.0, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "recoil": 40, "bullets": 4, "repeat": [2, 0.35], "effects": {"burn":[120,71]}, "type":["flower_orange"]},
+                                "basic": {"damage": 720, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.5],"burn":[120,71]}, "type":["flower_orange"]}}],
 
-            "frost_flower": [0,0,1940,26,"enemy",0.6,953,85,25,"mystical","random_normal",
-                               {"shotgun":{"damage": 596, "cooldown": 2.5, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "recoil": 40, "bullets": 7, "effects": {"slow":[120,0.33],"weakness":[160,0.5]}, "type":["flower_blue"]},
-                                "basic": {"damage": 715, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"slow":[120,0.33],"weakness":[160,0.5]}, "type":["flower_blue"]}}],
+            "frost_flower": [0,0,1940,26,"enemy",0.6,950,85,25,"mystical","random_normal",
+                               {"pulse":{"damage": 600, "cooldown": 2.8, "last_used": 0, "width": 12, "speed": 9, "range": 8000, "bullets": 10, "pulse": [45, 15], "effects": {"slow":[120,0.33],"weakness":[160,0.5]}, "type":["flower_blue"]},
+                                "basic": {"damage": 720, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"slow":[120,0.33],"weakness":[160,0.5]}, "type":["flower_blue"]}}],
 
-            "toxic_flower": [0,0,1940,26,"enemy",0.6,953,85,25,"mystical","random_normal",
-                               {"shotgun":{"damage": 596, "cooldown": 2.5, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "recoil": 40, "bullets": 7, "effects": {"acid":[120,0.33],"poison":[180,191]}, "type":["flower_green"]},
-                                "basic": {"damage": 715, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"acid":[120,0.33],"poison":[180,191]}, "type":["flower_green"]}}],
+            "toxic_flower": [0,0,1940,26,"enemy",0.6,950,85,25,"mystical","random_normal",
+                               {"split":{"damage": 600, "cooldown": 2.5, "last_used": 0, "width": 18, "speed": 7, "range": 3000, "effects": {"acid":[120,0.33],"poison":[180,191]}, "type":["flower_green"],
+                                         "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 360, "width": 10}},
+                                "basic": {"damage": 720, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"acid":[120,0.33],"poison":[180,191]}, "type":["flower_green"]}}],
+
+
+            # Firefly Queen (7.11): like the sun in ETG - glows, 3 dashes at you, then a full ring of light;
+            # when she dies she bursts: pushes everyone away (no damage to enemies), the player takes a hit
+            "firefly_queen": [0,0,1940,26,"enemy",2.6,950,85,25,"animal","random_normal",
+                {"dash": {"cooldown": 3.0, "last_used": 0, "dashes": 3, "windup": 24, "distance": 350, "dash_frames": 12, "type": ["normal_yellow"],
+                          "spiral": {"bullets": 16, "damage": 600, "speed": 8, "width": 13, "range": 3500, "effects": {}}},
+                 "death_blast": {"radius": 180, "damage": 810, "push": 140}}],
 
 
             # --- THE CORE ---
 
-            "liche": [0,0,10940,26,"enemy",2.5,835,120,50,"undead","random_normal",
-                {"basic": {"damage": 4177, "cooldown": 1.0, "last_used": 0, "width": 18, "speed": 12, "range": 3400, "effects": {"poison":[300,501],"confusion":[80,0.5]}, "type":["ghost_bullet"]},
-                "spiral": {"damage": 2506, "cooldown": 1.9, "last_used": 0, "width": 14, "speed": 10, "range": 2100, "bullets": 16, "effects": {"weakness":[300,0.3],"confusion":[80,0.5]}, "type":["ghost_bullet"]},
-                "shotgun":{"damage": 2506, "cooldown": 2.6, "last_used": 0, "width": 14, "speed": 10, "range": 2200, "recoil": 30, "bullets": 5, "effects": {"glued":[300,0.3],"confusion":[80,0.5]}, "type":["ghost_bullet"]}}],
+            "liche": [0,0,10940,26,"enemy",2.5,840,120,50,"undead","random_normal",
+                {"basic": {"damage": 4180, "cooldown": 1.0, "last_used": 0, "width": 18, "speed": 12, "range": 3400, "effects": {"poison":[300,501],"confusion":[80,0.5]}, "type":["ghost_bullet"]},
+                "sprinkler": {"damage": 2510, "cooldown": 2.4, "last_used": 0, "width": 14, "speed": 8, "range": 2600, "streams": 3, "duration": 1.8, "every": 8, "turn": 9, "effects": {"weakness":[300,0.3],"confusion":[80,0.5]}, "type":["ghost_bullet"]},
+                "shotgun":{"damage": 2510, "cooldown": 2.6, "last_used": 0, "width": 14, "speed": 10, "range": 2200, "recoil": 30, "bullets": 5, "effects": {"glued":[300,0.3],"confusion":[80,0.5]}, "type":["ghost_bullet"]}}],
 
-            "skeleton": [0,0,2330,21,"enemy",4.2,2506,30,25,"undead","to_player_normal",
+            "skeleton": [0,0,2330,21,"enemy",4.2,2510,30,25,"undead","to_player_normal",
                       {}],
 
             "mecha-skeleton": [0,0,3000,35,"boss",2.5,100,400,8,"undead","random_normal",
@@ -124,34 +178,36 @@ class EnemyDB:
                        "spawn": {"enemy_name":"skeleton","amount" : 2,"cooldown": 4.9, "last_used": 0},
                        "shotgun":{"damage": 25, "cooldown": 0.8, "last_used": 0, "width": 10, "speed": 8, "range": 2000, "recoil": 60, "bullets": 4, "effects": {"burn":[120,4]}, "type":["normal_red"]}}],
 
-            "guard": [0,0,8200,22,"enemy",2.2,3341,90,100,"human","to_player_normal",
+            "guard": [0,0,8200,22,"enemy",2.2,3340,90,100,"human","to_player_normal",
                       {}],
 
-            "fly": [0,0,1940,18,"enemy",4.8,2506,30,50,"animal","to_player_normal",
-                      {"death_spiral": {"damage": 1671, "cooldown": 0, "last_used": 0, "width": 15, "speed": 12, "range": 1600, "bullets": 8, "effects": {"poison":[180,835]}, "type":["spore"]}}],
+            "fly": [0,0,1940,18,"enemy",4.8,2510,30,50,"animal","to_player_normal",
+                      {"death_spiral": {"damage": 1670, "cooldown": 0, "last_used": 0, "width": 15, "speed": 12, "range": 1600, "bullets": 8, "effects": {"poison":[180,835]}, "type":["spore"]}}],
 
-            "generator": [0,0,4860,26,"enemy",0,835,120,50,"mechanical","random_normal",
-                      {"spiral": {"damage": 2924, "cooldown": 1.0, "last_used": 0, "width": 13, "speed": 8, "range": 4000, "bullets": 14, "effects": {"glued":[100,0.33]}, "type":["normal_yellow"]},
-                       "death_spiral": {"damage": 2924, "cooldown": 0, "last_used": 0, "width": 13, "speed": 8, "range": 4000, "bullets": 24, "effects": {"glued":[160,0.33]}, "type":["normal_yellow"]}}],
+            "generator": [0,0,4860,26,"enemy",0,840,120,50,"mechanical","random_normal",
+                      {"wall": {"damage": 2920, "cooldown": 1.8, "last_used": 0, "width": 13, "speed": 6, "range": 4500, "bullets": 11, "spacing": 34, "gap": 3, "effects": {"glued":[100,0.33]}, "type":["normal_yellow"]},
+                       "death_spiral": {"damage": 2920, "cooldown": 0, "last_used": 0, "width": 13, "speed": 8, "range": 4000, "bullets": 24, "effects": {"glued":[160,0.33]}, "type":["normal_yellow"]}}],
 
 
             # --- THE VOID ---
 
-            "voidling": [0,0,10940,14,"enemy",2.4,7851,80,100,"void","to_player_normal",
+            "voidling": [0,0,10940,14,"enemy",2.4,7850,80,100,"void","to_player_normal",
                 {"spawn": {"enemy_name":"voidling","amount" : 1,"cooldown": 3.0, "last_used": 0},
-                 "death_spiral": {"damage": 5608, "cooldown": 0, "last_used": 0, "width": 12, "speed": 12, "range": 3000, "bullets": 3, "effects": {"confusion":[30,0.5]}, "type":["flower_pink"]}}],
+                 "death_spiral": {"damage": 5610, "cooldown": 0, "last_used": 0, "width": 12, "speed": 12, "range": 3000, "bullets": 3, "effects": {"confusion":[30,0.5]}, "type":["flower_pink"]}}],
 
-            "red_crystal": [0,0,32800,25,"enemy",1.5,5608,200,50,"void","away_player_normal",
-                {"shotgun":{"damage": 8972, "cooldown": 2.1, "last_used": 0, "width": 16, "speed": 12, "range": 3500, "recoil": 40, "bullets": 8, "effects": {"burn":[180,336]}, "type":["flower_orange"]},
-                 "basic": {"telegraph": 30, "damage": 12337, "cooldown": 1.7, "last_used": 0, "width": 24, "speed": 18, "range": 3600, "effects": {"burn":[180,336]}, "type":["flower_orange"]}}],
+            "red_crystal": [0,0,32800,25,"enemy",1.5,5610,200,50,"void","away_player_normal",
+                {"shotgun":{"damage": 8970, "cooldown": 2.6, "last_used": 0, "width": 16, "speed": 12, "range": 3500, "recoil": 40, "bullets": 8, "repeat": [2, 0.35], "effects": {"burn":[180,336]}, "type":["flower_orange"]},
+                 "basic": {"telegraph": 30, "damage": 12340, "cooldown": 1.7, "last_used": 0, "width": 24, "speed": 18, "range": 3600, "effects": {"burn":[180,336]}, "type":["flower_orange"]}}],
 
-            "purple_crystal": [0,0,32800,25,"enemy",1.8,5608,250,50,"void","random_normal",
+            "purple_crystal": [0,0,32800,25,"enemy",1.8,5610,250,50,"void","random_normal",
                 {"death_spawn": {"amount": 1, "enemy_name": "voidling"},
-                "spiral": {"damage": 5608, "cooldown": 2.2, "last_used": 0, "width": 10, "speed": 8, "range": 4000, "bullets": 32, "effects": {"confusion":[30,1.0]}, "type":["flower_pink"]}}],
+                "pulse": {"damage": 5610, "cooldown": 4.4, "last_used": -178, "width": 10, "speed": 6, "range": 9000, "bullets": 24, "pulse": [45, 15], "effects": {"confusion":[30,1.0]}, "type":["flower_pink"]},
+                "sprinkler": {"damage": 5610, "cooldown": 2.8, "last_used": 0, "width": 10, "speed": 8, "range": 4000, "streams": 4, "duration": 1.6, "every": 8, "turn": 8, "effects": {"confusion":[30,1.0]}, "type":["flower_pink"]}}],
 
-            "blue_crystal": [0,0,24600,30,"enemy",1.1,10094,300,100,"void","to_player_normal",
-                {"death_spiral": {"damage": 5608, "cooldown": 0, "last_used": 0, "width": 16, "speed": 14, "range": 3200, "bullets": 12, "effects": {"slow":[120,0.8]}, "type":["flower_blue"]},
-                "basic": {"damage": 5608, "cooldown": 2.5, "last_used": 0, "width": 18, "speed": 12, "range": 3400, "effects": {"confusion":[80,0.5]}, "type":["arrow_blue"]}}]
+            "blue_crystal": [0,0,24600,30,"enemy",1.1,10090,300,100,"void","to_player_normal",
+                {"death_spiral": {"damage": 5610, "cooldown": 0, "last_used": 0, "width": 16, "speed": 14, "range": 3200, "bullets": 12, "effects": {"slow":[120,0.8]}, "type":["flower_blue"]},
+                "wave": {"damage": 5610, "cooldown": 2.5, "last_used": 0, "width": 14, "speed": 10, "range": 3400, "bullets": 4, "every": 6, "amp": 30, "period": 40, "double": True, "effects": {"confusion":[80,0.5]}, "type":["arrow_blue"]},
+                "wall": {"damage": 5610, "cooldown": 3.5, "last_used": -90, "width": 14, "speed": 7, "range": 4500, "bullets": 13, "spacing": 34, "gap": 3, "effects": {"slow":[120,0.8]}, "type":["flower_blue"]}}]
         }
             
         self.bosses = {
@@ -234,50 +290,19 @@ class EnemyDB:
         return dropped
 
     def provoke_enemies(self, biome, hard_mode, screen):
+        """A normal fight: random enemies of the biome until the fight's points run out (see SPAWNS)."""
         money = 0
-        w = screen.get_width()
-        h = screen.get_height()
-        spawnpoints = []
-        for i in range(3):  
-            for j in range(3):
-                
-                if i == 1 and j == 1:
-                    continue
-                    
-                spawn_x = min(w-90,max(90, j * (w // 2)))
-                spawn_y = min(h-90,max(90, i * (h // 2)))
-                
-                spawnpoints.append((spawn_x, spawn_y))
-
+        weights = SPAWNS[biome][1]
+        points = fight_points(biome, hard_mode)
+        spawnpoints = spawn_points(screen.get_width(), screen.get_height())
         provoked_enemies = []
-        # lower end_point of spawn amount should be at least 1 lower than upper end_point (it is chosen at random({lower},{upper}))
-        # biome : [[{lower spawn amount},{upper spawn amount}, [enemies]]]
-        biomes = {
-            "village": [[1,3],["slime_small","slime_big","shooter"]],
-            "rainbow_fields": [[1,4],["rainbow_slime","flower_spitter","rainbow_guard"]],
-            "sugarwood_grove": [[2,4],["gum_goblin","candy_shroom","toffee_runner","sugar_caster"]],
-            "toy_factory": [[3,5],["toy_soldier","portable_factory","robo-tesla","robo-bomber","scrap_beetle"]],
-            "silverpine_tundra": [[3,5],["frost_wolf","ice_shooter","frozen_orb"]],
-            "underground_garden": [[3,6],["pixie","rainbow_pixie","poison_skeleton","inferno_flower","frost_flower","toxic_flower"]],
-            "the_core": [[3,6],["liche","skeleton","guard","fly","generator"]],
-            "the_void": [[4,6],["voidling","red_crystal","purple_crystal","blue_crystal"]],
-        }
-
-        rnd = random.randint(biomes[biome][0][0]+(1 if hard_mode else 0),biomes[biome][0][1])
-        for i in range(rnd):
-
-            rnd_enemy_name = random.choice(biomes[biome][1])
-            enemy = self.get_enemy(rnd_enemy_name)
-
-            point = random.choice(spawnpoints)
-            spawnpoints.remove(point)
-
-            enemy.x = point[0]
-            enemy.y = point[1]
-
+        while points > 0 and spawnpoints:
+            name = random.choice(list(weights))
+            points -= weights[name]
+            enemy = self.get_enemy(name)
+            enemy.x, enemy.y = spawnpoints.pop()
             enemy.color = (random.randint(100,200),random.randint(100,200),random.randint(100,200))
             provoked_enemies.append(enemy)
-
             money += enemy.money
 
         return provoked_enemies, money

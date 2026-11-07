@@ -233,7 +233,8 @@ class Inventory_ui:
         dark = True
         self.tab_rects = {}
         x = sw // 40
-        for page, label in (("items", "Items"), ("sigils", "Sigils")):
+        pages = (("items", "Items"), ("sigils", "Sigils")) if self.sigils and self.sigils.owned else (("items", "Items"),)
+        for page, label in pages:            # (the Sigils page shows up once you have the first sigil)
             current = page == self.page
             colour = ((230, 215, 255) if current else (150, 130, 180)) if dark else (0, 0, 0)
             text = self.font_heavy["mid"].render(label, True, colour)
@@ -266,7 +267,7 @@ class Inventory_ui:
         return self.sigil_images[key]
 
     # colour of each column's cards (frame, sigil, glow)
-    SIGIL_COLOURS = {"fortune": (236, 178, 104), "craft": (120, 200, 220), "warden": (130, 140, 255), "tribe": (196, 120, 255)}
+    SIGIL_COLOURS = SG.COLUMN_COLOURS
 
     # the look of both pages: dark purple, light lavender text, purple frames, orange for what's yours / chosen
     TEXT = (235, 222, 255)
@@ -374,12 +375,15 @@ class Inventory_ui:
                     if not owned:
                         pic.set_alpha(90)
                     self.screen.blit(pic, pic.get_rect(center=centre))
-                name = self.font_heavy["mid"].render(sigil["name"] if owned else "???", True,
+                secret = sigil.get("secret") and not owned
+                name = self.font_heavy["mid"].render("???" if secret else sigil["name"], True,
                                                      (245, 235, 255) if owned else (120, 105, 145))
                 name_y = rect.top + int(card_h * 0.6)
                 self.screen.blit(name, name.get_rect(center=(rect.centerx, name_y)))
                 y = name_y + name.get_height() // 2 + 4
-                for row in (sigil["text"].split("\n") if owned else ["Not found yet."]):
+                # locked: HOW to get it (or ??? for a secret) instead of what it does
+                rows = sigil["text"].split("\n") if owned else ["???"] if secret else sigil.get("how", "Not found yet.").split("\n")
+                for row in rows:
                     img = self.font_light["small"].render(row, True, (225, 215, 240) if owned else (110, 95, 135))
                     self.screen.blit(img, img.get_rect(midtop=(rect.centerx, y)))
                     y += img.get_height() + 2

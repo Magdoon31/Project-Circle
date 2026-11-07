@@ -15,7 +15,7 @@ BACKGROUND = (18, 18, 22)   # same as the fog (map.FOG_COLOR) - unexplored land 
 # places shown on the map from FAR AWAY (even unexplored) while a quest is on one of the given steps:
 #   structure -> (quest, steps, icon, label)
 #   the sunken pier: the Gardener wants water from the end of it (gone once the water is taken: step "return")
-STRUCTURE_MARKERS = {"sunken_pier": ("gardener", ("sprouts", "water"), "assets/img/map/water.png", "Lake")}
+STRUCTURE_MARKERS = {"sunken_pier": ("gardener", ("water",), "assets/img/map/water.png", "Lake")}   # only while fetching the water
 _marker_icons = {}
 
 
@@ -41,10 +41,21 @@ class WorldMap:
         self.view = None             # LevelView of the level being looked at
         self.teleport_request = None # TEST: (level, tile) after a right click
         self.tabs = []               # (rect, level name) of the level tabs at the top
+        # SHORTCUTS (7.11, Ferris - game/story/ferris.py): buttons on the map; Game fills .shortcuts before opening:
+        # [{"id", "name", "level", "tile", "owned", "price"}]. ferris = True when opened by talking to him (buying).
+        self.shortcuts = []
+        self.ferris = False
+        self.buttons = []            # (rect, shortcut) drawn this frame
+        self.confirm = None          # the shortcut clicked: "Travel to ...?" Yes / No
+        self.confirm_rects = {}
+        self.shortcut_request = None # shortcut id chosen (Yes) - Game buys / travels
+        self.get_money = lambda: 0
 
-    def open(self, game_map):
+    def open(self, game_map, ferris=False):
         self.is_open = True
         self.dragging = False
+        self.ferris = ferris
+        self.confirm = None
         if game_map.level in MAP_SHOWS:                     # e.g. in the lunapark: the Surface map
             self.view = game_map.view(MAP_SHOWS[game_map.level])
             w = self.view.world
@@ -53,6 +64,9 @@ class WorldMap:
             return
         self.view = game_map.view(game_map.level)
         self.centre_on_player(game_map)
+        if ferris:                                          # Ferris: the whole level, so his places are all in sight
+            self.zoom = self.min_zoom(game_map)
+            self.centre = (self.view.world.width / 2, self.view.world.height / 2)
 
     def show_level(self, game_map, name):
         if self.view and name == self.view.level:
@@ -99,6 +113,19 @@ class WorldMap:
     def handle_events(self, events, game_map):
         """Returns True when the map should close."""
         self.teleport_request = None
+        self.shortcut_request = None
+        if self.confirm:                             # the Yes / No window takes all input
+            for event in events:
+                if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_m):
+                    self.confirm = None
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    if self.confirm_rects.get("yes") and self.confirm_rects["yes"].collidepoint(event.pos):
+                        self.shortcut_request = self.confirm["id"]
+                        self.confirm = None
+                        return True
+                    if self.confirm_rects.get("no") and self.confirm_rects["no"].collidepoint(event.pos):
+                        self.confirm = None
+            return False
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key in (pygame.K_m, pygame.K_ESCAPE):
@@ -125,6 +152,10 @@ class WorldMap:
                 tab = next((name for rect, name in self.tabs if rect.collidepoint(event.pos)), None)
                 if tab:
                     self.show_level(game_map, tab)
+                    continue
+                button = next((sc for rect, sc in self.buttons if rect.collidepoint(event.pos)), None)
+                if button:
+                    self.confirm = button
                     continue
                 self.dragging = True
                 self.drag_from = event.pos
@@ -206,13 +237,16 @@ class WorldMap:
             pygame.draw.circle(screen, (255, 230, 60), ppos, max(5, z * 0.7))
             pygame.draw.circle(screen, (0, 0, 0), ppos, max(5, z * 0.7), 2)
 
+        self.draw_shortcuts(view)
+
         # title + help
         explored = view.explored_fraction()          # only walkable, reachable tiles count
         from game.map.map import LEVEL_TITLES
         title = self.font.render(f"World Map - {LEVEL_TITLES.get(view.level, '')}   {min(100, int(explored * 100))}% explored", True, (255, 255, 255))
         screen.blit(title, (sw // 50, sh // 40))
         self.draw_tabs(game_map, LEVEL_TITLES)
-        help_text = self.font_small.render("Wheel: zoom   |   Drag: move   |   Tab / Q / E: other levels   |   Space: back to you   |   M / Esc: close", True, (200, 200, 200))
+        help_text = self.font_small.render(("Ferris: click a place to buy a shortcut   |   " if self.ferris else "")
+                                           + "Wheel: zoom   |   Drag: move   |   Tab / Q / E: other levels   |   Space: back to you   |   M / Esc: close", True, (200, 200, 200))
         screen.blit(help_text, (sw // 2 - help_text.get_width() // 2, sh - help_text.get_height() - sh // 40))
         legend = [((255, 230, 60), "You"), ((170, 20, 30), "Boss"), ((140, 60, 255), "Portal"), ((230, 90, 230), "NPC"),
                   ((120, 230, 120), "Quest item")]
@@ -224,6 +258,65 @@ class WorldMap:
             else:
                 pygame.draw.circle(screen, color, (sw // 50 + 10, y + 11), 9)
             screen.blit(self.font_small.render(name, True, (230, 230, 230)), (sw // 50 + 28, y))
+        if self.confirm:
+            self.draw_confirm()
+
+    # --- shortcuts (Ferris) ---------------------------------------------------------------------------------
+    def draw_shortcuts(self, view):
+        """Buttons over the places (like the warp buttons in FNaF World): bought = Travel, at Ferris = the price."""
+        self.buttons = []
+        for sc in self.shortcuts:
+            if sc["level"] != view.level or sc["tile"] is None or not (sc["owned"] or self.ferris):
+                continue
+            x, y = self.tile_to_screen(sc["tile"][0] + 0.5, sc["tile"][1] + 0.5)
+            name = self.font_small.render(sc["name"], True, (255, 255, 255))
+            sub_text = "Travel" if sc["owned"] else f"{sc['price']}$"
+            can = sc["owned"] or self.get_money() >= sc["price"]
+            sub = self.font_small.render(sub_text, True, (140, 240, 150) if sc["owned"] else (255, 220, 120) if can else (240, 120, 110))
+            w = max(name.get_width(), sub.get_width()) + 30
+            rect = pygame.Rect(0, 0, w, name.get_height() + sub.get_height() + 16)
+            rect.midbottom = (int(x), int(y) - 10)
+            hover = rect.collidepoint(pygame.mouse.get_pos())
+            pygame.draw.line(self.screen, (255, 255, 255), (x, y), rect.midbottom, 2)
+            pygame.draw.circle(self.screen, (255, 200, 80), (int(x), int(y)), 7)
+            pygame.draw.rect(self.screen, (70, 50, 110) if hover else (40, 30, 70), rect, 0, 10)
+            pygame.draw.rect(self.screen, (255, 200, 80) if sc["owned"] else (200, 170, 255), rect, 3, 10)
+            self.screen.blit(name, name.get_rect(midtop=(rect.centerx, rect.top + 6)))
+            self.screen.blit(sub, sub.get_rect(midbottom=(rect.centerx, rect.bottom - 6)))
+            self.buttons.append((rect, sc))
+
+    def draw_confirm(self):
+        sc = self.confirm
+        sw, sh = self.screen.get_size()
+        shade = pygame.Surface((sw, sh), pygame.SRCALPHA)
+        shade.fill((0, 0, 0, 140))
+        self.screen.blit(shade, (0, 0))
+        box = pygame.Rect(0, 0, int(sw * 0.42), int(sh * 0.24))
+        box.center = (sw // 2, sh // 2)
+        pygame.draw.rect(self.screen, (35, 25, 60), box, 0, 16)
+        pygame.draw.rect(self.screen, (200, 170, 255), box, 3, 16)
+        can = sc["owned"] or self.get_money() >= sc["price"]
+        if sc["owned"]:
+            text = f"Travel to {sc['name']}?"
+        elif can:
+            text = f"Buy the shortcut to {sc['name']} for {sc['price']}$?"
+        else:
+            text = "Shortcuts cost. Come back richer."
+        img = self.font.render(text, True, (255, 255, 255))
+        if img.get_width() > box.width - 40:
+            img = self.font_small.render(text, True, (255, 255, 255))
+        self.screen.blit(img, img.get_rect(center=(box.centerx, box.top + box.height * 0.33)))
+        self.confirm_rects = {}
+        options = (("yes", "Yes"), ("no", "No")) if can else (("no", "OK"),)
+        bw = box.width // 4
+        for k, (key, label) in enumerate(options):
+            rect = pygame.Rect(0, 0, bw, int(box.height * 0.26))
+            rect.center = (box.centerx + (k - (len(options) - 1) / 2) * (bw + 30), box.top + int(box.height * 0.72))
+            hover = rect.collidepoint(pygame.mouse.get_pos())
+            pygame.draw.rect(self.screen, (240, 225, 255) if hover else (200, 185, 230), rect, 0, 10)
+            label_img = self.font.render(label, True, (30, 20, 50))
+            self.screen.blit(label_img, label_img.get_rect(center=rect.center))
+            self.confirm_rects[key] = rect
 
     def draw_structure_markers(self, world, game_map, r):
         """STRUCTURE_MARKERS: an icon over the middle of the structure, also in the fog. Returns legend entries."""

@@ -96,7 +96,7 @@ class ItemDatabase:
                                     # 40 DPS +5Slow +2.2R       |   47p   |   weight 157
             "Hand Cannon": Weapon("Hand Cannon",
                                     "Ridiculously large and heavy.\nAlmost completely impractical.",
-                                    "weapon",154,1.5,{},"None",10000,25,8,["normal_red"],
+                                    "weapon",150,1.5,{},"None",10000,25,8,["normal_red"],
                                     self.load_img("weapon/hand_cannon.png")),
                                     # 33 DPS +4R                |   37p   |   weight 103
 
@@ -104,37 +104,37 @@ class ItemDatabase:
 
             "Laser Cannon": Weapon("Laser Cannon",
                                     "The casing says it was manufactured as a toy.\nThe power requirements suggest otherwise.",
-                                    "weapon",534,1.5,{"pierce":[2]},"Pierces 2 enemies",15000,27,8,["normal_blue"],
+                                    "weapon",530,1.5,{"pierce":[2]},"Pierces 2 enemies",15000,27,8,["normal_blue"],
                                     self.load_img("weapon/laser_cannon1.png")),
                                     # 47 DPS +24Pierce +14R         |   85p   |   weight 356
             "Poison Gun": Weapon("Poison Gun",
                                     "The green liquid inside\nis not listed in the factory inventory.",
-                                    "weapon",131,0.55,{"poison":[130,21]},"Poisons enemies",10000,14,18,["spore","normal_green","flower_green"],
+                                    "weapon",130,0.55,{"poison":[130,21]},"Poisons enemies",10000,14,18,["spore","normal_green","flower_green"],
                                     self.load_img("weapon/poison_gun.png")),
                                     # 48 DPS +12Poison +4R          |   64p   |   weight 259
             "Rifle A4": Weapon("Rifle A4",
                                     "An updated model.\nThe original design has been\nmodified more times than the label admits.",
-                                    "weapon",122,0.25,{"burst":[3,0.06]},"Automatic\n3-round bursts",12300,10,18,["bullet_red"],
+                                    "weapon",120,0.25,{"burst":[3,0.06]},"Automatic\n3-round bursts",12300,10,18,["bullet_red"],
                                     self.load_img("weapon/rifle_a4.png"),True,4),
                                     # 76 DPS +8.6R                  |   85p   |   weight 486
             "Taser": Weapon("Taser",
                                     "The instructions say:\n'DO NOT CONNECT TO CORE SYSTEM'.",
-                                    "weapon",131,0.45,{"zap":[2,0.5]},"Zaps 2 additional enemies for 50% dmg",9200,12,20,["normal_blue"],
+                                    "weapon",130,0.45,{"zap":[2,0.5]},"Zaps 2 additional enemies for 50% dmg",9200,12,20,["normal_blue"],
                                     self.load_img("weapon/taser.png")),
                                     # 53 DPS +12Zap +2.4R           |   67p   |   weight 292
             "Hunter's Sniper": Weapon("Hunter's Sniper",
                                     "Made for targets that want to stay still.\nThe scope has marks engraved around it.",
-                                    "weapon",738,1.9,{},"None",22000,18,36,["bullet"],
+                                    "weapon",740,1.9,{},"None",22000,18,36,["bullet"],
                                     self.load_img("weapon/sniper1.png")),
                                     # 47 DPS +28R                   |   75p   |   weight 389
             "Nail Gun": Weapon("Nail Gun",
                                     "Definitely a construction tool.\nMaybe it was used for the project...",
-                                    "weapon",148,0.35,{"binded":[108,0.20]},"20% chance to bind an enemy",8800,16,14,["nail"],
+                                    "weapon",150,0.35,{"binded":[108,0.20]},"20% chance to bind an enemy",8800,16,14,["nail"],
                                     self.load_img("weapon/nail_gun.png"),recoil=20),
                                     # 77 DPS *0.9Recoil +1.6R + 8Bind   |   79p     |   weight 421
             "G-Launcher": Weapon("G-Launcher",
                                     "KABOOM... KABLAOW...",
-                                    "weapon",486,1.0,{"explosion":[60,0.5], "bubble":[0.1]},"Explodes on impact",11000,22,10,["grenade_red"],
+                                    "weapon",490,1.0,{"explosion":[60,0.5], "bubble":[0.1]},"Explodes on impact",11000,22,10,["grenade_red"],
                                     self.load_img("weapon/grenade_launcher.png")),
                                     # 50 DPS + 20Boom +3R           |   73p   |   weight 486
 
@@ -142,7 +142,7 @@ class ItemDatabase:
 
             "Living Pistol": Weapon("Living Pistol",
                                     "The trigger isn't connected to anything.\nIt fires anyway.",
-                                    "weapon",124,0.45,{"homing":[0.75]},"Homing bullets",10000,16,16,["bullet"],
+                                    "weapon",120,0.45,{"homing":[0.75]},"Homing bullets",10000,16,16,["bullet"],
                                     self.load_img("weapon/living_pistol.png")),
                                     # 66 DPS  +10Homing +4R         |   80p   |   weight 275
             "Liquidator Hose": Weapon("Liquidator Hose",
@@ -162,7 +162,7 @@ class ItemDatabase:
                                     # 75 DPS + 1R +8Homing         |   84p   |   weight 324
             "Blaster 2.0": Weapon("Blaster 2.0",
                                     "The paint is peeling.\nUnderneath it is a number you don't recognize.",
-                                    "weapon",632,1.3,{"zap":[3,0.4],"slow":[90,0.2]},"Zaps and slows enemies",11000,18,18,["laser_blue"],
+                                    "weapon",630,1.3,{"zap":[3,0.4],"slow":[90,0.2]},"Zaps and slows enemies",11000,18,18,["laser_blue"],
                                     self.load_img("weapon/blaster2.png")),
                                     # 61 DPS +20Zap + 5Slow         |   86p   |   weight 486
             "Minigun": Weapon("Minigun",
@@ -172,7 +172,7 @@ class ItemDatabase:
                                     # 73 DPS *0.9Recoil +3R         |   69p   |   weight 324
             "Flare Gun": Weapon("Flare Gun",
                                     "It was designed to call for help.\nThe signal was never answered.",
-                                    "weapon",298,0.85,{"explosion":[60,0.4],"burn":[50,17.9]},"Explodes and burns enemies",9100,18,14,["bullet_red"],
+                                    "weapon",300,0.85,{"explosion":[60,0.4],"burn":[50,17.9]},"Explodes and burns enemies",9100,18,14,["bullet_red"],
                                     self.load_img("weapon/flare_gun.png")),
                                     # 59 DPS + 12Burn +16Boom        |   87p   |   weight 421
 
@@ -180,12 +180,12 @@ class ItemDatabase:
 
             "RPG": Weapon("RPG",
                                     "The garden has no reason to need weapons like this.",
-                                    "weapon",1973,1.4,{"explosion":[90,0.7]},"Big explosion",9100,24,13,["missile_red"],
+                                    "weapon",1970,1.4,{"explosion":[90,0.7]},"Big explosion",9100,24,13,["missile_red"],
                                     self.load_img("weapon/rpg1.png")),
                                     # 85 DPS + 60Boom +2.2R         |   147p   |   weight 1409
             "Living Rifle": Weapon("Living Rifle",
                                     "It doesn't aim at enemies.\nIt seems to know where they are going to be.",
-                                    "weapon",262,0.3,{"homing":[0.85]},"Homing bullets, Automatic",10100,14,18,["bullet"],
+                                    "weapon",260,0.3,{"homing":[0.85]},"Homing bullets, Automatic",10100,14,18,["bullet"],
                                     self.load_img("weapon/living_rifle.png"),True),
                                     # 100 DPS +16Homing +4.2R +2Auto        |   122p   |   weight 875
             "Flower Gun": Weapon("Flower Gun",
@@ -195,12 +195,12 @@ class ItemDatabase:
                                     # 71 DPS +20Poison + 40Acid     |   131p   |   weight 1069
             "Laser Cannon 2.0": Weapon("Laser Cannon 2.0",
                                     "Version 2.0 exists.\nVersion 1.0 is still running somewhere below.",
-                                    "weapon",1409,1.0,{"pierce":[4]},"Pierces 4 enemies",11100,28,8,["normal_blue"],
+                                    "weapon",1410,1.0,{"pierce":[4]},"Pierces 4 enemies",11100,28,8,["normal_blue"],
                                     self.load_img("weapon/laser_cannon2.png")),
                                     # 105 DPS + 50Pierce +6.2R      |   173p   |   weight 1409
             "Shotgun S8": Weapon("Shotgun S8",
                                     "More barrels were added because\nnobody knew how else to improve it.",
-                                    "weapon",126,0.58,{"shotgun":["s",8]},"Automatic",9100,14,18,["normal_red"],
+                                    "weapon",130,0.58,{"shotgun":["s",8]},"Automatic",9100,14,18,["normal_red"],
                                     self.load_img("weapon/shotgun_s8.png"),True,18),
                                     # 138 DPS *0.92Recoil +2.2R +2Auto      |   131p   |   weight 1215
             "Shotgun R15": Weapon("Shotgun R15",
@@ -210,7 +210,7 @@ class ItemDatabase:
                                     # 135 DPS *0.85Recoil 2.8R      |   118p   |   weight 680
             "Ultra Blaster": Weapon("Ultra Blaster",
                                     "There is a tiny crack in the casing.\nSomething underneath is glowing.",
-                                    "weapon",744,0.55,{"zap":[2,0.3],"poison":[180,57],"weakness":[180,0.3]},"Zaps, poisons and weakens enemies",10200,18,20,["laser_green"],
+                                    "weapon",740,0.55,{"zap":[2,0.3],"poison":[180,57],"weakness":[180,0.3]},"Zaps, poisons and weakens enemies",10200,18,20,["laser_green"],
                                     self.load_img("weapon/blaster3.png")),
                                     # 118 DPS +12Zap +20Poison +16Weakness  |   166p   |   weight 1409
 
@@ -218,7 +218,7 @@ class ItemDatabase:
 
             "AK-47": Weapon("AK-47",
                                     "A weapon from a world that shouldn't exist here.",
-                                    "weapon",834,0.22,{"weakness":[30,0.15]},"Apply -15% dmg to enemies hit",10900,15,18,["bullet"],
+                                    "weapon",830,0.22,{"weakness":[30,0.15]},"Apply -15% dmg to enemies hit",10900,15,18,["bullet"],
                                     self.load_img("weapon/ak_47.png"),True),
                                     # 264 DPS +10Weakness + 14R +2Auto      |   290p   |   weight 3791
             "Laser Arrow": Weapon("Laser Arrow",
@@ -228,22 +228,22 @@ class ItemDatabase:
                                     # 228 DPS +42Zap +10Slow +30R           |   310p   |   weight 4228
             "Acid Gun": Weapon("Acid Gun",
                                     "The container was empty when you found it.\nSomehow, now it's full.",
-                                    "weapon",1668,0.52,{"acid":[180,1.0],"slow":[100,0.3]},"Destroys enemies defence",11000,20,20,["laser_yellow"],
+                                    "weapon",1670,0.52,{"acid":[180,1.0],"slow":[100,0.3]},"Destroys enemies defence",11000,20,20,["laser_yellow"],
                                     self.load_img("weapon/acid_gun.png")),
                                     # 169 DPS +60Acid +20Slow +14R          |   263p   |   weight 3208
             "Peace Gun": Weapon("Peace Gun",
                                     "The name is handwritten.\nThe rumors say that this gun is\nMilo's worst enemy, no one tried it yet.",
-                                    "weapon",1735,0.85,{"binded":[100,0.33]},"33% chance to bind",9600,12,20,["flower_green"],
+                                    "weapon",1740,0.85,{"binded":[100,0.33]},"33% chance to bind",9600,12,20,["flower_green"],
                                     self.load_img("weapon/peace_gun.png")),
                                     # 106 DPS +80Bind +10R                  |   196p   |   weight 2041
             "Combat Sniper": Weapon("Combat Sniper",
                                     "Someone used this long after\nthe factory shut down.",
-                                    "weapon",3202,1.22,{"pierce":[1],"weakness":[90,0.3]},"Pierces and weakens enemies",27000,18,30,["nail"],
+                                    "weapon",3200,1.22,{"pierce":[1],"weakness":[90,0.3]},"Pierces and weakens enemies",27000,18,30,["nail"],
                                     self.load_img("weapon/sniper2.png")),
                                     # 172 DPS +26Pierce +14Weakness + 40Range   |  252p    |   weight 2624
             "Ghost USP": Weapon("Ghost USP",
                                     "There is no record of this weapon.\nThere is no record of you finding it.",
-                                    "weapon",1776,0.42,{"pierce":[1],"confusion":[30,0.9],"weakness":[120,0.25],"glued":[120,0.25]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9800,16,18,["ghost_bullet"],
+                                    "weapon",1780,0.42,{"pierce":[1],"confusion":[30,0.9],"weakness":[120,0.25],"glued":[120,0.25]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9800,16,18,["ghost_bullet"],
                                     self.load_img("weapon/ghost_usp.png")),
                                     # 226 DPS +26Pierce +20Confusion +20Weakness +20Glued   |   312p   |   weight 4228
 
@@ -257,12 +257,12 @@ class ItemDatabase:
 
             "Pocket AK": Weapon("Pocket AK",
                                     "This weapon should be a meme,\nmaybe it's an explanation why it's here",
-                                    "weapon",1102,0.18,{"glued":[150,0.25]},"Glues enemies, Automatic",10000,13,18,["bullet_gold"],
+                                    "weapon",1100,0.18,{"glued":[150,0.25]},"Glues enemies, Automatic",10000,13,18,["bullet_gold"],
                                     self.load_img("weapon/pocket_ak.png"),True,15),
                                     # 567 DPS *0.95Recoil + 50Glued         |   589p   |   weight 6124
             "Ghost Shotgun": Weapon("Ghost Shotgun",
                                     "The ectoplasma is really wierd in touch\nYou are holding it anyway.",
-                                    "weapon",1857,0.8,{"pierce":[2],"confusion":[40,0.85],"weakness":[120,0.2],"glued":[120,0.2],"shotgun":["s",7]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9000,16,18,["ghost_bullet"],
+                                    "weapon",1860,0.8,{"pierce":[2],"confusion":[40,0.85],"weakness":[120,0.2],"glued":[120,0.2],"shotgun":["s",7]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9000,16,18,["ghost_bullet"],
                                     self.load_img("weapon/ghost_shotgun.png"),recoil=15),
                                     # 578 DPS *0.95Recoil +80Ghost          |  629p    |   weight 11372
             "Missile-3000": Weapon("Missile-3000",
@@ -272,7 +272,7 @@ class ItemDatabase:
                                     # 286 DPS + 288Explosion + 40Burn +20Slow   |   634p   |   weight 11372
             "Laser SMG v2": Weapon("Laser SMG v2",
                                     "Don't you think it's too much DPS\nYeah i know the answer...",
-                                    "weapon",2388,0.21,{"pierce":[1],"binded":[60,0.1], "burst":[3,0.06]},"Pierces and has a small\nchance to bind an enemy\n3-round bursts",11800,14,24,["laser_red"],
+                                    "weapon",2390,0.21,{"pierce":[1],"binded":[60,0.1], "burst":[3,0.06]},"Pierces and has a small\nchance to bind an enemy\n3-round bursts",11800,14,24,["laser_red"],
                                     self.load_img("weapon/laser_smg2.png"),True),
                                     # 690 DPS +42Pierce +10Binded           |   742p   |   weight 11372
 
@@ -309,7 +309,7 @@ class ItemDatabase:
             "Gladiator's Chestplate": Armor(
                 "Gladiator's Chestplate",
                 "A sturdier version of the old chestplate.\nLost by the last fallen.",
-                "armor", 4.0,106,
+                "armor", 4.0,110,
                 {"guard": [1.0, 0.25]}, "Guard I\nAt 100% health, next dmg -25%",
                 self.load_img("armor/chestplate2.png")
             ),
@@ -323,7 +323,7 @@ class ItemDatabase:
             "Apprentice Armor": Armor(
                 "Apprentice Armor",
                 "A small suit of armor.\nProbably made for training.",
-                "armor", 6.5,154,
+                "armor", 6.5,150,
                 {"berserk": [0.3, 0.15]}, "Berserk I\nIf below 30% health, dmg +15%",
                 self.load_img("armor/knight1.png")
             ),
@@ -357,35 +357,35 @@ class ItemDatabase:
             "Knight Armor": Armor(
                 "Knight Armor",
                 "Several pieces have been replaced\nby parts that don't seem to\nbelong here.",
-                "armor", 42,1526,
+                "armor", 42,1530,
                 {"berserk": [0.4, 0.2]}, "Berserk II\nIf below 40% health, dmg +20%",
                 self.load_img("armor/knight2.png")
             ),
             "Medieval Armor II": Armor(
                 "Medieval Armor II",
                 "The Core makes the difference\nThe Core of the armor i mean",
-                "armor", 47,1487,
+                "armor", 47,1490,
                 {"poison_imm": [1]}, "Immune to poison",
                 self.load_img("armor/medieval2.png")
             ),
             "Samurai Plating": Armor(
                 "Samurai Plating",
                 "The material doesn't match anything\nelse found in the factory, wierd...",
-                "armor", 14,1489,
+                "armor", 14,1490,
                 {"focus": [90, 0.1, 0.2, 0]}, "Focus II\nAfter 1.5s without dmg: +10% speed, +20% dmg",
                 self.load_img("armor/samurai2.png")
             ),
             "Cyber Suit": Armor(
                 "Cyber Suit",
                 "Bad idea, worse execution.\nIt reminds me of this world",
-                "armor", 81,1084,
+                "armor", 81,1080,
                 {"bullseye": [0.1]}, "Bullseye I\nimmediately kills an enemy below 10% hp",
                 self.load_img("armor/cyber1.png")
             ),
             "Scrap Armor": Armor(
                 "Scrap Armor",
                 "These pieces are from the core.",
-                "armor", 58,1223,
+                "armor", 58,1220,
                 {"rnd_effect": [480, 1]}, "Randomiser I\nEach 8s gain a random effect",
                 self.load_img("armor/scrap.png")
             ),
@@ -395,14 +395,14 @@ class ItemDatabase:
             "Old-World Vest": Armor(
                 "Old-World Vest",
                 "Whoever made this cared more\nabout movement than protection.",
-                "armor", 33,1089,
+                "armor", 33,1090,
                 {"speed": ["inf", 0.21]}, "Lightweight III\n+21% movement speed",
                 self.load_img("armor/vest3.png")
             ),
             "Golden Chestplate": Armor(
                 "Golden Chestplate",
                 "It is much heavier than the original.\nThe metal is strangely warm,\ndespite where it was found.",
-                "armor", 53,1907,
+                "armor", 53,1910,
                 {"guard": [0.8, 0.5]}, "Guard II\nIf above 80% health, all dmg -50%",
                 self.load_img("armor/chestplate3.png")
             ),
@@ -416,7 +416,7 @@ class ItemDatabase:
             "Frost Armor": Armor(
                 "Frost Armor",
                 "That frost is an attempt to\ndestroy everything before it was too late",
-                "armor", 58,1859,
+                "armor", 58,1860,
                 {"frost": [60]}, "Frost Aura\nSlows nearby bullets",
                 self.load_img("armor/frost.png")
             ),
@@ -426,28 +426,28 @@ class ItemDatabase:
             "Medieval Armor III": Armor(
                 "Medieval Armor III",
                 "How the hell an armor can make you\nimmune to poison or weakness?",
-                "armor", 141,4566,
+                "armor", 140,4570,
                 {"poison_imm": [1], "glued_imm": [1], "weakness_imm": [1],"poison_up":[60,1]}, "Immune to poison, glued and weakness\nAlso your poison lasts one additional second",
                 self.load_img("armor/medieval3.png")
             ),
             "Plate Armor": Armor(
                 "Plate Armor",
                 "Probably the most tanky armor in the game",
-                "armor", 142,5764,
+                "armor", 140,5760,
                 {"guard": [0.5, 0.6], "slow": ["inf", 0.25]}, "Guard III\nIf above 50% health, all dmg -60%\nSlowness - -25% speed",
                 self.load_img("armor/knight3.png")
             ),
             "Saper Armor": Armor(
                 "Saper Armor",
                 "You like KABOOM...?",
-                "armor", 122,2842,
+                "armor", 120,2840,
                 {"explosion_up": [20, 0.1]}, "Buffs Explosions",
                 self.load_img("armor/saper.png")
             ),
             "Tribe Armor": Armor(
                 "Tribe Armor",
                 "It isn't armor.\nYou are wearing it because it allows you to.",
-                "armor", 98,6141,
+                "armor", 98,6140,
                 {"regen": [0.5, 1.5], "slow_imm": [1], "poison_imm": [1]}, "Regen II\nRegenerate up to 50% hp (1.5% every 0.5 s)\nImmune to slowness and poison",
                 self.load_img("armor/living3.png")
             ),
@@ -461,7 +461,7 @@ class ItemDatabase:
             "Cyber Armor": Armor(
                 "Cyber Armor",
                 "There is no serial number. There is no manufacturer.",
-                "armor", 212,3177,
+                "armor", 210,3180,
                 {"overclock": [600, 120, 0.5]}, "Overclock I\nEvery 10s gain a fire rate boost for 2s",
                 self.load_img("armor/cyber2.png")
             ),
@@ -471,35 +471,35 @@ class ItemDatabase:
             "Mecha Armor": Armor(
                 "Mecha Armor",
                 "Is it me or it looks like a lifejacket?",
-                "armor", 624,15660,
+                "armor", 620,15660,
                 {"overclock": [480, 180, 0.5]}, "Overclock II\nEvery 8s gain a fire rate boost for 3s",
                 self.load_img("armor/cyber3.png")
             ),
             "Viking Armor": Armor(
                 "Viking Armor",
                 "Nobody remembers where this armor came from.\nNobody remembers anything honestly",
-                "armor", 295,8917,
+                "armor", 300,8920,
                 {"bullseye": [0.3]}, "Bullseye II\nImmediately kills an enemy below 30% hp",
                 self.load_img("armor/viking.png")
             ),
             "Heroic Armor": Armor(
                 "Heroic Armor",
                 "A costume made for heroes.",
-                "armor", 398,12143,
+                "armor", 400,12140,
                 {"rnd_effect": [480, 2]}, "Randomiser II\nEach 8s gain a random buff",
                 self.load_img("armor/heroic.png")
             ),
             "Electro Armor": Armor(
                 "Electro Armor",
                 "Something inside is still receiving a signal.",
-                "armor", 473,13455,
+                "armor", 470,13460,
                 {"static": [0.25],"zap_up":[1,0.5]}, "Each time you get hit(not contact),\ndeal dmg to all enemies equivalent to quater\nthe dmg dealt, also buffs zap bullets",
                 self.load_img("armor/electro.png")
             ),
             "Samurai God": Armor(
                 "Samurai God",
                 "You belived in him and you became him.",
-                "armor", 122,20034,
+                "armor", 120,20030,
                 {"dodge": [0.5],"hitbox":[0.75]},"Chance to dodge bullets, smaller hitbox",
                 self.load_img("armor/samurai4.png")
             ),
@@ -509,21 +509,21 @@ class ItemDatabase:
             "Mecha-King Armor": Armor(
                 "Mecha-King Armor",
                 "Milo's best buddy had it\nnow he's dead...",
-                "armor", 1406,45846,
+                "armor", 1410,45850,
                 {"emergency":[1], "confusion_chance": [0]}, "Emergency Protocol\nOnce per fight, survive death with 15% hp\nImmune to confusion",
                 self.load_img("armor/cyber4.png")
             ),
             "Fallen knight armor": Armor(
                 "Armor of the fallen Knight",
                 "That's the fallen one\nhe certainly died here",
-                "armor", 1428,45677,
+                "armor", 1430,45680,
                 {"berserk": [0.6, 0.6], "bind_chance": [0], "burn_imm": [1]}, "Berserk III\nIf below 60% health, dmg +60%\nImmune to binded and burn",
                 self.load_img("armor/knight4.png")
             ),
             "Ghost Armor": Armor(
                 "Ghost Armor",
                 "You cover yourself in ghost, you may become a ghost",
-                "armor", 1580,44492,
+                "armor", 1580,44490,
                 {"ghost_up": [1,0.1]}, "Buffs ghost bullets",
                 self.load_img("armor/ghost.png")
             ),

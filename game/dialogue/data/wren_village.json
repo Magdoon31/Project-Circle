@@ -1,7 +1,14 @@
 {
-    "_comment": "Wren in the Separated Village (until the Garden is open). A curious researcher: fast, precise, asks questions. Only a teaser here.",
+    "_comment": "Wren in the Separated Village (until the Garden is open). A curious researcher: fast, precise, asks questions. Only a teaser here. Gives the first sigil (Overflow, 7.11) - also to players who talked to her before.",
     "partner": "wren",
     "start": [
+        {
+            "if": {
+                "flag": "talked:wren",
+                "not_flag": "wren_sigil"
+            },
+            "goto": "gift"
+        },
         {
             "if": {
                 "flag": "talked:wren"
@@ -50,6 +57,30 @@
                     "who": "wren",
                     "pose": "smile",
                     "text": "And then come tell me. Wherever I am."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Before you go - take this. I found it somewhere it shouldn't have been.",
+                    "do": {
+                        "sigil": "overflow",
+                        "flag": "wren_sigil"
+                    }
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "What is it?"
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "No idea. It's warm. And it's not the only one - I've seen the same mark on old stones further on."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "If you find more, they're yours. Just tell me what they do."
                 }
             ]
         },
@@ -70,6 +101,39 @@
                     "who": "wren",
                     "pose": "smile",
                     "text": "Did you see anything strange? Everything's strange. That's the problem."
+                }
+            ]
+        },
+        "gift": {
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "surprised",
+                    "text": "Oh - it's you. Wait, I almost forgot."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Before you go - take this. I found it somewhere it shouldn't have been.",
+                    "do": {
+                        "sigil": "overflow",
+                        "flag": "wren_sigil"
+                    }
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "What is it?"
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "No idea. It's warm. And it's not the only one - I've seen the same mark on old stones further on."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "If you find more, they're yours. Just tell me what they do."
                 }
             ]
         }

@@ -79,6 +79,7 @@ class Map:
         self.locked_gates = set()      # gate positions closed by the story (the way back after choosing a path)
         self.locked_portals = set()    # portal positions closed the same way
         self.lock_hit = False          # the player just bumped into such a closed way
+        self.secret_hit = None         # the player just bumped into a closed secret way (its id)
         self.confine = None            # (x, y, w, h) tiles the player may not leave (start fence before Milo) - set by Game
         self.confine_hit = False       # the player just bumped into that invisible border
         self.memory_bonus_ms = 0       # set by Game from the trinket (Eyeballs "map_memory") - longer memory in the Void
@@ -230,6 +231,10 @@ class Map:
             if tuple(gate["pos"]) in self.locked_gates:
                 self.lock_hit = True
             return not self.gate_open(gate)
+        for sid, cells in getattr(self.world, "locked", {}).items():
+            if (tx, ty) in cells and f"open:{sid}" not in self.flags:
+                self.secret_hit = sid                  # e.g. the Core's gold vault: "The gold is still lying..."
+                return True
         return TILES[char]["solid"] or (tx, ty) in self.npc_cells
 
     def can_stand(self, x, y, radius):
@@ -360,10 +365,33 @@ class Map:
                 if (row + tx in self.seen_until) if self.memory_ms else self.explored[row + tx]:
                     self.overview.set_at((tx, ty), self.overview_color(tx, ty))
 
+    # --- secret places (7.11): drawn as wall until the player steps in (world.hidden: id -> cells) ---------
+    def hidden_cells(self):
+        """Cells of the current level's secrets that are not found yet."""
+        out = set()
+        for sid, cells in getattr(self.world, "hidden", {}).items():
+            if f"found:{sid}" not in self.flags:
+                out |= cells
+        return out
+
+    def discover_secrets(self):
+        """The player stepped into a secret place: it shows up (map + world map). Returns its id or None."""
+        tile = self.tile_at(self.player.x, self.player.y)
+        for sid, cells in getattr(self.world, "hidden", {}).items():
+            if tile in cells and f"found:{sid}" not in self.flags:
+                self.flags.add(f"found:{sid}")
+                for tx, ty in cells:
+                    if self.explored[ty * self.world.width + tx]:
+                        self.overview.set_at((tx, ty), self.overview_color(tx, ty))
+                return sid
+        return None
+
     def overview_color(self, tx, ty):
         if self.world.zones[ty][tx] is None:
             return FOG_COLOR                 # outside every biome (mountains / solid rock) blends into the background
         char = self.world.tiles[ty][tx]
+        if char != "#" and (tx, ty) in self.hidden_cells():
+            char = "#"
         if char == "|":
             char = "," if self.gate_open(self.gate_of_cell[(tx, ty)]) else "|"
         return tile_color(char, self.world.biome_at(tx, ty))
@@ -494,6 +522,23 @@ class Map:
         return bytearray(size)
 
     # --- drawing ----------------------------------------------------------------------
+    def sigil_icon(self, sigil_id):
+        """The picture of the sigil's column, painted in its colour (shrines on the map)."""
+        key = ("sigil", sigil_id)
+        if key not in self._icon_cache:
+            from game.inventory import sigils as SG
+            img = None
+            column = next((c for c in SG.COLUMNS if any(x["id"] == sigil_id for x in c["sigils"])), None)
+            if column:
+                try:
+                    size = int(self.tile_size * 0.6)
+                    img = pygame.transform.smoothscale(pygame.image.load(f"assets/img/inventory/sigils/{column['image']}").convert_alpha(), (size, size))
+                    img.fill(SG.COLUMN_COLOURS.get(column["id"], (230, 210, 255)) + (0,), special_flags=pygame.BLEND_RGBA_MAX)
+                except (pygame.error, FileNotFoundError):
+                    img = None
+            self._icon_cache[key] = img
+        return self._icon_cache[key]
+
     def item_icon(self, name):
         if name not in self._icon_cache:
             item = self.item_db.find_item(name) if self.item_db else None
@@ -524,6 +569,46 @@ class Map:
         if strength > 0.01:
             extra.set_alpha(int(255 * strength))
             self.screen.blit(extra, (0, 0))
+        self.draw_shrine_lights()
+
+    # --- sigil shrines (7.11): a ring of stones with a pedestal; they shine through the cave's darkness ---------
+    def draw_shrine(self, cx, cy, sigil_id):
+        ts = self.tile_size
+        pulse = 0.5 + 0.5 * math.sin(pygame.time.get_ticks() / 300)
+        for k in range(8):                                     # the stone ring (about 2 x 2 tiles)
+            a = k * math.tau / 8
+            sx, sy = cx + math.cos(a) * ts * 0.95, cy + math.sin(a) * ts * 0.95
+            pygame.draw.circle(self.screen, (125, 120, 130), (sx, sy), ts * 0.17)
+            pygame.draw.circle(self.screen, (75, 72, 82), (sx, sy), ts * 0.17, 2)
+        pygame.draw.circle(self.screen, (60, 45, 90), (cx, cy), ts * (0.55 + 0.05 * pulse), max(2, ts // 14))
+        pygame.draw.rect(self.screen, (130, 125, 135), (cx - ts * 0.4, cy + ts * 0.12, ts * 0.8, ts * 0.3), 0, 5)
+        pygame.draw.rect(self.screen, (80, 76, 86), (cx - ts * 0.4, cy + ts * 0.12, ts * 0.8, ts * 0.3), 2, 5)
+        icon = self.sigil_icon(sigil_id)
+        if icon:
+            self.screen.blit(icon, icon.get_rect(center=(cx, cy - ts * 0.15)))
+
+    def draw_shrine_lights(self):
+        """Shrines on the screen glow through the darkness overlay (call after it)."""
+        from game.inventory import sigils as SG
+        ts = self.tile_size
+        sw, sh = self.screen.get_size()
+        cam_x, cam_y = self.player.x - sw / 2, self.player.y - sh / 2
+        hidden = self.hidden_cells()
+        for pickup in self.world.pickups:
+            if pickup["type"] != "sigil" or pickup["pos"] in self.collected or tuple(pickup["pos"]) in hidden:
+                continue
+            cx, cy = (pickup["pos"][0] + 0.5) * ts - cam_x, (pickup["pos"][1] + 0.5) * ts - cam_y
+            if not (-ts * 4 < cx < sw + ts * 4 and -ts * 4 < cy < sh + ts * 4):
+                continue
+            colour = SG.COLUMN_COLOURS.get(SG.COLUMN_OF.get(pickup["sigil"]), (230, 210, 255))
+            pulse = 0.85 + 0.15 * math.sin(pygame.time.get_ticks() / 400)
+            radius = int(ts * 2.6 * pulse)
+            glow = pygame.Surface((radius * 2, radius * 2))
+            for k in range(8, 0, -1):                          # soft light: dim at the edge, brighter in the middle
+                f = 0.045 * (9 - k)
+                pygame.draw.circle(glow, [int(c * f) for c in colour], (radius, radius), radius * k // 8)
+            self.screen.blit(glow, glow.get_rect(center=(cx, cy)), special_flags=pygame.BLEND_RGB_ADD)
+            self.draw_shrine(cx, cy, pickup["sigil"])
 
     def _draw_conveyor(self, sx, sy, push):
         # moving chevrons show the direction of the belt
@@ -550,10 +635,11 @@ class Map:
         first_x, first_y = int(cam_x // ts), int(cam_y // ts)
         last_x, last_y = int((cam_x + sw) // ts) + 1, int((cam_y + sh) // ts) + 1
         world = self.world
+        hidden = self.hidden_cells()
 
         for ty in range(max(0, first_y), min(world.height, last_y + 1)):
             for tx in range(max(0, first_x), min(world.width, last_x + 1)):
-                char = world.tiles[ty][tx]
+                char = world.tiles[ty][tx] if (tx, ty) not in hidden else "#"
                 sx, sy = tx * ts - cam_x, ty * ts - cam_y
                 biome = world.biome_at(tx, ty)
                 if char == "|":
@@ -583,10 +669,13 @@ class Map:
                 pygame.draw.circle(self.screen, (90, 90, 100) if sealed else (140, 60, 255), centre(portal["pos"]), ts * 0.45, max(3, ts // 10))
                 pygame.draw.circle(self.screen, (25, 25, 30) if sealed else (40, 0, 70), centre(portal["pos"]), ts * 0.3)
         for pickup in world.pickups:
-            if pickup["pos"] in self.collected or not visible(pickup["pos"]) or not self.pickup_shown(pickup):
+            if pickup["pos"] in self.collected or not visible(pickup["pos"]) or not self.pickup_shown(pickup) \
+                    or tuple(pickup["pos"]) in hidden:
                 continue
             cx, cy = centre(pickup["pos"])
-            if pickup["type"] == "gold":
+            if pickup["type"] == "sigil":                  # a shrine (drawn again over the darkness: draw_shrine_lights)
+                self.draw_shrine(cx, cy, pickup["sigil"])
+            elif pickup["type"] == "gold":
                 pygame.draw.circle(self.screen, (255, 210, 40), (cx, cy), ts * 0.2)
                 pygame.draw.circle(self.screen, (170, 120, 0), (cx, cy), ts * 0.2, 2)
             else:

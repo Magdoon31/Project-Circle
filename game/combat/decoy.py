@@ -23,8 +23,15 @@ def attack_dps(enemy):
             continue
         stop = info.get("stop_move") or (0, 0)
         cycle = info["cooldown"] + (stop[0] + stop[1]) / 60
-        if name == "spiral":
+        if name in ("spiral", "pulse"):
             hits = min(SPIRAL_HITS, info.get("bullets", 1))
+        elif name == "sprinkler":
+            hits = SPIRAL_HITS
+            cycle += info.get("duration", 0)
+        elif name in ("line", "wave"):
+            hits = info.get("bullets", 1)
+        elif name == "wall":
+            hits = 1
         elif name == "shotgun":
             hits = info.get("bullets", 1)
         elif name == "minigun":
@@ -32,7 +39,8 @@ def attack_dps(enemy):
             cycle += info.get("burst_delay", 0) * hits
         else:
             hits = 1
-        dps += info["damage"] * enemy.damage * hits / cycle
+        times = info.get("repeat", [1])[0]                  # a series
+        dps += info["damage"] * enemy.damage * hits * times / cycle
     return dps + enemy.contact_dmg * CONTACT_PER_SECOND
 
 

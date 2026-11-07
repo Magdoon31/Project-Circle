@@ -13,7 +13,7 @@ from game.lib.music_manager import MusicManager
 from game.menu.menu import Menu
 from game.menu.settings_manager import SettingsManager
 from game.menu.save_manager import SaveManager
-from game.combat.enemy.enemy_database import EnemyDB
+from game.combat.enemy.enemy_database import EnemyDB, SPAWNS
 from game.combat.bullet_types import BulletTypes
 from game.combat.combat_assets import CombatAssets
 from game.dialogue.dialogue import Dialogue, DialogueContext, reserve_talk_channel
@@ -28,9 +28,12 @@ from game.world import loot
 from game.story.milo import milo_npcs, path_locks, choose_path
 from game.story.wren import wren_npcs, auto_npc_near
 from game.story.garden import garden_npcs, PaleAltar
+from game.story import ferris as FERRIS
 from game.shop.shop import Shop
 from game.shop.stock import ShopStock
+from game.shop import stock as S
 from game.inventory.sigils import Sigils, ALL_SIGILS, HAGGLER_PRICE, LUCKY_COIN_REROLLS, LUCKY_COIN_GOLD
+from game.inventory import sigils as SG
 
 ESCAPE_GRACE_FRAMES = 180   # after running away: no random fight for the next 3 s of walking
 
@@ -44,7 +47,7 @@ NO_FIGHT_LEVELS = {"lunapark"}       # no random fights there (the Mascot boss i
 MASCOT_PRIZE = "Mascot Plush"        # the Mascot (lunapark boss) gives this the first time it is beaten
 LOCKED_PATH_MESSAGE = "This way is shut. Finish the path you chose first."
 SHOP_KEY = pygame.K_b                     # opens the shop (game/shop) anywhere on the map, like the Shop button
-VISIT_FLAG_ZONES = {"separated", "lunapark", "garden", "core"}   # flag "visited:<zone>" (the shopkeeper's mood)
+VISIT_FLAG_ZONES = {"separated", "lunapark", "garden", "core", "candy", "factory"}   # flag "visited:<zone>" (the shopkeeper's mood)
 NO_FIGHTS_BEFORE_FLAG = "talked:milo_village"     # monsters don't attack until the player has talked to Milo
 
 INTRO_FRAMES = 180          # start of a NEW game: the world fades in from black (no dialogue, can't move)
@@ -65,6 +68,12 @@ BIOME_KEYS = {
 DEBUG_STORY_ITEMS_KEY = pygame.K_0
 STORY_ITEMS = ["Peace Gun", "Broken Bulb", "Cassette Tape", "Old Note",
                "Meter"]   # Meter: the Foreman's part from the shop - TEST ONLY until the shop exists
+SECRET_HINTS = {"core_vault": "The gold is still lying on the ground"}   # bumping into a closed secret way
+SELL_SHARE = 0.25           # the buyer pays 25% of the shop price
+SIGIL_POPUP_FRAMES = 180    # "New Sigil" on the screen for 3 s
+MINIGAME_FADE_MS = 800      # the music fades out this long before a minigame's countdown (then the minigame music)
+# TEST ONLY: key F starts a normal fight right away (enemies of the biome you stand in)
+DEBUG_FIGHT_KEY = pygame.K_f
 PEACE_GUN = "Peace Gun"
 LORE_ITEMS = ["Broken Bulb", "Cassette Tape", "Old Note"]   # all 3 used at NPCs -> Secret Ending (Void boss)
 
@@ -132,6 +141,7 @@ class Game:
         self.minigame = None           # minigame started from a dialogue (memory, sudoku)
         self.minigame_music = None     # "waiting" (countdown) -> "playing" -> "done" (result shown)
         self.minigame_keeps_music = False   # True for minigames that keep the biome music (fishing)
+        self.minigame_fade = 0         # frames the biome music still fades out before the minigame starts
         self.quests = QuestLog()
         self.counters = {}             # saved numbers, e.g. "memory_plays", "sudoku_wins"
         self.map_ui.quests = self.quests        # short quest list on the map, under the Menu button
@@ -139,12 +149,15 @@ class Game:
         self.talk_npc = None           # NPC close enough to talk to (E)
         self.last_boss = None          # boss touched last frame - a fight starts only when you walk INTO a boss
         self.trinket_effects = {}
+        self.sigil_popup = None        # [sigil id, frames left] - "New Sigil" in the middle of the map screen
+        self.sigil_queue = []          # more sigils found at once (shown one after another)
 
         self.sfx.load_sfx("use", "assets/sfx/UI/use.wav")
         for name, path in (("coin_pickup", "assets/sfx/map/coin_pickup.mp3"), ("buy", "assets/sfx/map/buy.wav"),
                            ("buy_minigame", "assets/sfx/minigames/buy_minigame.wav"),
                            ("bonus1", "assets/sfx/map/bonus1.wav"), ("bonus2", "assets/sfx/map/bonus2.wav"),
-                           ("new_item", "assets/sfx/UI/new_item.wav")):
+                           ("new_item", "assets/sfx/UI/new_item.wav"),
+                           ("sigil_pickup", "assets/sfx/map/sigil_pickup.wav")):
             try:
                 self.sfx.load_sfx(name, path)
             except (pygame.error, FileNotFoundError):
@@ -236,6 +249,10 @@ class Game:
         self.refresh_talk_background()
         # a minigame from a dialogue: it takes all input; afterwards the dialogue goes on
         if self.minigame:
+            if self.minigame_fade > 0:                    # the music goes quiet first, then the countdown starts
+                self.minigame_fade -= 1
+                self.screen.blit(self.dialogue.background, (0, 0))
+                return
             self.minigame.handle_events(events)
             self.minigame.update()
             self.minigame.draw()
@@ -249,6 +266,8 @@ class Game:
             if self.minigame.finished:
                 won = self.minigame.won
                 reward = getattr(self.minigame, "reward", 0)     # minigames that pay out themselves (fishing)
+                if getattr(self.minigame, "won_sigil", None):     # Lucky's wheel: the "?" field
+                    self.award_sigil(self.minigame.won_sigil)
                 family = self.minigame_family
                 self.minigame = None
                 if self.music.has("minigame") and not self.minigame_keeps_music:   # back to the dialogue / biome music
@@ -282,6 +301,10 @@ class Game:
                 self.music.play(self.player.biome)
             self.dialogue = None
             self.player.encounter_grace = ESCAPE_GRACE_FRAMES     # no fight right after talking
+            if getattr(self, "after_talk", None) == "shortcuts":     # Ferris: his shortcut map
+                self.after_talk = None
+                self.open_world_map(ferris=True)
+                return
             events = []                  # the key that closed the talk (e.g. "2" for an answer) must not reach the map
         # world map (M) open: it takes all input, the game world is paused
         if self.world_map.is_open:
@@ -289,6 +312,9 @@ class Game:
                 self.world_map.close()
                 if self.world_map.teleport_request:
                     self.debug_teleport(*self.world_map.teleport_request)
+                    return
+                if self.world_map.shortcut_request:
+                    self.use_shortcut(self.world_map.shortcut_request)
                     return
             self.world_map.draw(self.map)
             return
@@ -300,9 +326,7 @@ class Game:
             self.open_shop()
             return
         if self.map_ui.page == "map" and any(e.type == pygame.KEYDOWN and e.key == pygame.K_m for e in events):
-            self.world_map.open(self.map)
-            self.player.vx = self.player.vy = 0.0
-            self.world_map.draw(self.map)
+            self.open_world_map()
             return
 
         change_state = self.map_ui.handle_click(mouse_pos,events)
@@ -319,6 +343,11 @@ class Game:
                         self.sigils.give(sigil)
                     self.counters["sigils"] = self.sigils.to_dict()
                     self.map_ui.show_message("TEST: story items + all sigils", 120)
+                elif event.type == pygame.KEYDOWN and event.key == DEBUG_FIGHT_KEY and not self.dialogue:
+                    if self.player.biome in SPAWNS and self.map.level not in NO_FIGHT_LEVELS:
+                        self.start_fight()
+                        return
+                    self.map_ui.show_message("TEST: no fights here", 90)
 
         event = None
         if on_map and self.intro_frames > 0:
@@ -344,11 +373,14 @@ class Game:
             self.map.confine_hit = False
             self.update_story()
             self.map.lock_hit = False
+            self.map.secret_hit = None
             event = self.player.move(keys)
             if self.map.confine_hit and self.map_ui.message_timer <= 0:
                 self.map_ui.show_message("Maybe talk to Milo first...", 120)
             elif self.map.lock_hit and self.map_ui.message_timer <= 0:
                 self.map_ui.show_message(LOCKED_PATH_MESSAGE, 150)
+            elif self.map.secret_hit and self.map_ui.message_timer <= 0:
+                self.map_ui.show_message(SECRET_HINTS.get(self.map.secret_hit, "..."), 150)
             self.map.reveal_around_player()
             self.map.draw()
             self.player.draw(self.screen)
@@ -374,6 +406,7 @@ class Game:
                 self.music.play(self.player.biome)
 
         self.map_ui.draw()
+        self.draw_sigil_popup()
 
         if self.dialogue:
             pass                                         # a talk just started - no fight this frame
@@ -470,6 +503,7 @@ class Game:
 
             self.state = GameState.MAP
             self.music.play(self.player.biome)
+            self.after_fight_sigils(self.combat.win)
             if self.combat.win:
                 self.give_items([self.inventory.ItemDB.get_item(name) for name in self.combat.loot])
                 if self.combat.boss:
@@ -483,6 +517,8 @@ class Game:
                     self.autosave()
                 else:
                     self.player.money += int(self.combat.money * self.combat.money_mult * self.fight_gold_mult())
+                    wins = self.counters.setdefault("biome_wins", {})          # (7.11) won normal fights per biome (shop rares)
+                    wins[self.player.biome] = wins.get(self.player.biome, 0) + 1
             else:
                 # lost: back to the village start (on the surface)
                 if self.map.level != "surface":
@@ -574,7 +610,8 @@ class Game:
             get_counter=lambda name: self.counters.get(name, 0),
             count_item=lambda name: self.owned_item_counts().get(name, 0),
             add_counter=lambda name: self.counters.__setitem__(name, self.counters.get(name, 0) + 1),
-            on_quest_done=lambda q: self.map_ui.show_quest_note(f"Quest complete: {QUESTS[q]['title']}"))
+            on_quest_done=lambda q: self.map_ui.show_quest_note(f"Quest complete: {QUESTS[q]['title']}"),
+            give_sigil=self.award_sigil, open_screen=lambda name: setattr(self, "after_talk", name))
         self.dialogue = Dialogue(self.screen, dialogue_id, context, self.sfx.sfx_volume)
         if self.music.has(self.dialogue.music):               # PLACEHOLDER: no dialogue music file yet -> biome music stays
             self.music.stop()
@@ -613,8 +650,10 @@ class Game:
         if family in MINIGAME_COOLDOWNS:
             self.counters[f"{family}_ready_at"] = self.player.play_time + MINIGAME_COOLDOWNS[family]
         self.minigame_keeps_music = family in ("fishing", "wheel")   # the biome music just keeps playing
-        if self.music.has("minigame") and not self.minigame_keeps_music:   # silence during the countdown
-            self.music.stop()
+        self.minigame_fade = 0
+        if self.music.has("minigame") and not self.minigame_keeps_music:   # music fades out, silence during the countdown
+            self.music.fade_out(MINIGAME_FADE_MS)
+            self.minigame_fade = MINIGAME_FADE_MS * 60 // 1000
         self.minigame_music = "waiting"
         self.counters[f"{family}_plays"] = self.counters.get(f"{family}_plays", 0) + 1
         self.minigame_family = family
@@ -631,7 +670,8 @@ class Game:
         elif kind == "fishing":                           # Oliver's ice hole: one cast per payment
             self.minigame = Fishing(self.screen, self.dialogue.background, volume)
         elif family == "wheel":                           # Lucky's wheel of fortune (stake in the name)
-            self.minigame = Wheel(self.screen, self.dialogue.background, int(kind.split("_")[1]), volume)
+            self.minigame = Wheel(self.screen, self.dialogue.background, int(kind.split("_")[1]), volume,
+                                  sigil=None if "haggler" in self.sigils.owned else "haggler")   # the "?" field
         elif kind.startswith("wires"):                    # "wires_5" = Hal's antenna with 5 wires
             self.minigame = Wires(self.screen, self.dialogue.background, int(kind.split("_")[1]), volume)
         else:
@@ -645,6 +685,101 @@ class Game:
         return LUCKY_COIN_GOLD if self.sigils.on("lucky_coin") else 1.0      # Lucky Coin sigil
 
     # --- the shop ----------------------------------------------------------------------------------
+    # --- sigils (7.11): how they are found - see game/inventory/sigils.py and the project's SIGILS.md --------
+    def award_sigil(self, sigil_id):
+        """The player finds a sigil: sound + "New Sigil" in the middle of the screen (not switched on by itself)."""
+        if not self.sigils.give(sigil_id):
+            return False
+        self.counters["sigils"] = self.sigils.to_dict()
+        self.sfx.play("sigil_pickup")
+        self.sigil_queue.append(sigil_id)
+        return True
+
+    def after_fight_sigils(self, won):
+        combat, biome = self.combat, self.player.biome
+        if "firefly_dash" in combat.feats:
+            self.award_sigil("lucky_coin")
+        if biome == "the_core" and combat.near_misses >= SG.NEAR_MISSES:
+            self.award_sigil("bullet_time")
+        hp = self.player_in_combat.hp if self.player_in_combat else 0
+        if won and biome == "silverpine_tundra" and 0 < hp <= self.player_in_combat.max_hp * SG.CLOSE_CALL_HP:
+            self.award_sigil("close_call")
+
+    def draw_sigil_popup(self):
+        if not self.sigil_popup and self.sigil_queue:
+            self.sigil_popup = [self.sigil_queue.pop(0), SIGIL_POPUP_FRAMES]
+        if not self.sigil_popup:
+            return
+        sigil_id, left = self.sigil_popup
+        self.sigil_popup[1] -= 1
+        if self.sigil_popup[1] <= 0:
+            self.sigil_popup = None
+        t = SIGIL_POPUP_FRAMES - left
+        alpha = int(255 * min(1.0, t / 20, left / 30))
+        sw, sh = self.screen.get_size()
+        size = sh // 5
+        column = SG.COLUMN_OF[sigil_id]
+        layer = pygame.Surface((sw, sh), pygame.SRCALPHA)
+        img = self.inventory_ui.sigil_image(SG.IMAGE_OF[sigil_id], size, SG.COLUMN_COLOURS[column])
+        centre = (sw // 2, sh // 2 - sh // 20)
+        pygame.draw.circle(layer, (25, 15, 40, 170), centre, int(size * 0.8))
+        if img:
+            layer.blit(img, img.get_rect(center=centre))
+        title = self.font.render("New Sigil", True, (220, 205, 250))
+        name = self.font.render(SG.NAMES[sigil_id], True, SG.COLUMN_COLOURS[column])
+        layer.blit(title, title.get_rect(center=(sw // 2, centre[1] + int(size * 0.9))))
+        layer.blit(name, name.get_rect(center=(sw // 2, centre[1] + int(size * 0.9) + title.get_height() + 6)))
+        layer.set_alpha(alpha)
+        self.screen.blit(layer, (0, 0))
+
+    # --- Ferris's shortcuts (7.11, game/story/ferris.py) and selling (shop, Sell page) -----------------------
+    def open_world_map(self, ferris=False):
+        owned = self.counters.get("shortcuts", [])
+        shortcuts = []
+        for sc, have in FERRIS.available(self.map.flags, owned):
+            if sc["level"] not in self.map.viewable_levels() and sc["level"] != self.map.level:
+                continue
+            world = self.map.world if sc["level"] == self.map.level else self.map.view(sc["level"]).world
+            shortcuts.append({**sc, "tile": FERRIS.tile_of(sc, world), "owned": have, "price": FERRIS.price(sc)})
+        self.world_map.shortcuts = shortcuts
+        self.world_map.get_money = lambda: self.player.money
+        self.world_map.open(self.map, ferris=ferris)
+        self.player.vx = self.player.vy = 0.0
+        self.world_map.draw(self.map)
+
+    def use_shortcut(self, shortcut_id):
+        sc = FERRIS.BY_ID[shortcut_id]
+        owned = self.counters.setdefault("shortcuts", [])
+        if shortcut_id not in owned:
+            cost = FERRIS.price(sc)
+            if self.player.money < cost:
+                return
+            self.player.money -= cost
+            owned.append(shortcut_id)
+            message = "Ferris drops you off and is gone."
+        else:
+            message = "You take the shortcut."
+        world = self.map.world if sc["level"] == self.map.level else self.map.view(sc["level"]).world
+        tile = FERRIS.tile_of(sc, world)
+        if tile is None:
+            return
+        self.debug_teleport(sc["level"], tile)          # (the same jump as the test teleport: nearest free tile)
+        self.map_ui.show_message(message, 150)
+        self.autosave()
+
+    def sell_price(self, name):
+        """What the buyer pays (None = he won't take it: story / quest items, things with no biome)."""
+        biome = next((b for b, items in loot.ITEMS_BY_BIOME.items() if name in items), None)
+        if biome is None or name in loot.NOT_RANDOM:
+            return None
+        return S.round10(S.price_of(name, biome) * SELL_SHARE)
+
+    def sell_item(self, item, price):
+        self.inventory.remove_item(item)
+        if self.inventory.selected_item is item:
+            self.inventory.selected_item = None
+        self.player.money += price
+
     def open_shop(self):
         if NO_FIGHTS_BEFORE_FLAG not in self.map.flags:
             self.map_ui.show_message("Maybe talk to Milo first...", 120)
@@ -662,7 +797,9 @@ class Game:
             "inventory_full": self.inventory.is_full, "play_sfx": self.sfx.play,
             "price_mult": HAGGLER_PRICE if self.sigils.on("haggler") else 1.0,              # Haggler sigil
             "extra_rerolls": LUCKY_COIN_REROLLS if self.sigils.on("lucky_coin") else 0,      # Lucky Coin sigil
-            "luck": self.luck()})
+            "luck": self.luck(), "wins": self.counters.get("biome_wins", {}),
+            "can_sell": "boss:rainbow_fields" in self.map.flags,                 # the Sell page (7.11)
+            "inventory": lambda: list(self.inventory.items), "sell_price": self.sell_price, "sell": self.sell_item})
         self.counters["shop"] = self.shop_stock.to_dict()
         self.music.fade_to("shop")
 
@@ -693,6 +830,7 @@ class Game:
         extra, hidden = milo_npcs(self.map.level, w, self.map.flags)
         extra, wren_hidden = wren_npcs(self.map.level, w, self.map.flags, extra)    # Wren (and Milo arguing with her)
         extra, garden_hidden = garden_npcs(self.map.level, w, self.map.flags, extra)  # the whisper in the mushroom ring
+        extra, _ = FERRIS.ferris_npcs(self.map.level, w, self.map.flags, extra)       # Ferris (shortcuts) in the Village
         self.map.extra_npcs, self.map.hidden_npcs = extra, hidden | wren_hidden | garden_hidden
         self.map.locked_gates, self.map.locked_portals = path_locks(self.map.level, w, self.map.flags, zone)
         self.map.refresh_npcs()
@@ -833,12 +971,18 @@ class Game:
         # gold / items on the ground: picked up by walking over them
         self.map.quest_steps = dict(self.quests.active)              # quest -> current step (world map markers)
         self.map.active_quests = set(self.quests.active)          # quest items (e.g. the Foreman's Gear) show up
+        self.map.discover_secrets()                                # secret places show up when you step in
         for pickup in self.map.pickups_at(self.player.x, self.player.y, self.player.radius):
             self.map.collected.add(pickup["pos"])
-            if pickup["type"] == "gold":
+            if pickup["type"] == "sigil":                          # a shrine / secret pedestal
+                self.award_sigil(pickup["sigil"])
+            elif pickup["type"] == "gold":
                 self.player.money += pickup["amount"]
                 self.sfx.play("coin_pickup")
                 self.map_ui.show_message(f"+{pickup['amount']}$", 90)
+                if self.map.level == "core" and all(p["pos"] in self.map.collected
+                                                    for p in self.map.world.pickups if p["type"] == "gold"):
+                    self.map.flags.add("open:core_vault")          # all the Core's gold: the vault wall lets you in
             else:
                 self.give_item(self.inventory.ItemDB.get_item(pickup["item"]))
         # portals: travel between the surface and the cellar
@@ -868,6 +1012,8 @@ class Game:
             arrival_key = portal["leads_to"]
         else:
             arrival_key = f"{self.map.level}:{portal['zone']}"
+        if arrival_key == "surface:tundra_pass":
+            self.map.flags.add("arrived:garden_tundra")      # Ferris's shortcut to the Garden's Tundra side
         self.change_level(target_level, arrival_key)
         self.autosave()
 

@@ -38,6 +38,7 @@ TILES = {
     "m": {"name": "machine",     "solid": True,  "encounter": False},
     # core / void
     "e": {"name": "cable",       "solid": False, "encounter": True},    # glowing cables on the floor (core)
+    "E": {"name": "gold_cable",  "solid": False, "encounter": True},    # the golden cable to the Core's secret room
     "p": {"name": "pipe",        "solid": True,  "encounter": False},
     "O": {"name": "core",        "solid": True,  "encounter": False},   # THE core object
     "k": {"name": "crate",       "solid": True,  "encounter": False},
@@ -51,7 +52,7 @@ DEFAULT_COLORS = {
     "^": (95, 90, 85),    "M": (40, 38, 45),    "F": (255, 205, 90),   "a": (150, 155, 170), "q": (228, 228, 232),
     "g": (95, 95, 105),   "v": (70, 70, 78),    "m": (170, 130, 60),  "k": (140, 100, 60),
     ">": (70, 70, 78),    "<": (70, 70, 78),    "A": (70, 70, 78),
-    "e": (200, 60, 90),   "p": (105, 105, 125), "O": (255, 80, 110),
+    "e": (200, 60, 90),   "E": (235, 190, 70),   "p": (105, 105, 125), "O": (255, 80, 110),
 }
 
 # only what differs from DEFAULT_COLORS

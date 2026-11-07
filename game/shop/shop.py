@@ -5,24 +5,37 @@
 #         In the Void he isn't there - only a sign "BRB, or not." (the shelves still work).
 #   right: 6 shelves (game/shop/stock.py), a 7th item on the counter sometimes (the Foreman's Meter).
 #   mouse: click a shelf = buy, point at it = what it is. Reroll button. Esc / B / Leave = back to the map.
+# SELL page (7.11, after the Rainbow Fields boss - tabs Buy / Sell at the top): another person, the BUYER, sits
+#   there instead; the right side shows your inventory (not what you wear). Click an item = sell it for
+#   SELL_SHARE of its shop price. Story / quest items can't be sold. ctx: can_sell, inventory(), sell_price(name), sell(item)
 # Music: Game crossfades to the shop music and back (the biome music goes on where it stopped).
 #
-# PLACEHOLDER pictures - drawn by code until these files exist (assets/img/shop/):
-#   background.png (whole screen), keeper_happy.png / keeper_calm.png / keeper_neutral.png (or keeper.png),
+# The shopkeeper: assets/img/shopkeeper/shopkeeper_<normal / happy>.png (per line: "pose"), a small bounce
+# after every purchase. PLACEHOLDER pictures - drawn by code until these files exist (assets/img/shop/):
+#   background.png (whole screen),
 #   brb_sign.png (the Void), shelf.png (one shelf board, under each item), counter.png (the counter, bottom left)
 
-import json, os, random
+import json, math, os, random
 import pygame
 from game.shop import stock as S
 
 LINES_FILE = "game/shop/lines.json"
 IMG_DIR = "assets/img/shop"
+KEEPER_DIR = "assets/img/shopkeeper"     # the shopkeeper's pictures (7.11): shopkeeper_<name>.png
+# his picture follows the LINE he is saying: "pose" in lines.json = normal / happy -> shopkeeper_<pose>.png
+# (a missing file -> shopkeeper_normal.png; nothing said yet -> normal)
+KEEPER_HEIGHT = 0.5           # share of the screen height (his lower part is hidden behind the counter)
+KEEPER_TOP = 0.32             # where his head starts (share of the screen height) - the counter starts at 0.8
+BOUNCE_FRAMES = 70            # after a purchase he bobs down and up a little, softer and softer, then stops
+BOUNCE_SIZE = 0.022           # share of the screen height (the first dip)
 VOICE_DIR = "assets/sfx/shop"
 RARE_CHANCE = 0.08            # a rare (Pale World) line instead of a greeting
 TYPE_SPEED = 1.5              # letters per frame
 NOTE_FRAMES = 120             # how long a small note ("Inventory full") stays
 BUY_COOLDOWN = 180            # frames (3 s) after buying before the next thing can be bought
 BRB_TEXT = "BRB, or not."
+SELL_COOLDOWN = 20            # frames between two sales (no double clicks)
+BUYER_COAT, BUYER_EYES = (52, 78, 66), (150, 230, 160)   # PLACEHOLDER buyer: the keeper's shape, other colours
 
 
 def mood_of(flags):
@@ -78,7 +91,10 @@ class Shop:
         self.shown = 0.0                 # letters typed so far
         self.note, self.note_timer = "", 0
         self.buy_cooldown = 0
-        self.hover = None                # ("shelf", i) / ("counter", i) / "reroll" / "leave"
+        self.bounce = 0                  # frames of the after-purchase bounce left
+        self.keeper_pics = {}            # file -> picture cut to its visible part (None = no file)
+        self.hover = None                # ("shelf", i) / ("counter", i) / ("inv", i) / "reroll" / "leave" / ("tab", page)
+        self.page = "buy"                # "buy" / "sell"
         self.rects = {}
 
     # --- opening / closing --------------------------------------------------------------------------
@@ -87,9 +103,10 @@ class Shop:
         inventory_full() -> bool, play_sfx(name)"""
         self.is_open = True
         self.stock, self.ctx = stock, ctx
-        if stock.refresh(ctx["flags"], ctx["owned"], ctx.get("luck", 0)):
+        if stock.refresh(ctx["flags"], ctx["owned"], ctx.get("luck", 0), ctx.get("wins")):
             stock.rerolls += ctx.get("extra_rerolls", 0)          # Lucky Coin sigil
         self.note_timer = self.buy_cooldown = 0
+        self.page = "buy"
         self.say(self.greeting())
 
     def close(self):
@@ -129,7 +146,7 @@ class Shop:
         return self.pick("greet")
 
     def say(self, line):
-        if not self.keeper_here or not line:
+        if not line or (not self.keeper_here and self.page == "buy"):
             return
         self.line, self.shown = line, 0.0
         if self.voice:
@@ -145,8 +162,9 @@ class Shop:
 
     # --- buying -------------------------------------------------------------------------------------
     def price(self, value):
-        """Price after the Haggler sigil."""
-        return max(1, round(value * self.ctx.get("price_mult", 1.0)))
+        """Price after the Haggler sigil (still a multiple of 10)."""
+        mult = self.ctx.get("price_mult", 1.0)
+        return value if mult == 1.0 else S.round10(value * mult)
 
     def buy(self, item_name, price, mark_sold=None):
         ctx = self.ctx
@@ -167,13 +185,42 @@ class Shop:
             mark_sold()
         ctx["play_sfx"]("buy")
         self.buy_cooldown = BUY_COOLDOWN
+        self.bounce = BOUNCE_FRAMES
         self.say(self.pick("buy"))
         return True
+
+    def rarity(self, name):
+        from game.world import loot
+        w = loot.weight(name)
+        return "common" if w >= 10 else "medium" if w >= 5 else "rare"
+
+    def sell(self, item):
+        if self.buy_cooldown > 0:
+            return
+        price = self.ctx["sell_price"](item.name)
+        if price is None:
+            self.show_note("He won't take that")
+            return
+        self.ctx["sell"](item, price)
+        self.ctx["play_sfx"]("buy")
+        self.buy_cooldown = SELL_COOLDOWN
+        self.say(self.pick("sell_" + self.rarity(item.name)))
 
     def click(self, target):
         ctx = self.ctx
         if target == "leave":
             return "leave"
+        if isinstance(target, tuple) and target[0] == "tab":
+            if target[1] != self.page:
+                self.page = target[1]
+                self.line = None                          # the other person hasn't said anything yet
+                ctx["play_sfx"]("use")
+            return None
+        if isinstance(target, tuple) and target[0] == "inv":
+            items = ctx["inventory"]()
+            if target[1] < len(items):
+                self.sell(items[target[1]])
+            return None
         if target == "reroll":
             price = S.reroll_price(ctx["flags"])
             if self.stock.rerolls <= 0:
@@ -184,13 +231,15 @@ class Shop:
                     self.show_note("Not enough money")
             else:
                 ctx["pay"](price)
-                self.stock.reroll(ctx["flags"], ctx["owned"], ctx.get("luck", 0))
+                self.stock.reroll(ctx["flags"], ctx["owned"], ctx.get("luck", 0), ctx.get("wins"))
                 ctx["play_sfx"]("use")
             return None
         if isinstance(target, tuple) and target[0] == "shelf":
             shelf = self.stock.shelves[target[1]]
             if shelf["item"] and not shelf["sold"]:
-                self.buy(shelf["item"], self.price(S.price_of(shelf["biome"])), lambda: shelf.__setitem__("sold", True))
+                if self.buy(shelf["item"], self.price(S.price_of(shelf["item"], shelf["biome"])), lambda: shelf.__setitem__("sold", True)) \
+                        and ctx.get("bought"):
+                    ctx["bought"](shelf["item"], shelf["biome"])        # (Game: e.g. the Haggler sigil counts Garden items)
         elif isinstance(target, tuple) and target[0] == "counter":
             items = self.stock.counter_items(ctx["active_quests"], ctx["owned"])
             if target[1] < len(items):
@@ -215,6 +264,8 @@ class Shop:
             self.note_timer -= 1
         if self.buy_cooldown > 0:
             self.buy_cooldown -= 1
+        if self.bounce > 0:
+            self.bounce -= 1
 
     # --- drawing ------------------------------------------------------------------------------------
     def image(self, name, size):
@@ -244,14 +295,20 @@ class Shop:
             screen.fill((46, 34, 32))
             for y in range(0, sh, sh // 12):
                 pygame.draw.line(screen, (38, 27, 26), (0, y), (sw, y), 3)
-        self.draw_keeper(sw, sh)
-        self.draw_counter(sw, sh)
-        self.draw_shelves(sw, sh)
+        if self.page == "sell":
+            self.draw_buyer(sw, sh)
+            self.draw_counter(sw, sh, items=False)
+            self.draw_inventory(sw, sh)
+        else:
+            self.draw_keeper(sw, sh)
+            self.draw_counter(sw, sh)
+            self.draw_shelves(sw, sh)
         self.draw_buttons(sw, sh)
         money = self.font_big.render(f"{self.ctx['get_money']()}$", True, (255, 225, 120))
         screen.blit(money, (sw - money.get_width() - sw // 40, sh // 40))
         title = self.font_big.render("Shop", True, (240, 230, 220))
         screen.blit(title, (sw // 40, sh // 40))
+        self.draw_tabs(sw, sh, title.get_width())
         self.draw_tooltip(sw, sh)
         if self.note_timer > 0:
             note = self.font.render(self.note, True, (240, 90, 80))
@@ -275,9 +332,13 @@ class Shop:
                 text = self.font.render(BRB_TEXT, True, (40, 25, 20))
                 screen.blit(text, text.get_rect(center=rect.center))
             return
-        pic = self.image(f"keeper_{self.mood}.png", size) or self.image("keeper.png", size)
+        pic = self.keeper_picture(sh)
         if pic:
-            screen.blit(pic, pic.get_rect(center=centre))
+            # standing behind the counter; after a purchase a small bounce that dies down
+            t = BOUNCE_FRAMES - self.bounce
+            dip = sh * BOUNCE_SIZE * math.exp(-t / 22) * math.sin(t / BOUNCE_FRAMES * math.pi * 5) if self.bounce else 0
+            rect = pic.get_rect(midtop=(centre[0], int(sh * KEEPER_TOP + dip)))
+            screen.blit(pic, rect)
         else:                                                   # PLACEHOLDER: a hooded figure, eyes show the mood
             body = pygame.Rect(0, 0, size[0] * 0.7, size[1] * 0.62)
             body.midbottom = (centre[0], centre[1] + size[1] // 2)
@@ -294,6 +355,92 @@ class Shop:
                     pygame.draw.circle(screen, eye, pos, 6 if self.mood == "calm" else 4)
         if self.line:                                           # speech bubble above him
             self.draw_bubble(sw, sh, self.line["text"][:int(self.shown)])
+
+    def draw_tabs(self, sw, sh, title_w):
+        if not self.ctx.get("can_sell"):
+            return
+        x = sw // 40 + title_w + sw // 30
+        for page, label in (("buy", "Buy"), ("sell", "Sell")):
+            img = self.font.render(label, True, (25, 20, 20) if page == self.page else (200, 190, 180))
+            rect = pygame.Rect(x, sh // 40 + 4, img.get_width() + 36, img.get_height() + 14)
+            self.rects[("tab", page)] = rect
+            colour = (240, 225, 200) if page == self.page else (80, 60, 55)
+            if self.hover == ("tab", page) and page != self.page:
+                colour = (120, 95, 80)
+            pygame.draw.rect(self.screen, colour, rect, 0, 8)
+            self.screen.blit(img, img.get_rect(center=rect.center))
+            x = rect.right + 12
+
+    def draw_buyer(self, sw, sh):
+        """PLACEHOLDER buyer (until assets/img/shop/buyer.png exists): the keeper's shape in other colours."""
+        screen = self.screen
+        centre = (int(sw * 0.2), int(sh * 0.56))
+        size = (int(sh * 0.42), int(sh * 0.5))
+        pic = self.image("buyer.png", size)
+        if pic:
+            screen.blit(pic, pic.get_rect(center=centre))
+        else:
+            body = pygame.Rect(0, 0, size[0] * 0.7, size[1] * 0.62)
+            body.midbottom = (centre[0], centre[1] + size[1] // 2)
+            pygame.draw.rect(screen, BUYER_COAT, body, 0, 40)
+            head = (centre[0], body.top - size[1] * 0.08)
+            pygame.draw.circle(screen, BUYER_COAT, head, size[0] * 0.24)
+            pygame.draw.circle(screen, (20, 26, 22), head, size[0] * 0.18)
+            for side in (-1, 1):
+                pygame.draw.circle(screen, BUYER_EYES, (head[0] + side * size[0] * 0.07, head[1]), 5)
+        if self.line:
+            self.draw_bubble(sw, sh, self.line["text"][:int(self.shown)])
+
+    def draw_inventory(self, sw, sh):
+        """Sell page: your inventory (4 x 4) on the right, the price under each item."""
+        area = pygame.Rect(int(sw * 0.46), int(sh * 0.13), int(sw * 0.5), int(sh * 0.7))
+        cols = rows = 4
+        w, h = area.width // cols, area.height // rows
+        items = self.ctx["inventory"]()
+        size = int(min(w, h) * 0.55)
+        for i in range(cols * rows):
+            cell = pygame.Rect(area.left + (i % cols) * w, area.top + (i // cols) * h, w, h).inflate(-14, -14)
+            pygame.draw.rect(self.screen, (60, 45, 42), cell, 0, 10)
+            pygame.draw.rect(self.screen, (90, 66, 58), cell, 2, 10)
+            if i >= len(items):
+                continue
+            item = items[i]
+            self.rects[("inv", i)] = cell
+            if self.hover == ("inv", i):
+                pygame.draw.rect(self.screen, (255, 240, 200), cell, 3, 10)
+            spot = pygame.Rect(0, 0, size, size)
+            spot.center = (cell.centerx, cell.centery - h // 10)
+            pic = self.item_picture(item.name, (size, size))
+            price = self.ctx["sell_price"](item.name)
+            if pic:
+                if price is None:
+                    pic = pic.copy()
+                    pic.set_alpha(90)
+                self.screen.blit(pic, spot)
+            label = f"{price}$" if price is not None else "-"
+            tag = self.font_small_bold.render(label, True, (150, 240, 160) if price is not None else (150, 130, 125))
+            self.screen.blit(tag, tag.get_rect(midtop=(cell.centerx, spot.bottom + 6)))
+
+    def keeper_picture(self, sh):
+        """The shopkeeper for his mood, cut to its visible part and scaled to KEEPER_HEIGHT (kept in memory)."""
+        pose = (self.line or {}).get("pose", "normal")
+        name = f"shopkeeper_{pose}.png"
+        if not os.path.exists(os.path.join(KEEPER_DIR, name)):
+            name = "shopkeeper_normal.png"
+        key = (name, sh)
+        if key not in self.keeper_pics:
+            path = os.path.join(KEEPER_DIR, name)
+            pic = None
+            try:
+                if os.path.exists(path):
+                    img = pygame.image.load(path).convert_alpha()
+                    img = img.subsurface(img.get_bounding_rect()).copy()
+                    h = int(sh * KEEPER_HEIGHT)
+                    pic = pygame.transform.smoothscale(img, (round(img.get_width() * h / img.get_height()), h))
+            except pygame.error:
+                pic = None
+            self.keeper_pics[key] = pic
+        return self.keeper_pics[key]
 
     def draw_bubble(self, sw, sh, text):
         box = pygame.Rect(int(sw * 0.03), int(sh * 0.1), int(sw * 0.36), int(sh * 0.2))
@@ -319,7 +466,7 @@ class Shop:
                 rows.append(word)
         return rows
 
-    def draw_counter(self, sw, sh):
+    def draw_counter(self, sw, sh, items=True):
         counter = pygame.Rect(0, int(sh * 0.8), int(sw * 0.42), int(sh * 0.2))
         pic = self.image("counter.png", counter.size)
         if pic:
@@ -327,6 +474,8 @@ class Shop:
         else:
             pygame.draw.rect(self.screen, (110, 72, 48), counter)
             pygame.draw.rect(self.screen, (75, 48, 32), counter, 6)
+        if not items:
+            return
         items = self.stock.counter_items(self.ctx["active_quests"], self.ctx["owned"])
         size = int(sh * 0.1)
         for i, entry in enumerate(items):
@@ -364,7 +513,7 @@ class Shop:
                 item_pic = self.item_picture(shelf["item"], (size, size))
                 if item_pic:
                     self.screen.blit(item_pic, spot)
-                self.draw_price(board, f"{self.price(S.price_of(shelf['biome']))}$")
+                self.draw_price(board, f"{self.price(S.price_of(shelf['item'], shelf['biome']))}$")
             elif i < len(self.stock.shelves):                    # bought (an empty shelf beyond the stock: nothing)
                 sold = self.font.render("SOLD", True, (200, 80, 70))
                 self.screen.blit(sold, sold.get_rect(center=spot.center))
@@ -380,6 +529,8 @@ class Shop:
         price = S.reroll_price(self.ctx["flags"])
         buttons = [("reroll", f"Reroll {price}$  ({self.stock.rerolls} left)", self.stock.rerolls > 0),
                    ("leave", "Leave", True)]
+        if self.page == "sell":
+            buttons = buttons[1:]
         x = int(sw * 0.46)
         for key, label, active in buttons:
             img = self.font.render(label, True, (20, 20, 20) if active else (110, 110, 110))
@@ -397,6 +548,9 @@ class Shop:
         name = None
         if isinstance(self.hover, tuple) and self.hover[0] == "shelf":
             name = self.stock.shelves[self.hover[1]]["item"]
+        elif isinstance(self.hover, tuple) and self.hover[0] == "inv":
+            items = self.ctx["inventory"]()
+            name = items[self.hover[1]].name if self.hover[1] < len(items) else None
         elif isinstance(self.hover, tuple) and self.hover[0] == "counter":
             items = self.stock.counter_items(self.ctx["active_quests"], self.ctx["owned"])
             name = items[self.hover[1]]["item"] if self.hover[1] < len(items) else None

@@ -284,12 +284,12 @@
             ],
             "choices": [
                 {
-                    "text": "I'll take the tape.",
-                    "goto": "reward"
-                },
-                {
                     "text": "I'll take the flare gun.",
                     "goto": "reward_flare"
+                },
+                {
+                    "text": "I'll take the tape.",
+                    "goto": "reward"
                 }
             ]
         },
