@@ -1,0 +1,15 @@
+@name boss_underground_garden
+@biomes underground_garden
+; GARDEN BOSS: a sunken temple overgrown by giant roots, glowing mushrooms and still pools.
+
+   TTT#.#TTT
+  TT##*.*##TT
+ TT#~~_._~~#TT
+ T##~_____~##T
+ T#*___r___*#T
+ ..____B____..
+ T#*___r___*#T
+ T##~_____~##T
+ TT#~~_._~~#TT
+  TT##*.*##TT
+   TTT#.#TTT

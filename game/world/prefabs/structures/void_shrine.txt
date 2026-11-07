@@ -1,0 +1,16 @@
+@name void_shrine
+@biomes the_void
+@items random, random
+@npcs milo_void
+; Halfway to the end of the Void: a quiet ring of crystals with a small camp inside.
+; Milo waits here (dialogue comes later). Placed ONCE per world by void_map.py, not randomly.
+
+   rrTTTrr
+  rT_____Tr
+ rT__I_I__Tr
+ T_________T
+ T____N____T
+ T_________T
+ rT_______Tr
+  rT_____Tr
+   rrT_Trr

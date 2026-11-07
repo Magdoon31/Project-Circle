@@ -1,0 +1,11 @@
+@name frozen_cabin
+@biomes silverpine_tundra
+@items random
+; A cabin buried in snow. The door is frozen shut, but something lies by the wall.
+
+  T.......T
+ ...HHHHH...
+ ...HHDHH...
+ ..r__I__r..
+ ...__$__...
+  T...,...T

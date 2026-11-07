@@ -1,0 +1,55 @@
+{
+    "_comment": "The very end of the sunken pier (Gardener's quest, step 'water').",
+    "partner": "look",
+    "start": [
+        {
+            "if": {
+                "quest_step": [
+                    "gardener",
+                    "water"
+                ]
+            },
+            "goto": "fill"
+        },
+        "plain"
+    ],
+    "nodes": {
+        "plain": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Black water. Very still. Something waits at the end of the pier... it's your own reflection."
+                },
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "The lake is so still it looks like a second, darker garden."
+                }
+            ]
+        },
+        "fill": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "gardener",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "You kneel at the very end of the pier and fill the old watering can."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "The water is ice cold, and so clear you can see the roots growing at the bottom."
+                }
+            ]
+        }
+    }
+}

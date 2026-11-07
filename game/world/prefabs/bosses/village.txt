@@ -1,0 +1,17 @@
+@name boss_village
+@biomes village
+; VILLAGE BOSS: the old barn with a fenced yard. Hay bales inside, something big sleeps in the middle.
+; Top row = back door (towards the passage), bottom row = front door (player comes from here). B = boss.
+
+ ffffff,ffffff
+ f...........f
+ f.HHHH_HHHH.f
+ f.H_______H.f
+ f.H_k___k_H.f
+ f.H_______H.f
+ f.H___B___H.f
+ f.H_______H.f
+ f.H_k___k_H.f
+ f.HHHH_HHHH.f
+ f...........f
+ ffffff,ffffff

@@ -1,0 +1,214 @@
+{
+    "_comment": "Milo in the Separated Village (after the Candy boss). Tense. NEUTRAL about the two ways (but hints: Factory = more/stronger WEAPONS, Tundra = more/stronger ARMOUR): Factory (portal down) or Tundra (passage). Whichever is entered, the way back closes until its boss is beaten (like Crimson/Corruption).",
+    "partner": "milo",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:milo_separated"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:milo_separated"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Oh. You made it here too."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "This village is... quieter than mine. People here keep to themselves. They had their reasons."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "From here there are two ways. I can't pick for you. Wouldn't be fair."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "But listen. Whichever way you go in, it closes behind you. You don't come back until whatever lives there is beaten."
+                },
+                {
+                    "who": "player",
+                    "pose": "serious",
+                    "text": "Closes? How?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "It just does. Some doors are like that."
+                }
+            ],
+            "then": "hub"
+        },
+        "hub": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "So. What do you want to know?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Tell me about the Factory.",
+                    "goto": "factory"
+                },
+                {
+                    "text": "Tell me about the Tundra.",
+                    "goto": "tundra"
+                },
+                {
+                    "text": "What's under all of this?",
+                    "goto": "under"
+                },
+                {
+                    "text": "Thanks, Milo.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "factory": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "pointing",
+                    "text": "The Factory's down there. Under the village. Toys, machines, conveyor belts that never stop."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Good: it's small. Rooms and corridors. You won't get lost for long."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Bad: it's dark, it's loud, and the toys don't always stay where you put them."
+                },
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "And whatever they built down there, most of it shoots. If you want something that hits harder, that's where you'll find it."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "It also leads somewhere bigger. A lot bigger."
+                }
+            ],
+            "then": "hub"
+        },
+        "tundra": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "pointing",
+                    "text": "The Tundra is north. Snow, pines, and a cold that gets into your bones and pays rent."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Good: it's open. You see what's coming. Fewer surprises."
+                },
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "Bad: it's big, it's empty, and walking in snow is slow. Also, cold. Did I say cold?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "People up there don't fight much. They just dress like the cold is out to get them. Thick coats, heavy armour. Whatever keeps you standing, it's up there."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "At the end there's a way down too. Same place the Factory leads to, from the other side."
+                }
+            ],
+            "then": "hub"
+        },
+        "under": {
+            "do": {
+                "flag": "milo:asked_under"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Under? Dirt. Rocks. Roots. Normal under-stuff."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "That's not what I meant."
+                },
+                {
+                    "who": "milo",
+                    "pose": "scary",
+                    "text": "I know what you meant.",
+                    "voice": "scary",
+                    "speed": 0.6
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "...Sorry. Long day. It's just dirt. Promise."
+                }
+            ],
+            "then": "hub"
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Take care. Whichever way you pick... come back in one piece, okay?"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "Factory or Tundra. Hit harder or hold out longer. Loud or cold. Life is full of terrible choices."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "People here don't like to talk about the old days. Maybe don't ask them."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "I keep thinking about that question of yours. About what's under. Forget I reacted like that."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Remember: in is easy. Out is the hard part."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Tell me about the ways again.",
+                    "goto": "hub"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        }
+    }
+}

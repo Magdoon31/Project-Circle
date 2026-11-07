@@ -1,0 +1,245 @@
+{
+    "_comment": "The Wanderer at the campfire. A mapmaker who SELLS maps: the Village (cheap) and Rainbow Fields (expensive). Voice: slow, soft, wistful.",
+    "partner": "wanderer",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:wanderer"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:wanderer"
+            },
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "sitting",
+                    "text": "...Oh. A traveller. Sit, if you like. The fire doesn't mind."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "sitting",
+                    "text": "I draw maps. Roads, rivers, the places in between. Mostly the places in between."
+                },
+                {
+                    "who": "player",
+                    "pose": "sitting",
+                    "text": "You sell them?"
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "smile",
+                    "text": "To those who ask kindly. And pay. Kindness doesn't buy paper."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "thinking",
+                    "text": "The Village is cheap. Small, round, easy to draw."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "thinking",
+                    "text": "The Rainbow Fields took me a whole season. Colours are expensive. So is the patience to sit still while flowers look at you."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Buy the map of the Village (30$)",
+                    "if": {
+                        "not_flag": "map_bought:village"
+                    },
+                    "goto": "buy_village"
+                },
+                {
+                    "text": "Buy the map of Rainbow Fields (90$)",
+                    "if": {
+                        "not_flag": "map_bought:rainbow"
+                    },
+                    "goto": "buy_rainbow"
+                },
+                {
+                    "text": "Why do you draw maps?",
+                    "goto": "why"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "sitting",
+                    "text": "The fire's still warm. So am I. Mostly."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "thinking",
+                    "text": "Every road leads somewhere. That's the problem with roads."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "smile",
+                    "text": "Looking for a map? I have a few. Fewer than I'd like."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "sad",
+                    "text": "I tried to draw what's past the sweet forest once. The ink kept running off the page."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Buy the map of the Village (30$)",
+                    "if": {
+                        "not_flag": "map_bought:village"
+                    },
+                    "goto": "buy_village"
+                },
+                {
+                    "text": "Buy the map of Rainbow Fields (90$)",
+                    "if": {
+                        "not_flag": "map_bought:rainbow"
+                    },
+                    "goto": "buy_rainbow"
+                },
+                {
+                    "text": "Why do you draw maps?",
+                    "goto": "why"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "buy_village": {
+            "then": [
+                {
+                    "if": {
+                        "money_at_least": 30
+                    },
+                    "goto": "sold_village"
+                },
+                "poor"
+            ]
+        },
+        "buy_rainbow": {
+            "then": [
+                {
+                    "if": {
+                        "money_at_least": 90
+                    },
+                    "goto": "sold_rainbow"
+                },
+                "poor"
+            ]
+        },
+        "sold_village": {
+            "do": {
+                "pay": 30,
+                "reveal_map": "surface:village",
+                "flag": "map_bought:village"
+            },
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "smile",
+                    "text": "The Village. Every fence, every chimney. Even the well the mayor keeps polishing."
+                }
+            ]
+        },
+        "sold_rainbow": {
+            "do": {
+                "pay": 90,
+                "reveal_map": "surface:rainbow_fields",
+                "flag": "map_bought:rainbow"
+            },
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "smile",
+                    "text": "The Rainbow Fields. Careful with it. Some of the colours are still wet."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "thinking",
+                    "text": "If the flowers look at you funny out there... it's not the map's fault."
+                }
+            ]
+        },
+        "poor": {
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "sad",
+                    "text": "Your purse is lighter than this map, traveller. Come back when it isn't."
+                }
+            ]
+        },
+        "why": {
+            "do": {
+                "flag": "wanderer:asked_why"
+            },
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "thinking",
+                    "text": "Why..."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "sitting",
+                    "text": "Because things change when nobody's looking. A map is a way of looking. All the time."
+                },
+                {
+                    "who": "wanderer",
+                    "pose": "sad",
+                    "text": "And because some mornings a road is gone. If it's on paper, at least it existed."
+                }
+            ],
+            "then": "again_menu"
+        },
+        "again_menu": {
+            "lines": [
+                {
+                    "who": "wanderer",
+                    "pose": "smile",
+                    "text": "Anything else, traveller?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Buy the map of the Village (30$)",
+                    "if": {
+                        "not_flag": "map_bought:village"
+                    },
+                    "goto": "buy_village"
+                },
+                {
+                    "text": "Buy the map of Rainbow Fields (90$)",
+                    "if": {
+                        "not_flag": "map_bought:rainbow"
+                    },
+                    "goto": "buy_rainbow"
+                },
+                {
+                    "text": "Why do you draw maps?",
+                    "goto": "why"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,11 @@
+@name factory_control_room
+@biomes toy_factory
+@items random
+; The control room. All screens show the same frozen image.
+
+ ########
+ #mm__mm#
+ #______#
+ #m_I__m#
+ #______#
+ ####___#

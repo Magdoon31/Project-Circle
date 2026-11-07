@@ -1,0 +1,12 @@
+@name core_control_desk
+@biomes the_core
+@items random
+; A control desk with a hundred switches. All of them are set to OFF, except one.
+
+ #########
+ #mmmmmmm#
+ #___e___#
+ #_e_I_e_#
+ #_______#
+ ##__$__##
+  ###_###

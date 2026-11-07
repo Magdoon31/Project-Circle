@@ -1,0 +1,264 @@
+{
+    "player": {
+        "x": 7760.5,
+        "y": 4191.5,
+        "money": 231,
+        "playtime": 965.7499999994503
+    },
+    "inventory": {
+        "active_items": [
+            "Flare Gun",
+            "Saper Armor",
+            "Bra"
+        ],
+        "active_trinket2": null,
+        "items": [
+            "Martini",
+            "Vest",
+            "Rose",
+            "Medieval Armor I",
+            "Reinforced Vest",
+            "Old Pistol",
+            "Shotgun S4",
+            "Shrooms",
+            "Old-World Vest",
+            "Laser SMG",
+            "Living Pistol",
+            "Frost Armor"
+        ]
+    },
+    "map": {
+        "seed": 978464991,
+        "seed_text": "",
+        "level": "surface",
+        "levels": {
+            "surface": {
+                "collected": [
+                    [
+                        51,
+                        172
+                    ],
+                    [
+                        53,
+                        174
+                    ],
+                    [
+                        58,
+                        135
+                    ],
+                    [
+                        60,
+                        136
+                    ],
+                    [
+                        61,
+                        137
+                    ],
+                    [
+                        69,
+                        79
+                    ],
+                    [
+                        70,
+                        23
+                    ],
+                    [
+                        71,
+                        24
+                    ],
+                    [
+                        79,
+                        213
+                    ],
+                    [
+                        83,
+                        214
+                    ],
+                    [
+                        84,
+                        214
+                    ],
+                    [
+                        86,
+                        242
+                    ],
+                    [
+                        87,
+                        243
+                    ],
+                    [
+                        97,
+                        161
+                    ],
+                    [
+                        100,
+                        160
+                    ],
+                    [
+                        120,
+                        192
+                    ],
+                    [
+                        120,
+                        193
+                    ],
+                    [
+                        130,
+                        65
+                    ],
+                    [
+                        134,
+                        65
+                    ],
+                    [
+                        142,
+                        162
+                    ],
+                    [
+                        152,
+                        141
+                    ],
+                    [
+                        158,
+                        88
+                    ],
+                    [
+                        158,
+                        89
+                    ],
+                    [
+                        194,
+                        112
+                    ],
+                    [
+                        195,
+                        112
+                    ]
+                ],
+                "defeated": [
+                    [
+                        49,
+                        224
+                    ],
+                    [
+                        66,
+                        93
+                    ],
+                    [
+                        103,
+                        138
+                    ],
+                    [
+                        185,
+                        100
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
+            },
+            "cellar": {
+                "collected": [
+                    [
+                        151,
+                        157
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
+            }
+        },
+        "flags": [
+            "antenna_1:fixed",
+            "antenna_2:fixed",
+            "antenna_3:fixed",
+            "asked_hook:bramble",
+            "boss:candy",
+            "boss:rainbow_fields",
+            "boss:tundra",
+            "boss:village",
+            "explained_price:bramble",
+            "gus:snapped",
+            "milo:asked_under",
+            "path:tundra",
+            "quest_done:hal",
+            "quest_done:hook",
+            "ring:heard",
+            "talked:hal",
+            "talked:milo_rainbow",
+            "talked:milo_separated",
+            "talked:milo_village",
+            "talked:oliver",
+            "talked:wanderer",
+            "visited:garden",
+            "visited:separated"
+        ]
+    },
+    "quests": {
+        "gus": "find"
+    },
+    "counters": {
+        "sigils": {
+            "owned": [],
+            "active": {}
+        },
+        "shop": {
+            "stage": [
+                "boss:candy",
+                "boss:rainbow_fields",
+                "boss:tundra",
+                "boss:village"
+            ],
+            "shelves": [
+                {
+                    "item": "Shotgun S8",
+                    "biome": "underground_garden",
+                    "sold": false
+                },
+                {
+                    "item": "Flower Gun",
+                    "biome": "underground_garden",
+                    "sold": false
+                },
+                {
+                    "item": "Golden Chestplate",
+                    "biome": "silverpine_tundra",
+                    "sold": false
+                },
+                {
+                    "item": "Cotton Candy",
+                    "biome": "sugarwood_grove",
+                    "sold": false
+                },
+                {
+                    "item": "Normal Blaster",
+                    "biome": "rainbow_fields",
+                    "sold": false
+                },
+                {
+                    "item": "Leather Chestplate",
+                    "biome": "village",
+                    "sold": false
+                }
+            ],
+            "rerolls": 1,
+            "greeted": [
+                "boss:candy",
+                "boss:rainbow_fields",
+                "boss:tundra",
+                "boss:village"
+            ]
+        },
+        "sudoku_plays": 2,
+        "sudoku_wins": 1,
+        "gus_talks": 10,
+        "fishing_ready_at": 1077.7499999996212,
+        "fishing_plays": 1,
+        "wires_plays": 3,
+        "wires_wins": 3,
+        "hal_antennas": 3
+    },
+    "game": {
+        "hard_mode": false
+    }
+}

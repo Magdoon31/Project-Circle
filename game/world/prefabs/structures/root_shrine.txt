@@ -1,0 +1,11 @@
+@name root_shrine
+@biomes underground_garden
+; Giant roots growing around a stone block, as if protecting it.
+
+   TT.TT
+  T.....T
+ T..x#x..T
+ ...#$#...
+ T..x_x..T
+  T.....T
+   TT.TT

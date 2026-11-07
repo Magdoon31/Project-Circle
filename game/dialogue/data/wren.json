@@ -1,0 +1,336 @@
+{
+    "_comment": "Wren at her camp in the Garden (prefab wren_camp). Quest 'wren': examine 3 places (clue_stones / clue_playground / clue_lab, counter 'wren_clues') -> she works out one piece of the truth (things were hidden down here on purpose), 3x gold. She stays at the camp. The Cassette Tape can be given ONLY if you ask 'What would help you?' (easy to miss): flag lore_used:Cassette Tape (Secret Ending) + she goes searching by herself (flag wren:moved, the camp is empty). After the Garden boss she argues with Milo at the way up to the Core (wren_argument). No tape = no argument.",
+    "partner": "wren",
+    "start": [
+        {
+            "if": {
+                "quest_done": "wren"
+            },
+            "goto": "camp"
+        },
+        {
+            "if": {
+                "quest": "wren",
+                "counter_at_least": [
+                    "wren_clues",
+                    3
+                ]
+            },
+            "goto": "report"
+        },
+        {
+            "if": {
+                "quest": "wren",
+                "counter_at_least": [
+                    "wren_clues",
+                    1
+                ]
+            },
+            "goto": "progress"
+        },
+        {
+            "if": {
+                "quest": "wren"
+            },
+            "goto": "waiting"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:wren_garden",
+                "quest": {
+                    "start": "wren"
+                }
+            },
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "surprised",
+                    "text": "You! The one who looks at things!",
+                    "if": {
+                        "flag": "talked:wren"
+                    }
+                },
+                {
+                    "who": "wren",
+                    "pose": "surprised",
+                    "text": "Hey - you. You look like someone who looks at things. I'm Wren.",
+                    "if": {
+                        "not_flag": "talked:wren"
+                    }
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "I followed the way down. Somebody had to. Look at this place - a garden underground, with no sun. It shouldn't exist."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "I need your eyes. There are three places down here that bother me."
+                },
+                {
+                    "who": "wren",
+                    "pose": "pointing",
+                    "text": "Rows of stones with flowers. A playground swallowed by roots. And a lab someone left in a hurry."
+                },
+                {
+                    "who": "wren",
+                    "pose": "neutral",
+                    "text": "Go and look at them. Properly. Then tell me what you saw."
+                }
+            ]
+        },
+        "waiting": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "pointing",
+                    "text": "Stones, playground, lab. Look at them properly - don't just walk past."
+                },
+                {
+                    "who": "wren",
+                    "pose": "neutral",
+                    "text": "Nothing yet? Take your time. I'll be here. Writing."
+                }
+            ]
+        },
+        "progress": {
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "You saw one? Don't tell me yet. I want to hear all three together.",
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            1
+                        ],
+                        "counter_below": [
+                            "wren_clues",
+                            2
+                        ]
+                    }
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Two. One more. I can see it in your face - it's not nothing, is it?",
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            2
+                        ]
+                    }
+                }
+            ]
+        },
+        "report": {
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Well? What did you see?"
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "Stones that someone keeps bringing flowers to."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "A playground built under a real sky. Not for down here."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "Papers with the words gone. Like someone took them off the page."
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "..."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "None of it grew here. It was put here."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Someone takes things from up there and hides them down here. On purpose."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "I don't know who. I don't know why. But it's not an accident."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "Here - for your trouble. I found it lying around. Everything down here is lying around."
+                }
+            ],
+            "then": "reward"
+        },
+        "reward": {
+            "do": {
+                "gold_piles": 3,
+                "quest": {
+                    "finish": "wren"
+                }
+            },
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "neutral",
+                    "text": "I'll stay here and write it all down. Every detail."
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "But paper isn't enough. Paper loses its words down here. I need something more."
+                }
+            ]
+        },
+        "camp": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "Still writing. Still not enough."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Put here. Hidden. On purpose. I keep reading it and it doesn't get better."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "You again! Good. Have you seen anything else?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "What would help you?",
+                    "goto": "need"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "need": {
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "A voice. A recording. A letter. Anything from the people who were here before."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Paper loses its words down here. But a voice... a voice might survive."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I have a tape.",
+                    "if": {
+                        "item": "Cassette Tape"
+                    },
+                    "goto": "tape"
+                },
+                {
+                    "text": "I'll keep an eye out.",
+                    "goto": "keep_eye"
+                }
+            ]
+        },
+        "keep_eye": {
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "Please do."
+                }
+            ]
+        },
+        "tape": {
+            "do": {
+                "take": "Cassette Tape",
+                "flag": [
+                    "lore_used:Cassette Tape",
+                    "wren:moved"
+                ]
+            },
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "surprised",
+                    "text": "A tape? Give it here. Gently!"
+                },
+                {
+                    "who": "wren",
+                    "pose": "listening",
+                    "text": "..."
+                },
+                {
+                    "who": "radio",
+                    "pose": "static",
+                    "horror": true,
+                    "speed": 0.5,
+                    "text": "We need to turn it off."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "'Turn it off.'"
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "Turn what off? Something that... takes things? And hides them down here?"
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "So someone built it. Someone made the thing that does all this."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "And they wanted to switch it off. But they didn't. Or they couldn't."
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "Why not?"
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "...That's it. I'm done waiting for answers to come to me."
+                },
+                {
+                    "who": "wren",
+                    "pose": "pointing",
+                    "text": "I'm going to look for them myself. Whoever 'we' is. Wherever they went."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "Don't wait for me here. I'll find you. Or you'll find me."
+                }
+            ]
+        }
+    }
+}

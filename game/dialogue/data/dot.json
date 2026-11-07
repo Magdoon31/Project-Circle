@@ -1,0 +1,264 @@
+{
+    "_comment": "Dot the baker in the Village (next to the house). Says nothing concrete until the Hook quest; then reveals the minigame (memory). Who has the Hook is picked by the world seed.",
+    "partner": "dot",
+    "start": "talk",
+    "nodes": {
+        "talk": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "angry",
+                    "text": "If you're here to tell me my rolls are too small, I swear to the oven gods-"
+                },
+                {
+                    "who": "dot",
+                    "pose": "tired",
+                    "text": "Morning! Or whatever it is. I've been up since four. Everything's a blur and it smells like cinnamon."
+                },
+                {
+                    "who": "dot",
+                    "pose": "neutral",
+                    "text": "The kitchen was a total slaughterhouse this morning. Flour everywhere. Like a snowstorm in there."
+                },
+                {
+                    "who": "dot",
+                    "pose": "serious",
+                    "text": "Don't touch the window sill. Pies cooling. Touch the pies and you lose a finger."
+                },
+                {
+                    "who": "dot",
+                    "pose": "annoyed",
+                    "text": "The mayor came by again. Ate three buns. Paid for one. Classic."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Do you have the Angler's Hook?",
+                    "if": {
+                        "quest_step": [
+                            "hook",
+                            "find"
+                        ],
+                        "not_flag": "asked_hook:dot"
+                    },
+                    "goto": "hook"
+                },
+                {
+                    "text": "Let's play memory.",
+                    "if": {
+                        "any": [
+                            {
+                                "flag": "asked_hook:dot"
+                            },
+                            {
+                                "quest_done": "hook"
+                            }
+                        ]
+                    },
+                    "goto": "play"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "hook": {
+            "do": {
+                "flag": "asked_hook:dot"
+            },
+            "then": [
+                {
+                    "if": {
+                        "seed_choice": {
+                            "key": "hook_holder",
+                            "options": [
+                                "bramble",
+                                "dot"
+                            ],
+                            "is": "dot"
+                        }
+                    },
+                    "goto": "hook_yes"
+                },
+                "hook_no"
+            ]
+        },
+        "hook_yes": {
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "guilty",
+                    "text": "The Hook? Oh, THAT Hook. Yeah. I used it to get a tray off the top shelf. Long story."
+                },
+                {
+                    "who": "dot",
+                    "pose": "sly",
+                    "text": "Look, I'll give it back. But I'm not just handing it over, I've got my pride."
+                },
+                {
+                    "who": "dot",
+                    "pose": "grin",
+                    "text": "Play me a round of memory. If you win, it's yours. If you lose, you buy a bun. Kidding. Mostly."
+                }
+            ],
+            "then": "play"
+        },
+        "hook_no": {
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "annoyed",
+                    "text": "The Angler's Hook? Why would I have that, do I look like I fish? I'm a baker. I bake."
+                },
+                {
+                    "who": "dot",
+                    "pose": "sly",
+                    "text": "...But you look bored. I've got a game. Cards, pairs, the whole thing. Fancy a round?"
+                },
+                {
+                    "who": "dot",
+                    "pose": "grin",
+                    "text": "Win and I'll pay you a bit. Lose and you've wasted your time. Which, honestly, is the real price."
+                }
+            ],
+            "then": "play"
+        },
+        "play": {
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "sly",
+                    "text": "Twenty cards, ten pairs, and not much time. Ready?"
+                },
+                {
+                    "who": "dot",
+                    "pose": "sly",
+                    "text": "First game's on me. After that it costs you. And the more you win, the more it costs. Business.",
+                    "if": {
+                        "not_flag": "explained_price:dot"
+                    },
+                    "do": {
+                        "flag": "explained_price:dot"
+                    }
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Let's go. - {price:memory}",
+                    "do": {
+                        "minigame": {
+                            "type": "memory",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Maybe later.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "won": {
+            "then": [
+                {
+                    "if": {
+                        "seed_choice": {
+                            "key": "hook_holder",
+                            "options": [
+                                "bramble",
+                                "dot"
+                            ],
+                            "is": "dot"
+                        },
+                        "quest_step": [
+                            "hook",
+                            "find"
+                        ],
+                        "not_item": "Hook"
+                    },
+                    "goto": "won_hook"
+                },
+                "won_plain"
+            ]
+        },
+        "won_hook": {
+            "do": {
+                "give": "Hook",
+                "quest": {
+                    "step": [
+                        "hook",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "shocked",
+                    "text": "Oh, son of a biscuit. You actually did it."
+                },
+                {
+                    "who": "dot",
+                    "pose": "neutral",
+                    "text": "Fine, fine. Here's the Hook. Tell the old grump it's a bit floury. That's a feature."
+                }
+            ]
+        },
+        "won_plain": {
+            "do": {
+                "gold_piles": 2
+            },
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "shocked",
+                    "text": "Again?! Your memory's scary. Here, take your coins."
+                },
+                {
+                    "who": "dot",
+                    "pose": "annoyed",
+                    "text": "Son of a scone. Fine. Paid. Happy?"
+                },
+                {
+                    "who": "dot",
+                    "pose": "smile",
+                    "text": "Not bad. You'd make a decent baker. Terrible hours, though."
+                }
+            ],
+            "random_line": true
+        },
+        "lost": {
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "grin",
+                    "text": "Ha! Time's up. Better luck next time, sweetcheeks. Kidding. Again tomorrow?"
+                },
+                {
+                    "who": "dot",
+                    "pose": "smile",
+                    "text": "Close one. You've got the memory of a goldfish. A clever goldfish, but still."
+                },
+                {
+                    "who": "dot",
+                    "pose": "tired",
+                    "text": "That's how I feel at four in the morning. Want another go?"
+                }
+            ],
+            "random_line": true
+        },
+        "poor": {
+            "lines": [
+                {
+                    "who": "dot",
+                    "pose": "annoyed",
+                    "text": "No coins, no cards. I've got rent. Well, I don't. But I've got principles."
+                }
+            ]
+        }
+    }
+}

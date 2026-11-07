@@ -1,0 +1,37 @@
+@name lunapark
+@biome lunapark
+@npcs lucky
+; THE LUNAPARK (fixed layout, its own small map - entrance in Sugarwood Grove, open after the Candy boss).
+; Built by tools: see game/world/lunapark_map.py.  No fights here.
+;   P = way back to Sugarwood   N = Lucky (wheel of fortune)   B = the Mascot (optional boss) in the big tent
+;   m = rides (carousel, ferris wheel)   H = tents / stalls   o = booths   _ boards   , paths   f fence   c grills   k crates
+
+fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+f...........................................................f
+f...................HHHHHHHHHHHHHHHHHHHHH...................f
+f...............*...HHHHHHHHHHHHHHHHHHHHH...................f
+f....*...........*..HHH_______________HHH.......mmmmm.......f
+f.....*.............HH_________________HH.....mm..m..mm.....f
+f.......mmmmm.......HH________B________HH....m....m....m....f
+f.....mm.....mm.....HH_________________HH...mmm...m...mmm...f
+f....mm.......mm....HH__k___________k__HH...m..mmmmmmm..m...f
+f....m.........m....HH____$___$___$____HH..m...mm...mm...m..f
+f...mm.........mm...HH_________________HH..m...m.....m...m..f
+f...m....ooo....m...HH_________________HH..mmmmm.....mmmmm..f
+f...m....ooo....m...HHHHHHHHH___HHHHHHHHH..m...m.....m...m..f
+f...m....ooo....m............,,,...........m...mm...mm...m..f
+f...mm.........mm............,,,.....T......m..mmmmmmm..m...f
+f....m....$....m.............,,,...*........mmm...m...mmm...f
+f....mm.......mm.............,,,.............m....m....m....f
+f.....mm.....mm..............,,,..*...........mm..m..mm.....f
+f.......mm,mm................,,,................m...m.....T.f
+f........,,,.................,,,.................,,,........f
+f..,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,..f
+f..,,$,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,$,,..f
+f............................,,,.N..........................f
+f............................,,,............................f
+f....*......$................,P,....*.........$...T.........f
+f............................,,,............................f
+fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+
+

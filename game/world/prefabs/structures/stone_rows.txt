@@ -1,0 +1,13 @@
+@name stone_rows
+@biomes underground_garden
+@npcs clue_stones
+; Neat rows of small stones with dried flowers in front of each.
+; One of the 3 places of Wren's investigation (quest "wren"): N = the spot you examine. ALWAYS in the Garden.
+
+ .........
+ .r.r.r.r.
+ .x.x.x.x.
+ ....N....
+ .r.r.r.r.
+ .x.x.x.x.
+ .........

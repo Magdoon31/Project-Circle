@@ -1,0 +1,15 @@
+@name boss_sugarwood_grove
+@biomes sugarwood_grove
+; CANDY BOSS: a gingerbread fortress with candy-cane towers in the corners and a sugar courtyard.
+
+ TT####,####TT
+ T##___,___##T
+ ##_*_____*_##
+ #___HH_HH___#
+ #___H___H___#
+ #___H_B_H___#
+ #___H___H___#
+ #___HH_HH___#
+ ##_*_____*_##
+ T##___,___##T
+ TT####_####TT

@@ -1,0 +1,12 @@
+@name factory_break_room
+@biomes toy_factory
+@npcs foreman
+; The workers' break room. Cups are still on the table. The foreman never left.
+; ALWAYS in the Factory (cellar_map.py REQUIRED_FACTORY_STRUCTURE is tried first).
+
+ #######
+ #_____#
+ #_kk__#
+ #_kkN_#
+ #___$_#
+ ###_###

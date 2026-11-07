@@ -1,0 +1,12 @@
+@name lollipop_grove
+@biomes sugarwood_grove
+@items random
+; A clearing ringed by giant lollipop trees, with sugar flowers in the middle.
+
+   TT.TT
+ TT.....TT
+ T..*.*..T
+ ...*I*...
+ T..*$*..T
+ TT.....TT
+   TT.TT

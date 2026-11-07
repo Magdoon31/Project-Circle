@@ -1,0 +1,15 @@
+@name boss_silverpine_tundra
+@biomes silverpine_tundra
+; TUNDRA BOSS: an ice fortress surrounded by a frozen moat. Bridges lead to both gates.
+
+ ~~~~~~=~~~~~~
+ ~#####_#####~
+ ~#_________#~
+ ~#_r_____r_#~
+ ~#_________#~
+ ~#____B____#~
+ ~#_________#~
+ ~#_r_____r_#~
+ ~#_________#~
+ ~#####_#####~
+ ~~~~~~=~~~~~~

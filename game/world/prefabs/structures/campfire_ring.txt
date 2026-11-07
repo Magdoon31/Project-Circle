@@ -1,0 +1,12 @@
+@name campfire_ring
+@biomes village, rainbow_fields, silverpine_tundra
+@npcs wanderer
+; A ring of stones around a campfire. A wanderer rests here.
+
+   .....
+  ..r.r..
+ .r_____r.
+ ._N_c_$_.
+ .r_____r.
+  ..r.r..
+   ..,..

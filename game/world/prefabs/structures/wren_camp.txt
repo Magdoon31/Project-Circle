@@ -1,0 +1,13 @@
+@name wren_camp
+@biomes underground_garden
+@npcs wren
+; Wren's camp in the Garden: a tent, a lamp and papers pinned to the roots. ALWAYS in the Garden (cellar_map.py).
+; Wren comes here from the Separated Village once the Garden is open (game/story/wren.py).
+
+  .......
+ ..##_##..
+ ..#___#..
+ ..#___#..
+ ...._N...
+ .*.....*.
+  .......

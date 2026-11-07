@@ -1,0 +1,13 @@
+@name sweet_shop_ruin
+@biomes sugarwood_grove
+@items random
+; A collapsed sweet shop. The sign is gone, only the counters are left.
+
+ ####.######
+ #___r_____#
+ #_$__####_#
+ #____#I$#_.
+ .____#_#._#
+ #_r_______#
+ ###_,######
+     ,

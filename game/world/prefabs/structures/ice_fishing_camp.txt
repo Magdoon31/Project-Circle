@@ -1,0 +1,13 @@
+@name ice_fishing_camp
+@biomes silverpine_tundra
+@npcs ice_fisher
+; A frozen lake with a fishing hole and a small camp. Oliver waits for something to bite.
+; ALWAYS in the Tundra (surface_map.py REQUIRED_STRUCTURES). Minigame "fishing" (game/minigames/fishing.py).
+
+    ~~~~~~~
+  ~~~~~~~~~~~
+ ~~~~~____~~~~
+ ~~~~__N_c_~~~
+  ~~~__$___~~
+   ..______..
+    ...,,...

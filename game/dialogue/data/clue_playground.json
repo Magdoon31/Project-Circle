@@ -1,0 +1,120 @@
+{
+    "_comment": "A place of Wren's investigation (quest 'wren'): examine it while the quest is active.",
+    "partner": "look",
+    "start": [
+        {
+            "if": {
+                "flag": "clue:playground"
+            },
+            "goto": "seen"
+        },
+        {
+            "if": {
+                "quest": "wren"
+            },
+            "goto": "examine"
+        },
+        "plain"
+    ],
+    "nodes": {
+        "plain": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "A slide and a fence, half swallowed by roots. Bright paint under the moss."
+                }
+            ]
+        },
+        "examine": {
+            "do": {
+                "flag": "clue:playground",
+                "count": "wren_clues"
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "A slide and a fence, half swallowed by roots. Bright paint under the moss."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "There's a sun painted on the slide. A sandpit. A bench for parents."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "Someone built this under a real sky. Then it ended up down here."
+                }
+            ],
+            "then": [
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            3
+                        ]
+                    },
+                    "goto": "step3"
+                },
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            2
+                        ]
+                    },
+                    "goto": "step2"
+                },
+                "step1"
+            ]
+        },
+        "step1": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "look1"
+                    ]
+                }
+            }
+        },
+        "step2": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "look2"
+                    ]
+                }
+            }
+        },
+        "step3": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "That's all three. Wren should hear about this."
+                }
+            ]
+        },
+        "seen": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Someone built this under a real sky. Then it ended up down here."
+                }
+            ]
+        }
+    }
+}

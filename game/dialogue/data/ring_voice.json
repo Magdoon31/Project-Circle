@@ -1,0 +1,98 @@
+{
+    "_comment": "The whisper in the mushroom ring (starts by itself the first time you step in - story/garden.py). A riddle about the Pale Orb: pale altar + NO weapon + stand still 10 s. No choices.",
+    "partner": "whisper",
+    "start": [
+        {
+            "if": {
+                "flag": "pale_orb:revealed"
+            },
+            "goto": "silent"
+        },
+        {
+            "if": {
+                "flag": "ring:heard"
+            },
+            "goto": "remember"
+        },
+        "whisper"
+    ],
+    "nodes": {
+        "whisper": {
+            "do": {
+                "flag": "ring:heard"
+            },
+            "lines": [
+                {
+                    "who": "whisper",
+                    "pose": "dark",
+                    "horror": true,
+                    "speed": 0.45,
+                    "text": "...closer..."
+                },
+                {
+                    "who": "whisper",
+                    "pose": "dark",
+                    "horror": true,
+                    "speed": 0.45,
+                    "text": "Only the innocent may see what is true."
+                },
+                {
+                    "who": "whisper",
+                    "pose": "dark",
+                    "horror": true,
+                    "speed": 0.45,
+                    "text": "Find the stone that has no colour."
+                },
+                {
+                    "who": "whisper",
+                    "pose": "dark",
+                    "horror": true,
+                    "speed": 0.45,
+                    "text": "Come to it with nothing to hurt with."
+                },
+                {
+                    "who": "whisper",
+                    "pose": "dark",
+                    "horror": true,
+                    "speed": 0.45,
+                    "text": "Stand. Be still."
+                },
+                {
+                    "who": "whisper",
+                    "pose": "dark",
+                    "horror": true,
+                    "speed": 0.45,
+                    "text": "Wait until the light forgets you."
+                },
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "The whisper is gone. Only the mushrooms glow."
+                }
+            ]
+        },
+        "remember": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "The ring is quiet now. But you still remember the words:"
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "'Only the innocent may see what is true. The stone that has no colour. Nothing to hurt with. Be still. Wait until the light forgets you.'"
+                }
+            ]
+        },
+        "silent": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "The ring is silent. Nothing grows inside it."
+                }
+            ]
+        }
+    }
+}

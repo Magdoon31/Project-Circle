@@ -1,0 +1,339 @@
+{
+    "_comment": "Oliver - the ice fisher in the Tundra (prefab ice_fishing_camp). Calm, patient, short sentences and pauses. Waits for 'the big one' he saw under the ice years ago. Minigame 'fishing' (like DeeDee's in FNaF World): 30$ a cast (the first one free), fish 1/5/30/50$, the pearl 250$. After a cast: a 5 min (play time) break.",
+    "partner": "oliver",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:oliver"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:oliver"
+            },
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "..."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Shh. You'll scare them."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Oliver. I fish."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "Caught anything?"
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Many things. Not the one I want."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "thinking",
+                    "text": "Years ago, something big swam under this ice. Bigger than me. It looked at me through the hole."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "sad",
+                    "text": "Then it was gone."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "So I wait."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "You can try too, if you like. The first cast is on me."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Cast the line. - {price:fishing}",
+                    "do": {
+                        "minigame": {
+                            "type": "fishing",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor",
+                            "resting": "resting"
+                        }
+                    }
+                },
+                {
+                    "text": "Tell me about the big one.",
+                    "goto": "big"
+                },
+                {
+                    "text": "What's down there?",
+                    "goto": "down"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "...Oh. You."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Quiet today. Good."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Still waiting. Still here."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "The ice is thick today. The fish like that."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Cast the line. - {price:fishing}",
+                    "do": {
+                        "minigame": {
+                            "type": "fishing",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor",
+                            "resting": "resting"
+                        }
+                    }
+                },
+                {
+                    "text": "Tell me about the big one.",
+                    "goto": "big"
+                },
+                {
+                    "text": "What's down there?",
+                    "goto": "down"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "hub": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Another cast?"
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "..."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "The water's patient. Are you?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Cast the line. - {price:fishing}",
+                    "do": {
+                        "minigame": {
+                            "type": "fishing",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor",
+                            "resting": "resting"
+                        }
+                    }
+                },
+                {
+                    "text": "Tell me about the big one.",
+                    "goto": "big"
+                },
+                {
+                    "text": "What's down there?",
+                    "goto": "down"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "big": {
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "thinking",
+                    "text": "Long. Pale. Slow."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "thinking",
+                    "text": "It didn't look hungry. It looked... curious."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "sad",
+                    "text": "I've never told anyone that. Nobody asks."
+                }
+            ],
+            "then": "hub"
+        },
+        "down": {
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Fish. Cold water. The deeper, the better the fish."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "And at the very bottom, a pearl. I see it shine sometimes."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "thinking",
+                    "text": "It never stays still. Like it doesn't want to be found."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "You have to wait for a gap. Most people don't wait."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "And after a cast, the fish hide for a while. Everybody needs a rest."
+                }
+            ],
+            "then": "hub"
+        },
+        "won": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "Not bad. Not the big one. But not bad."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "Patience. You have some."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "The ice is kind to you today."
+                }
+            ],
+            "then": "hub_resting"
+        },
+        "lost": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Nothing. ...That's fishing."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Empty hook. It happens. Most days it happens."
+                }
+            ],
+            "then": "hub_resting"
+        },
+        "poor": {
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "No coins? Then sit. Watching is free."
+                }
+            ]
+        },
+        "resting": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Not now. The fish need a rest. So do I."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "smile",
+                    "text": "They're hiding. They saw your last cast. Come back later."
+                },
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "...Let the water settle first."
+                }
+            ],
+            "then": "hub_resting"
+        },
+        "hub_resting": {
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "Sit, if you want. Watching is free."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Tell me about the big one.",
+                    "goto": "big"
+                },
+                {
+                    "text": "What's down there?",
+                    "goto": "down"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "oliver",
+                    "pose": "calm",
+                    "text": "...Mhm."
+                }
+            ]
+        }
+    }
+}

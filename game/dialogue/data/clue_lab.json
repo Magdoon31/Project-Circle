@@ -1,0 +1,125 @@
+{
+    "_comment": "A place of Wren's investigation (quest 'wren'): examine it while the quest is active.",
+    "partner": "look",
+    "start": [
+        {
+            "if": {
+                "flag": "clue:lab"
+            },
+            "goto": "seen"
+        },
+        {
+            "if": {
+                "quest": "wren"
+            },
+            "goto": "examine"
+        },
+        "plain"
+    ],
+    "nodes": {
+        "plain": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "A small lab with broken machines. Papers everywhere."
+                }
+            ]
+        },
+        "examine": {
+            "do": {
+                "flag": "clue:lab",
+                "count": "wren_clues"
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "A small lab with broken machines. Papers everywhere."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "You pick up a page. It's blank."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "They're all blank - but you can still see where the words were, pressed into the paper."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "Like someone took the words away."
+                }
+            ],
+            "then": [
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            3
+                        ]
+                    },
+                    "goto": "step3"
+                },
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            2
+                        ]
+                    },
+                    "goto": "step2"
+                },
+                "step1"
+            ]
+        },
+        "step1": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "look1"
+                    ]
+                }
+            }
+        },
+        "step2": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "look2"
+                    ]
+                }
+            }
+        },
+        "step3": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "That's all three. Wren should hear about this."
+                }
+            ]
+        },
+        "seen": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Like someone took the words away."
+                }
+            ]
+        }
+    }
+}

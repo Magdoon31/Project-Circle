@@ -1,0 +1,12 @@
+@name hook_pond
+@biomes village
+@items random
+; A tiny pond with a pier. (The Hook is NOT here any more - it comes from the Angler quest.)
+
+    TTTT
+  TT~~~~TT
+ T~~~~~~~~T
+ T~~~~~~~~T
+ .~~~==~~~.
+ ....=I....
+ ..........

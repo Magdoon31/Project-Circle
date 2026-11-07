@@ -1,0 +1,153 @@
+{
+    "_comment": "The overheard Wren x Milo argument at the way up to the Core. Only if you gave Wren the tape, and only after the Garden boss (story/wren.py). Starts by itself when you come close; the player only listens. Wren leaves for good, Milo stays - and the same talk goes straight on with his Core warning (milo_core_entrance). The point: the Core on its own is NOT the answer (the normal ending only quiets things down for a while).",
+    "switch_partner": true,
+    "partner": "wren",
+    "start": [
+        "argue"
+    ],
+    "nodes": {
+        "argue": {
+            "do": {
+                "flag": "wren:argued"
+            },
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "-no, Milo, listen to me. Listen! The tape. 'We need to turn it off.' Someone built all of this. Someone can stop it."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Nobody can stop it, Wren."
+                },
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "You don't know that."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "I know more than you think."
+                },
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "Then tell me! For once, just tell me something true."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "...The Core isn't the answer."
+                },
+                {
+                    "who": "wren",
+                    "pose": "pointing",
+                    "text": "It's the only way up. Everything leads there. The stones, the playground, the voice on the tape - it all points up."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "It points up because that's where people look."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "They go up. They break things. And for a while, everything is quiet."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "And then it starts again."
+                },
+                {
+                    "who": "wren",
+                    "pose": "surprised",
+                    "text": "Starts again? What starts again?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Everything."
+                },
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "That doesn't make any sense."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "I know. That's the worst part."
+                },
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "So what - we just sit here? Let the monsters get stranger every year? Let someone keep hiding things down here?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "I didn't say that."
+                },
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "You didn't say anything! You never do. You just stand there, one step ahead of everyone, smiling."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "..."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "If the Core isn't the answer, then what is?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Something nobody has found yet."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Then I'll find it."
+                },
+                {
+                    "who": "milo",
+                    "pose": "worried",
+                    "text": "Wren-"
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "No. I'm done with riddles. I'll find out myself. Up there, down there, wherever it is."
+                },
+                {
+                    "who": "wren",
+                    "pose": "sad",
+                    "text": "Goodbye, Milo."
+                },
+                {
+                    "who": "look",
+                    "pose": "empty",
+                    "text": "Wren walks away without looking back."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "..."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "She'll be back. Everybody comes back."
+                }
+            ],
+            "then": "dialogue:milo_core_entrance"
+        }
+    }
+}

@@ -1,0 +1,349 @@
+{
+    "_comment": "The Gardener (gardener_hut). Old, kind, slow; talks to the plants. He is the one who brings flowers to the stone rows. Quest 'gardener' in stages: (1) 3 Glowing Sprouts - 2 on the floor of far parts of the Garden, 1 from a toxic flower (25%), only during the quest; (2) water from the very end of the sunken pier (pier_water); (3) back to him -> map of the Garden + Toxic Gas.",
+    "partner": "gardener",
+    "start": [
+        {
+            "if": {
+                "quest_done": "gardener"
+            },
+            "goto": "after"
+        },
+        {
+            "if": {
+                "quest_step": [
+                    "gardener",
+                    "return"
+                ]
+            },
+            "goto": "watered"
+        },
+        {
+            "if": {
+                "quest_step": [
+                    "gardener",
+                    "water"
+                ]
+            },
+            "goto": "wait_water"
+        },
+        {
+            "if": {
+                "quest": "gardener",
+                "item_count": [
+                    "Glowing Sprout",
+                    3
+                ]
+            },
+            "goto": "sprouts_in"
+        },
+        {
+            "if": {
+                "quest": "gardener"
+            },
+            "goto": "wait_sprouts"
+        },
+        {
+            "if": {
+                "flag": "talked:gardener"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:gardener"
+            },
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "whisper",
+                    "text": "Shh... she's sleeping."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "Oh. A visitor. Mind the moss, it bruises."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "I'm the gardener. Just the gardener. Everybody forgot my name a long time ago, and I let them."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "How long have you been down here?"
+                },
+                {
+                    "who": "gardener",
+                    "pose": "thinking",
+                    "text": "Since the garden came down. Or since I came down with it. I don't remember which came first."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "The plants remember, I think. Plants remember everything. They just don't talk about it."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "...Would you help an old man? My hands aren't what they were."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "pointing",
+                    "text": "There are sprouts that glow. Real ones, from before. Two of them grow far from here, where nobody walks."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "tired",
+                    "text": "And the toxic flowers... one of them swallowed a sprout. Greedy thing. You'll have to take it back."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "Bring me all three, and I'll show you something."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll find them.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Who brings flowers to the stone rows?",
+                    "goto": "stones"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "Back again? The moss remembers you."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "Mind your step. Everything here is older than it looks."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll find them.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Who brings flowers to the stone rows?",
+                    "goto": "stones"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "stones": {
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "sad",
+                    "text": "...I do."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "Every morning. Or what I call morning, down here."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "sad",
+                    "text": "Somebody should remember them. The plants can't carry flowers."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "So. Will you help me with the sprouts?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll find them.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "no": {
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "No hurry. Nothing down here is in a hurry."
+                }
+            ]
+        },
+        "accept": {
+            "do": {
+                "quest": {
+                    "start": "gardener"
+                }
+            },
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "Thank you. Far corners, where nobody walks - that's where they like it."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "serious",
+                    "text": "And the toxic flower... be careful. They bite."
+                }
+            ]
+        },
+        "wait_sprouts": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "Far corners, where nobody walks. And mind the toxic flowers."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "They glow, you can't miss them. Unless you're not looking. Most people aren't."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "One, two, three. I'll wait. I'm good at waiting."
+                }
+            ]
+        },
+        "sprouts_in": {
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "happy",
+                    "text": "All three. Look at them glow..."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "thinking",
+                    "text": "But they're thirsty. Down here the water is all wrong - except at the end of the old pier."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "pointing",
+                    "text": "The lake there is clean. Cold, but clean. Take my watering can and fill it at the very end."
+                }
+            ],
+            "do": {
+                "take": [
+                    "Glowing Sprout",
+                    "Glowing Sprout",
+                    "Glowing Sprout"
+                ],
+                "quest": {
+                    "step": [
+                        "gardener",
+                        "water"
+                    ]
+                }
+            }
+        },
+        "wait_water": {
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "pointing",
+                    "text": "The pier. The very end. The water is cleaner where nobody stands."
+                }
+            ]
+        },
+        "watered": {
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "happy",
+                    "text": "You've got it? Give it here, give it here..."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "whisper",
+                    "text": "There we go. Drink, little ones."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "happy",
+                    "text": "...See that? They glow brighter already."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "You've done more for this garden than anybody in years."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "pointing",
+                    "text": "Here. A map of the garden, the way I know it. Every corner, every root."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "grin",
+                    "text": "And this - I bottled it from the toxic flowers. Nasty stuff. Whatever you shoot, it keeps stinging. And stinging."
+                }
+            ],
+            "then": "reward"
+        },
+        "reward": {
+            "do": {
+                "reveal_map": "cellar:garden",
+                "give": "Toxic Gas",
+                "quest": {
+                    "finish": "gardener"
+                }
+            },
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "Don't open it indoors."
+                }
+            ]
+        },
+        "after": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "They're growing. Slowly. Everything down here grows slowly."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "calm",
+                    "text": "Every morning the stones, every evening the sprouts. It's a quiet life. A good one."
+                },
+                {
+                    "who": "gardener",
+                    "pose": "smile",
+                    "text": "Mind the toxic flowers. And thank you."
+                }
+            ]
+        }
+    }
+}

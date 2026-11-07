@@ -1,0 +1,12 @@
+@name factory_workshop
+@biomes toy_factory
+@items random
+; A toy workshop. Tools on the walls, unfinished toys on the benches - some of them look like weapons.
+
+ #########
+ #m_____m#
+ #_k___k_#
+ #___I___#
+ #_k_$_k_#
+ #_______#
+ ####_####

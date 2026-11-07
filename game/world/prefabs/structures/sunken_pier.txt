@@ -1,0 +1,13 @@
+@name sunken_pier
+@biomes underground_garden
+@npcs pier_water
+; A wooden pier over an underground lake. Something waits at the end.
+; ALWAYS in the Garden. N = the clean water at the very end (the Gardener's quest: fill his watering can there).
+
+ ~~~~~~~~~~~
+ ~~~~~N~~~~~
+ ~~~~~=~~~~~
+ ~~~~~=~~~~~
+ ~~~~~=~~~~~
+  ~~~.=.~~~
+     ...

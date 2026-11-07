@@ -1,0 +1,130 @@
+{
+    "_comment": "A place of Wren's investigation (quest 'wren'): examine it while the quest is active.",
+    "partner": "look",
+    "start": [
+        {
+            "if": {
+                "flag": "clue:stones"
+            },
+            "goto": "seen"
+        },
+        {
+            "if": {
+                "quest": "wren"
+            },
+            "goto": "examine"
+        },
+        "plain"
+    ],
+    "nodes": {
+        "plain": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Neat rows of small stones. A dried flower in front of each one."
+                },
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Some of the flowers are older than others."
+                }
+            ]
+        },
+        "examine": {
+            "do": {
+                "flag": "clue:stones",
+                "count": "wren_clues"
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Neat rows of small stones. A dried flower in front of each one."
+                },
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Some of the flowers are older than others."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "You kneel down. The newest flower is barely dry."
+                },
+                {
+                    "who": "look",
+                    "pose": "closer",
+                    "text": "Someone comes back here. Again and again. To remember something."
+                }
+            ],
+            "then": [
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            3
+                        ]
+                    },
+                    "goto": "step3"
+                },
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "wren_clues",
+                            2
+                        ]
+                    },
+                    "goto": "step2"
+                },
+                "step1"
+            ]
+        },
+        "step1": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "look1"
+                    ]
+                }
+            }
+        },
+        "step2": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "look2"
+                    ]
+                }
+            }
+        },
+        "step3": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "wren",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "That's all three. Wren should hear about this."
+                }
+            ]
+        },
+        "seen": {
+            "lines": [
+                {
+                    "who": "look",
+                    "pose": "place",
+                    "text": "Someone comes back here. Again and again. To remember something."
+                }
+            ]
+        }
+    }
+}

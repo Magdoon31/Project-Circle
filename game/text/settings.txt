@@ -1,0 +1,4 @@
+music_volume
+0.2
+sfx_volume
+0.6729166666666667

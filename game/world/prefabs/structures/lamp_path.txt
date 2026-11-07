@@ -1,0 +1,8 @@
+@name lamp_path
+@biomes underground_garden
+; A short paved path with old lamp posts. It starts nowhere and ends nowhere.
+
+ o.......o.......o
+ ,,,,,,,,,,,,,,,,,
+ ,,,,,,,,$,,,,,,,,
+ o.......o.......o

@@ -1,0 +1,12 @@
+@name rainbow_ruins
+@biomes rainbow_fields
+@items random
+; Broken walls of an old building, overgrown with flowers.
+
+ ##.#*##.##
+ #._____*.#
+ *._$_____.
+ #.___I__.#
+ ._____$_.*
+ #*_______#
+ ##.##.#*##

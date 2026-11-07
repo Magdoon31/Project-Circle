@@ -1,0 +1,18 @@
+{
+    "_comment": "Wren next to Milo at the way up to the Core, before their argument. The argument (wren_argument) starts by itself when you come close, so this is only a fallback.",
+    "partner": "wren",
+    "start": [
+        "wait"
+    ],
+    "nodes": {
+        "wait": {
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "angry",
+                    "text": "Not now. Milo and I are... talking."
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,12 @@
+@name angler_shack
+@biomes village
+@npcs angler
+; The Angler's shack by his little pond. ALWAYS in the Village (surface_map.py REQUIRED_STRUCTURES).
+; He stands on the shore next to his little pier.
+
+ .HHHH......
+ .HDHH..~~~.
+ ..,....~~~~.
+ ..,,,,N=~~~~
+ .......~~~~.
+ ........~~..

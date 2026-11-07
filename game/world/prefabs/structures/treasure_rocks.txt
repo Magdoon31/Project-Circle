@@ -1,0 +1,9 @@
+@name treasure_rocks
+@biomes village, rainbow_fields, sugarwood_grove, silverpine_tundra
+; A pile of rocks with some gold hidden between them.
+
+  .rr.
+ .r$_r.
+ r__$_r
+ .r__r.
+  .,,.

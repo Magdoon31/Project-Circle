@@ -1,0 +1,11 @@
+@name core_storage_bay
+@biomes the_core
+@items random, random
+; Spare parts for the core, sorted and labelled. Two of the boxes are not spare parts.
+
+ ###########
+ #k_k___k_k#
+ #k_I___I_k#
+ #_________#
+ #k_k_$_k_k#
+ #####_#####

@@ -1,0 +1,350 @@
+{
+    "_comment": "Milo at the factory entrance of the Underground Garden (after the Factory boss). He asks directly: 'Why do you keep looking?'. The FIRST real choice with a consequence (rude = Milo offended). Seeing him again at the other entrance (tundra) = a fake 'secret'.",
+    "partner": "milo",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:milo_garden_factory"
+            },
+            "goto": "again"
+        },
+        {
+            "if": {
+                "flag": "talked:milo_garden_tundra"
+            },
+            "goto": "second_side"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:milo_garden_factory"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "..."
+                },
+                {
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "You're here. Of course you're here."
+                },
+                {
+                    "who": "milo",
+                    "pose": "pointing",
+                    "text": "This is the Garden. Everything that grows down here grew without the sun. Think about that for a second."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "It's huge. Bigger than everything up there put together. People get lost. Some of them like it."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "I'm going to ask you something, and I want a real answer."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Why do you keep looking?",
+                    "speed": 0.7
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Because something here is wrong.",
+                    "goto": "honest"
+                },
+                {
+                    "text": "I'm just walking around.",
+                    "goto": "evasive"
+                },
+                {
+                    "text": "Mind your own business, Milo.",
+                    "goto": "rude"
+                }
+            ]
+        },
+        "honest": {
+            "do": {
+                "flag": "milo:honest"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Wrong."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "Maybe. Maybe it is."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "But wrong things can still be good to live in. Did you ever think of that?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Up there people laugh, and bake bread, and fish. If you pull on the wrong thread..."
+                },
+                {
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "Never mind. Go. Look. Just... be careful what you find."
+                }
+            ],
+            "then": "hub"
+        },
+        "evasive": {
+            "do": {
+                "flag": "milo:evasive"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Walking around. Through two guards. Down a hole. Into the dark."
+                },
+                {
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "Sure. Walking around."
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "I'm not stupid, you know. I just pretend really well."
+                }
+            ],
+            "then": "hub"
+        },
+        "rude": {
+            "do": {
+                "flag": [
+                    "milo:rude",
+                    "offended:milo"
+                ]
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "surprised",
+                    "text": "..."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "Wow. Okay."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "I was nice to you from the very first day. Remember that.",
+                    "voice": "scary",
+                    "speed": 0.7
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Go on, then. It's your business. Clearly."
+                }
+            ],
+            "then": "hub"
+        },
+        "second_side": {
+            "do": {
+                "flag": "talked:milo_garden_factory"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "surprised",
+                    "text": "Oh! You came from the other side too?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "Wow. You found it. The big secret. The... second entrance."
+                },
+                {
+                    "who": "player",
+                    "pose": "grin",
+                    "text": "That's it?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "laugh",
+                    "text": "That's it. Congratulations. It's a tunnel. Very exciting tunnel. Ten out of ten."
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "And yes, I was here first. Again. Don't ask."
+                }
+            ],
+            "then": "hub"
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "Mushrooms glow down here. Nobody planted them. They just decided to."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Sometimes I hear the roots. They creak like old doors."
+                },
+                {
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "You're still looking. I can tell. You've got that face."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "The deeper you go, the quieter it gets. That's not a good sign. Just so you know."
+                },
+                {
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "I'd tell you to go home. But you'd just ask me where home is."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "What is this place, really?",
+                    "goto": "place"
+                },
+                {
+                    "text": "How do you always get here first?",
+                    "goto": "howfirst"
+                },
+                {
+                    "text": "Where does it end?",
+                    "goto": "ending"
+                },
+                {
+                    "text": "I should go.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "hub": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "...What else."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "What is this place, really?",
+                    "goto": "place"
+                },
+                {
+                    "text": "How do you always get here first?",
+                    "goto": "howfirst"
+                },
+                {
+                    "text": "Where does it end?",
+                    "goto": "ending"
+                },
+                {
+                    "text": "I should go.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "place": {
+            "do": {
+                "flag": "milo_garden:place"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "A garden. Things grow. Nobody tends it. It tends itself."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "It got bigger every year. Nobody remembers it being small."
+                }
+            ],
+            "then": "hub"
+        },
+        "howfirst": {
+            "do": {
+                "flag": "milo_garden:first"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "I walk fast."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "You don't."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "...I walk fast."
+                }
+            ],
+            "then": "hub"
+        },
+        "ending": {
+            "do": {
+                "flag": "milo_garden:end"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Somewhere deep in here, there's a way up. Not to the surface. Somewhere else."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "A guard sits in front of it. And behind it..."
+                },
+                {
+                    "who": "milo",
+                    "pose": "scary",
+                    "text": "Please don't.",
+                    "voice": "scary",
+                    "speed": 0.6
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Sorry. Forget it. It's a door. Doors are boring."
+                }
+            ],
+            "then": "hub"
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "Yeah. You should."
+                }
+            ]
+        }
+    }
+}

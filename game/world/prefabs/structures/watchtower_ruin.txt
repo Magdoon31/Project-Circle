@@ -1,0 +1,11 @@
+@name watchtower_ruin
+@biomes silverpine_tundra
+@items random
+; Remains of a watchtower. It looks towards the factory.
+
+  r.....r
+ .###_###.
+ .#_____#.
+ .#_$I__#.
+ .###_###.
+  r..,..r

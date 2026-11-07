@@ -1,0 +1,156 @@
+{
+    "_comment": "TEST dialogue (not canon). Milo stands in the village just north of the start. Every line has a 'pose' = which picture of Milo is shown (assets/img/dialogue/milo/<pose>.png).",
+    "partner": "milo",
+    "music": "dialogue",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:test_milo"
+            },
+            "goto": "again"
+        },
+        "intro"
+    ],
+    "nodes": {
+        "intro": {
+            "do": {
+                "flag": "talked:test_milo"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "text": "Hello. This is a test dialogue.",
+                    "pose": "wave"
+                },
+                {
+                    "who": "milo",
+                    "text": "Every letter makes a sound. Press Space once to show the whole line, and again to go on.",
+                    "pose": "neutral"
+                },
+                {
+                    "who": "player",
+                    "text": "Testing, testing... one, two.",
+                    "pose": "listening"
+                },
+                {
+                    "who": "milo",
+                    "voice": "scary",
+                    "speed": 0.5,
+                    "text": "This line uses the other voice. And it is slower.",
+                    "pose": "scary"
+                },
+                {
+                    "who": "milo",
+                    "text": "Now you can answer me.",
+                    "pose": "neutral"
+                }
+            ],
+            "then": "hub"
+        },
+        "again": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "text": "Oh, you are back. This is the line for the second visit - the game remembered that we talked.",
+                    "pose": "neutral"
+                }
+            ],
+            "then": "hub"
+        },
+        "hub": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "text": "What do you want to test?",
+                    "pose": "neutral"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "How do the answers work?",
+                    "goto": "answers"
+                },
+                {
+                    "text": "Use the scary voice again.",
+                    "goto": "scary"
+                },
+                {
+                    "if": {
+                        "flag": "test_milo:secret"
+                    },
+                    "text": "(This answer appears only after you asked about answers.)",
+                    "goto": "secret"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "answers": {
+            "do": {
+                "flag": "test_milo:secret"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "text": "Every answer jumps to another part of the talk.",
+                    "pose": "neutral"
+                },
+                {
+                    "who": "milo",
+                    "text": "Answers can also make the game remember things. A new answer just appeared - look.",
+                    "pose": "neutral"
+                }
+            ],
+            "then": "hub"
+        },
+        "scary": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "voice": "scary",
+                    "speed": 0.35,
+                    "text": "LIKE... THIS.",
+                    "pose": "scary"
+                },
+                {
+                    "who": "milo",
+                    "text": "...and back to normal.",
+                    "pose": "neutral"
+                }
+            ],
+            "then": "hub"
+        },
+        "secret": {
+            "lines": [
+                {
+                    "who": "player",
+                    "text": "So this answer was hidden before?",
+                    "pose": "listening"
+                },
+                {
+                    "who": "milo",
+                    "text": "Yes. Hidden answers and lines are how the real dialogues will react to what you did and what you carry.",
+                    "pose": "neutral"
+                }
+            ],
+            "then": "hub"
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "player",
+                    "text": "Bye.",
+                    "pose": "listening"
+                },
+                {
+                    "who": "milo",
+                    "text": "See you. Talk to me again to test the second visit.",
+                    "pose": "wave"
+                }
+            ],
+            "then": "end"
+        }
+    }
+}

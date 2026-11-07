@@ -1,0 +1,14 @@
+@name flower_shrine
+@biomes rainbow_fields
+@items random
+; A circle of flowers around a small stone shrine. The flowers closest to it are grey and dead.
+
+    *****
+  **.....**
+ **..xxx..**
+ *..x###x..*
+ *..x#I#x..*
+ *..xx_xx..*
+ **...,...**
+  ***.,.***
+     .,.

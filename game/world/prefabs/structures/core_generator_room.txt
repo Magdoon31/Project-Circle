@@ -1,0 +1,12 @@
+@name core_generator_room
+@biomes the_core
+@items random
+; A humming generator room. The cables all lead to one machine that is still warm.
+
+ #########
+ #m_e_e_m#
+ #__e_e__#
+ #___I___#
+ #_e_$_e_#
+ #m_____m#
+ ####_####

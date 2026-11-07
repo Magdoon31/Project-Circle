@@ -1,0 +1,221 @@
+{
+    "_comment": "The shopkeeper (no name). Text only, no talk sound. Voice: assets/sfx/shop/<id>.mp3/.wav/.ogg (optional). kind: greet (opening the shop), buy, poor (not enough money), rare (small chance instead of a greeting, any mood; 'flag' = only once that story flag is set), boss (the FIRST greeting after beating a boss). moods: happy (start) -> calm (from Separated Village / the lunapark) -> neutral (from the Garden / the Core).",
+    "lines": [
+        {
+            "id": "greet_happy_1",
+            "kind": "greet",
+            "text": "What a lovely surprise! I was just beginning to miss having someone to talk to.",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "greet_happy_2",
+            "kind": "greet",
+            "text": "Well, well! Look what the world dragged in! Come on, take a look around!",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "greet_calm_1",
+            "kind": "greet",
+            "text": "Oh! Hello there! Always nice to see a familiar face. Or any face, really.",
+            "moods": [
+                "calm"
+            ]
+        },
+        {
+            "id": "greet_calm_2",
+            "kind": "greet",
+            "text": "Well, fancy seeing you again! The road treating you kindly?",
+            "moods": [
+                "calm"
+            ]
+        },
+        {
+            "id": "greet_neutral_1",
+            "kind": "greet",
+            "text": "Take your time. There's no rush.",
+            "moods": [
+                "neutral"
+            ]
+        },
+        {
+            "id": "greet_neutral_2",
+            "kind": "greet",
+            "text": "Everything's where it should be. More or less.",
+            "moods": [
+                "neutral"
+            ]
+        },
+        {
+            "id": "buy_happy_1",
+            "kind": "buy",
+            "text": "Excellent choice! I'm sure it'll serve you well.",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "buy_happy_2",
+            "kind": "buy",
+            "text": "There we go! A happy customer and a slightly heavier purse. Well, mine at least!",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "buy_calm_1",
+            "kind": "buy",
+            "text": "Pleasure doing business. I do hope we'll meet again.",
+            "moods": [
+                "calm"
+            ]
+        },
+        {
+            "id": "buy_calm_2",
+            "kind": "buy",
+            "text": "There you are. Try to make it last, won't you?",
+            "moods": [
+                "calm"
+            ]
+        },
+        {
+            "id": "buy_neutral_1",
+            "kind": "buy",
+            "text": "I hope it proves useful.",
+            "moods": [
+                "neutral"
+            ]
+        },
+        {
+            "id": "buy_neutral_2",
+            "kind": "buy",
+            "text": "Take care of your new purchase. Things have a way of disappearing.",
+            "moods": [
+                "neutral"
+            ]
+        },
+        {
+            "id": "poor_happy_1",
+            "kind": "poor",
+            "text": "Ahaha! Your ambition is admirable, but your wallet disagrees!",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "poor_happy_2",
+            "kind": "poor",
+            "text": "A little short, are we? Well, every great adventure needs a financial struggle!",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "poor_calm_1",
+            "kind": "poor",
+            "text": "Almost! I do appreciate the optimism, though.",
+            "moods": [
+                "calm"
+            ]
+        },
+        {
+            "id": "poor_calm_2",
+            "kind": "poor",
+            "text": "Well, that's unfortunate. I suppose you'll have to find another way.",
+            "moods": [
+                "calm"
+            ]
+        },
+        {
+            "id": "poor_neutral_1",
+            "kind": "poor",
+            "text": "I'm afraid that's not sufficient.",
+            "moods": [
+                "neutral"
+            ]
+        },
+        {
+            "id": "poor_neutral_2",
+            "kind": "poor",
+            "text": "No money, no merchandise. Simple arrangement.",
+            "moods": [
+                "neutral"
+            ]
+        },
+        {
+            "id": "rare_1",
+            "kind": "rare",
+            "text": "You know, some things are better left untouched. But then again, untouched things tend to get lonely."
+        },
+        {
+            "id": "rare_2",
+            "kind": "rare",
+            "text": "Careful where you leave your memories. Some places have a habit of keeping them."
+        },
+        {
+            "id": "rare_3",
+            "kind": "rare",
+            "text": "I wonder… if the Pale World remembers us the way we remember it?",
+            "flag": "visited:pale_world"
+        },
+        {
+            "id": "rare_4",
+            "kind": "rare",
+            "text": "If you ever hear someone calling your name there… do be polite. But don't answer."
+        },
+        {
+            "id": "boss_1",
+            "kind": "boss",
+            "text": "You seem to be getting closer to something. Just make sure it's something you actually want to find.",
+            "moods": [
+                "calm",
+                "neutral"
+            ]
+        },
+        {
+            "id": "boss_2",
+            "kind": "boss",
+            "text": "I suppose you've noticed it by now. The world feels a little different, doesn't it?",
+            "moods": [
+                "calm",
+                "neutral"
+            ]
+        },
+        {
+            "id": "boss_3",
+            "kind": "boss",
+            "text": "Funny how every victory brings you closer to something you haven't even named.",
+            "moods": [
+                "calm",
+                "neutral"
+            ]
+        },
+        {
+            "id": "boss_4",
+            "kind": "boss",
+            "text": "Nice clutch during that boss battle, congrats.",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "boss_5",
+            "kind": "boss",
+            "text": "At least give these bosses a chance!",
+            "moods": [
+                "happy"
+            ]
+        },
+        {
+            "id": "boss_6",
+            "kind": "boss",
+            "text": "Nothing's better than smooth victory.",
+            "moods": [
+                "happy"
+            ]
+        }
+    ]
+}

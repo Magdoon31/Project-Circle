@@ -1,0 +1,14 @@
+@name mushroom_ring
+@biomes underground_garden
+@npcs ring_voice
+; A perfect circle of glowing mushrooms. Nothing grows inside it.
+; ALWAYS in the Garden. Stepping inside the first time: a whisper with a riddle (where the Pale Orb is) - game/story/garden.py.
+; N = the quiet middle of the ring (talk there again to remember the words).
+
+    *****
+  **.....**
+ *.........*
+ *....N....*
+ *.........*
+  **.....**
+    *****

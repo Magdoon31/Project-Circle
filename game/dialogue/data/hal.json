@@ -1,0 +1,355 @@
+{
+    "_comment": "Hal - radio operator in the Tundra (prefab radio_hut). Talks in radio jargon ('Copy', 'Over'). Quest 'hal': fix the 3 antennas (antenna_1/2/3 dialogues, minigame 'wires'); counter 'hal_antennas'. When all three work, channel nine plays 'We need to turn it off.' (horror lines) -> Cassette Tape. Reward at the end: the Cassette Tape OR the Flare Gun (player's choice).",
+    "partner": "hal",
+    "start": [
+        {
+            "if": {
+                "quest_done": "hal"
+            },
+            "goto": "after"
+        },
+        {
+            "if": {
+                "quest": "hal",
+                "counter_at_least": [
+                    "hal_antennas",
+                    3
+                ]
+            },
+            "goto": "finale"
+        },
+        {
+            "if": {
+                "quest": "hal",
+                "counter_at_least": [
+                    "hal_antennas",
+                    2
+                ]
+            },
+            "goto": "progress2"
+        },
+        {
+            "if": {
+                "quest": "hal",
+                "counter_at_least": [
+                    "hal_antennas",
+                    1
+                ]
+            },
+            "goto": "progress1"
+        },
+        {
+            "if": {
+                "quest": "hal"
+            },
+            "goto": "progress0"
+        },
+        {
+            "if": {
+                "flag": "talked:hal"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:hal"
+            },
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "pointing",
+                    "text": "Contact! Hold position, stranger. Don't touch the dials."
+                },
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "Name's Hal. Radio operator, Silverpine Tundra station. Only station. Only operator. Over."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "Over?"
+                },
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "Habit. Thirty years on the radio does that. You stop saying 'goodbye' and start saying 'over'."
+                },
+                {
+                    "who": "hal",
+                    "pose": "thinking",
+                    "text": "Not much traffic lately. Three antennas out there, all three dead. Frost gets in the boxes. Monsters chew the wires. Mostly the frost."
+                },
+                {
+                    "who": "hal",
+                    "pose": "tired",
+                    "text": "Without them I'm listening to snow. Static, static, static. Over."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I can fix them.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "What are you listening for?",
+                    "goto": "listening"
+                },
+                {
+                    "text": "Not my problem.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "listening": {
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "thinking",
+                    "text": "Anything. Everything. A voice, a song, a weather report from somewhere warm."
+                },
+                {
+                    "who": "hal",
+                    "pose": "serious",
+                    "text": "...There used to be something on channel nine. Late at night. I never caught all of it."
+                },
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "Get the antennas back up and maybe I will. So. Can I count on you?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll fix them.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "no": {
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "Copy. The offer stays on the frequency. Over and out."
+                }
+            ]
+        },
+        "accept": {
+            "do": {
+                "quest": {
+                    "start": "hal"
+                }
+            },
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "Copy that! Three antennas, scattered around the Tundra. You'll know them. Tall, metal, sad-looking."
+                },
+                {
+                    "who": "hal",
+                    "pose": "pointing",
+                    "text": "Open the box at the bottom, match the wires by colour. Red to red, blue to blue. Even a penguin could do it."
+                },
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "Not that we have penguins. Report back when all three are humming. Over."
+                }
+            ]
+        },
+        "again": {
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "Back on the frequency, stranger? The antennas are still dead. Want the job?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll fix them.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "progress0": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "tired",
+                    "text": "Nothing yet. Static. Pure, high-quality static. Over."
+                },
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "The antennas won't fix themselves, stranger. I asked them. Twice."
+                }
+            ]
+        },
+        "progress1": {
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "One antenna up! I can hear the wind on a whole new frequency. Two to go. Over."
+                }
+            ]
+        },
+        "progress2": {
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "serious",
+                    "text": "Two up. There's something between the static now. Can't make it out. One more, stranger."
+                },
+                {
+                    "who": "hal",
+                    "pose": "serious",
+                    "text": "...Hurry. Please. Over."
+                }
+            ]
+        },
+        "finale": {
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "happy",
+                    "text": "All three! I can hear everything. The whole Tundra, loud and clear."
+                },
+                {
+                    "who": "hal",
+                    "pose": "serious",
+                    "text": "Listen. Channel nine. Here it comes..."
+                },
+                {
+                    "who": "radio",
+                    "pose": "static",
+                    "horror": true,
+                    "speed": 0.5,
+                    "text": "...need to... turn it off."
+                },
+                {
+                    "who": "radio",
+                    "pose": "static",
+                    "horror": true,
+                    "speed": 0.5,
+                    "text": "We need to turn it off."
+                },
+                {
+                    "who": "radio",
+                    "pose": "static",
+                    "horror": true,
+                    "speed": 0.5,
+                    "text": "We need to turn it off. We need to turn it off. We need to"
+                },
+                {
+                    "who": "hal",
+                    "pose": "scared",
+                    "text": "...That's it. That's all it says. Over and over."
+                },
+                {
+                    "who": "hal",
+                    "pose": "scared",
+                    "text": "I heard it before. Years ago. Never this clear."
+                },
+                {
+                    "who": "hal",
+                    "pose": "serious",
+                    "text": "Who needs to turn what off? ...No. Don't answer that. I have a feeling I really don't want to know."
+                },
+                {
+                    "who": "hal",
+                    "pose": "pointing",
+                    "text": "I recorded it. Take the tape and get it away from my radio."
+                },
+                {
+                    "who": "hal",
+                    "pose": "neutral",
+                    "text": "Or, if you'd rather not carry that thing around... take my old flare gun instead. Can't have both. Over."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll take the tape.",
+                    "goto": "reward"
+                },
+                {
+                    "text": "I'll take the flare gun.",
+                    "goto": "reward_flare"
+                }
+            ]
+        },
+        "reward": {
+            "do": {
+                "give": "Cassette Tape",
+                "quest": {
+                    "finish": "hal"
+                }
+            },
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "Thanks for the antennas, stranger. I mean it. From now on I'm sticking to the weather channel. Over and out."
+                }
+            ]
+        },
+        "after": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "Weather report: cold. Tomorrow: colder. Over."
+                },
+                {
+                    "who": "hal",
+                    "pose": "serious",
+                    "text": "Channel nine's quiet now. I keep it switched off. Mostly."
+                },
+                {
+                    "who": "hal",
+                    "pose": "tired",
+                    "text": "You still have that tape? Don't play it near me. Over.",
+                    "if": {
+                        "item": "Cassette Tape"
+                    }
+                },
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "The antennas are holding. Good work, stranger. Over."
+                }
+            ]
+        },
+        "reward_flare": {
+            "do": {
+                "give": "Flare Gun",
+                "quest": {
+                    "finish": "hal"
+                }
+            },
+            "lines": [
+                {
+                    "who": "hal",
+                    "pose": "smile",
+                    "text": "Good choice. Some things are better left unheard. Thanks for the antennas, stranger. Over and out."
+                }
+            ]
+        }
+    }
+}

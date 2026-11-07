@@ -1,0 +1,15 @@
+@name pale_altar
+@biomes underground_garden
+@items Pale Orb
+; A slab of stone with no colour at all, ringed by dead flowers. ALWAYS in the Garden.
+; The Pale Orb (I) shows up ONLY if: you heard the whisper in the mushroom ring, you stand on the pale stone (q)
+; with NO weapon equipped, and you stay still for 10 s (game/story/garden.py). "Only the innocent may see what is true."
+; The Orb appears just OFF the stone (in front of it), so you see it appear before you pick it up.
+
+ ...........
+ ..x..I..x..
+ ...qqqqq...
+ .x.qqqqq.x.
+ ...qqqqq...
+ ..x.....x..
+ ...........

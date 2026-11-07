@@ -1,0 +1,196 @@
+{
+    "_comment": "Milo at the entrance of Rainbow Fields (after the Village boss). Still warm and proud of the player; first tiny crack.",
+    "partner": "milo",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:milo_rainbow"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:milo_rainbow"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "There you are! I heard the noise all the way from here. Big crash, lots of yelling. Was that you?"
+                },
+                {
+                    "who": "player",
+                    "pose": "grin",
+                    "text": "...You heard that from here?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Sound travels. Anyway. You beat it. The big grumpy thing. Honestly, I didn't think anyone could."
+                },
+                {
+                    "who": "milo",
+                    "pose": "laugh",
+                    "text": "How did you even- no, don't tell me. I'd just get jealous."
+                },
+                {
+                    "who": "milo",
+                    "pose": "pointing",
+                    "text": "Welcome to Rainbow Fields. Every colour you can think of, and a few you can't."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "The flowers here are friendly. Mostly. Don't stare at them for too long. They stare back."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "Past the fields there's a forest made of sugar. You'll smell it before you see it."
+                },
+                {
+                    "who": "milo",
+                    "pose": "shrug",
+                    "text": "And another one of those guards. Bigger. Grumpier. Probably."
+                }
+            ],
+            "then": "hub"
+        },
+        "before": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Hm? I've been here for a while."
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "You walk slow. No offence."
+                }
+            ],
+            "do": {
+                "flag": "milo_rainbow:before"
+            },
+            "then": "hub"
+        },
+        "advice": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Flowers that move are not flowers. That's the whole advice."
+                },
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "Oh, and if something sparkles in the grass, it's either gold or a very bad idea. Usually gold."
+                }
+            ],
+            "do": {
+                "flag": "milo_rainbow:advice"
+            },
+            "then": "hub"
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Isn't it beautiful? I could stand here all day. I kind of do."
+                },
+                {
+                    "who": "milo",
+                    "pose": "laugh",
+                    "text": "Counted the colours once. Got to forty-two and then a flower bit me."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "You okay? You look like you're thinking hard. Don't think too hard here. It's a happy place."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "The wind smells like candy today. That means the sweet forest is close."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "How did you get here before me?",
+                    "goto": "before"
+                },
+                {
+                    "text": "Any advice?",
+                    "goto": "advice"
+                },
+                {
+                    "text": "What's past the fields?",
+                    "goto": "past"
+                },
+                {
+                    "text": "See you around.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "hub": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "So. Anything else on your mind?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "How did you get here before me?",
+                    "goto": "before"
+                },
+                {
+                    "text": "Any advice?",
+                    "goto": "advice"
+                },
+                {
+                    "text": "What's past the fields?",
+                    "goto": "past"
+                },
+                {
+                    "text": "See you around.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "past": {
+            "do": {
+                "flag": "milo_rainbow:past"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "pointing",
+                    "text": "The Sugarwood Grove. Candy trees, syrup rivers. It smells amazing for about five minutes."
+                },
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "Then it smells like a dentist's nightmare."
+                }
+            ],
+            "then": "hub"
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Go get 'em. Carefully. Like, really carefully."
+                }
+            ]
+        }
+    }
+}

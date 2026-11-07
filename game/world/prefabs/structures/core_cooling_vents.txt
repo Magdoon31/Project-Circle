@@ -1,0 +1,12 @@
+@name core_cooling_vents
+@biomes the_core
+@gold 200-400
+; Cold air blows up from the floor. Coins rattle somewhere inside the vents.
+
+  #######
+ ##__e__##
+ #_p___p_#
+ #e__$__e#
+ #_p___p_#
+ ##_____##
+  ###_###

@@ -1,0 +1,275 @@
+{
+    "_comment": "Mayor Bramble in the Village (next to the house). Says nothing concrete until the Hook quest; then reveals the minigame (sudoku). Who has the Hook is picked by the world seed.",
+    "partner": "bramble",
+    "start": "talk",
+    "nodes": {
+        "talk": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "proud",
+                    "text": "Ah, a citizen! Or a visitor. Either way, welcome to the finest village in all the land. I would know. I'm the mayor."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "smile",
+                    "text": "Lovely weather today. It's always lovely weather. I like to think that's my doing."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "sad",
+                    "text": "Have you seen the well? I had it polished. Twice. Nobody noticed. Nobody ever notices."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "proud",
+                    "text": "A mayor's work is never done. Mostly it's standing here. But with dignity."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "thinking",
+                    "text": "If anyone asks, the fence was my idea. It was not my idea. But if anyone asks."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Do you have the Angler's Hook?",
+                    "if": {
+                        "quest_step": [
+                            "hook",
+                            "find"
+                        ],
+                        "not_flag": "asked_hook:bramble"
+                    },
+                    "goto": "hook"
+                },
+                {
+                    "text": "Let's play sudoku.",
+                    "if": {
+                        "any": [
+                            {
+                                "flag": "asked_hook:bramble"
+                            },
+                            {
+                                "quest_done": "hook"
+                            }
+                        ]
+                    },
+                    "goto": "play"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "hook": {
+            "do": {
+                "flag": "asked_hook:bramble"
+            },
+            "then": [
+                {
+                    "if": {
+                        "seed_choice": {
+                            "key": "hook_holder",
+                            "options": [
+                                "bramble",
+                                "dot"
+                            ],
+                            "is": "bramble"
+                        }
+                    },
+                    "goto": "hook_yes"
+                },
+                "hook_no"
+            ]
+        },
+        "hook_yes": {
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "sly",
+                    "text": "The Angler's Hook? Hm. Hmmm. Perhaps it is in my possession. Perhaps it is not."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "proud",
+                    "text": "A mayor does not simply hand things out. A mayor must be... persuaded."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "grin",
+                    "text": "Beat me at sudoku, and we'll talk. I've never lost. Well. I've never lost to anyone who counts."
+                }
+            ],
+            "then": "play"
+        },
+        "hook_no": {
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "surprised",
+                    "text": "The Angler's Hook? Goodness, no. What would a mayor want with a fishing hook?"
+                },
+                {
+                    "who": "bramble",
+                    "pose": "sly",
+                    "text": "Though while you're here... do you, perchance, enjoy numbers? I have a little hobby."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "grin",
+                    "text": "Sudoku! The thinking person's battlefield. Beat me and I'll pay you. From the village treasury. Which is my pocket."
+                }
+            ],
+            "then": "play"
+        },
+        "play": {
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "sly",
+                    "text": "So. Sudoku. Do you prefer to think, or to hurry?"
+                },
+                {
+                    "who": "bramble",
+                    "pose": "sly",
+                    "text": "The first game is a gift from the village. After that, a modest fee. Rising, naturally, with every victory of yours.",
+                    "if": {
+                        "not_flag": "explained_price:bramble"
+                    },
+                    "do": {
+                        "flag": "explained_price:bramble"
+                    }
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Thinking (hard, no time limit) - {price:sudoku}",
+                    "do": {
+                        "minigame": {
+                            "type": "sudoku_think",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Speed (easier, but fast) - {price:sudoku}",
+                    "do": {
+                        "minigame": {
+                            "type": "sudoku_speed",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Maybe later.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "won": {
+            "then": [
+                {
+                    "if": {
+                        "seed_choice": {
+                            "key": "hook_holder",
+                            "options": [
+                                "bramble",
+                                "dot"
+                            ],
+                            "is": "bramble"
+                        },
+                        "quest_step": [
+                            "hook",
+                            "find"
+                        ],
+                        "not_item": "Hook"
+                    },
+                    "goto": "won_hook"
+                },
+                "won_plain"
+            ]
+        },
+        "won_hook": {
+            "do": {
+                "give": "Hook",
+                "quest": {
+                    "step": [
+                        "hook",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "shocked",
+                    "text": "Impossible. Every number in its place. That was a bloodbath. A dignified bloodbath, but still."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "sad",
+                    "text": "Fine. A deal's a deal. Here's the Hook. I was only... keeping it safe."
+                }
+            ]
+        },
+        "won_plain": {
+            "do": {
+                "gold_piles": 5
+            },
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "shocked",
+                    "text": "Again?! You're draining the treasury. Fine. Here. Take it."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "sad",
+                    "text": "Hmph. Beginner's luck. Twice. Three times. Many times."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "smile",
+                    "text": "Well played. Truly. I hate it."
+                }
+            ],
+            "random_line": true
+        },
+        "lost": {
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "proud",
+                    "text": "Ha! The mayor remains undefeated. Come back when your mind is sharper."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "grin",
+                    "text": "Close! Not really. But I'm being polite. Mayors are polite."
+                },
+                {
+                    "who": "bramble",
+                    "pose": "thinking",
+                    "text": "Numbers are cruel, citizen. Cruel and beautiful."
+                }
+            ],
+            "random_line": true
+        },
+        "poor": {
+            "lines": [
+                {
+                    "who": "bramble",
+                    "pose": "proud",
+                    "text": "Ah. Your purse is lighter than your ambition, citizen. Come back with coins."
+                }
+            ]
+        }
+    }
+}

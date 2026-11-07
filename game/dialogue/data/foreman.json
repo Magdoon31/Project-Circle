@@ -1,0 +1,295 @@
+{
+    "_comment": "The Foreman - Factory (cellar), in factory_break_room. Paranoid: thinks the player is an inspector. Secretly one of the system's creators and hides it (only small slips). Quest 'foreman': Gear (on the floor of a far hall, only while the quest is active), Meter (shop - not made yet, test key 0), Fuse (25% drop from robo-teslas during the quest) -> Nail Gun. 'Line Bloodbath' = the Geometry Dash reference.",
+    "partner": "foreman",
+    "start": [
+        {
+            "if": {
+                "quest_done": "foreman"
+            },
+            "goto": "after"
+        },
+        {
+            "if": {
+                "quest": "foreman",
+                "item": [
+                    "Gear",
+                    "Meter",
+                    "Fuse"
+                ]
+            },
+            "goto": "hand_in"
+        },
+        {
+            "if": {
+                "quest": "foreman"
+            },
+            "goto": "waiting"
+        },
+        {
+            "if": {
+                "flag": "talked:foreman"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:foreman"
+            },
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Stop right there. Hands where I can see them."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Who sent you? The board? The inspection? It's the inspection, isn't it."
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "Nobody sent me."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "That's exactly what an inspector would say."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Fine. Fine! Look around. Everything's in order. Safety rules on the wall. Cups washed. Mostly washed."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "I'm the Foreman. I run this place. Been running it since we bu- since I was hired. Long time ago. Normal hiring. Very normal."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "The workers? On break. Long break. Don't write that down."
+                }
+            ],
+            "then": "problem"
+        },
+        "problem": {
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "worried",
+                    "text": "...And Line Bloodbath is down. Has been for weeks. If the inspection sees that, I'm finished."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "You say you're not an inspector? Prove it. Help me get the line running."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "thinking",
+                    "text": "Three parts. A gear - there's one lying around somewhere in the halls, I'm sure of it. Almost sure."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "A meter. The shop sells those. And a fuse. The tesla robots carry spare fuses. Don't ask me why. I didn't design them."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "...I didn't. Design them."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll get the parts.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "accept": {
+            "do": {
+                "quest": {
+                    "start": "foreman"
+                }
+            },
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "Good. Quiet, quick, and you were never here."
+                }
+            ]
+        },
+        "no": {
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "angry",
+                    "text": "Then stop looking at my line. Out. Out!"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "You again. Still not an inspector? ...Then help me with the line."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Did someone follow you here? Check behind you. ...Okay. Talk."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I'll get the parts.",
+                    "goto": "accept"
+                },
+                {
+                    "text": "Not now.",
+                    "goto": "no"
+                }
+            ]
+        },
+        "waiting": {
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Show me what you've got. Slowly."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "The gear. Good. Rusty, but good.",
+                    "if": {
+                        "item": "Gear"
+                    }
+                },
+                {
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "Still no gear. It's in one of the far halls. On the floor. Look down once in a while.",
+                    "if": {
+                        "not_item": "Gear"
+                    }
+                },
+                {
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "A meter! Did anyone see you buy it? ...Good.",
+                    "if": {
+                        "item": "Meter"
+                    }
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Meter. From the shop. Pay cash. No receipts.",
+                    "if": {
+                        "not_item": "Meter"
+                    }
+                },
+                {
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "A fuse. From a tesla? Did it... say anything? Never mind.",
+                    "if": {
+                        "item": "Fuse"
+                    }
+                },
+                {
+                    "who": "foreman",
+                    "pose": "thinking",
+                    "text": "Fuse. The tesla robots. One in four carries a spare. Don't let them zap you twice.",
+                    "if": {
+                        "not_item": "Fuse"
+                    }
+                }
+            ]
+        },
+        "hand_in": {
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "surprised",
+                    "text": "Gear. Meter. Fuse. All three."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Stand back. Further. Further than that."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "happy",
+                    "text": "...Listen. Hear that? Line Bloodbath. Running again."
+                }
+            ],
+            "then": "reward"
+        },
+        "reward": {
+            "do": {
+                "take": [
+                    "Gear",
+                    "Meter",
+                    "Fuse"
+                ],
+                "give": "Nail Gun",
+                "quest": {
+                    "finish": "foreman"
+                }
+            },
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "Here. A nail gun from the old toolbox. Nobody counts the tools. Nobody counts anything down here anymore."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "And if anyone asks - the line never stopped. Understood?"
+                }
+            ]
+        },
+        "after": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "The line's running. Nothing comes out the other end, but it's running."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "You didn't see the old blueprints in the control room. Right? Right."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "worried",
+                    "text": "The inspection still hasn't come. Good. Or bad. Means they forgot about us."
+                },
+                {
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Before? There was no 'before'. I've always worked here. Always."
+                }
+            ]
+        }
+    }
+}

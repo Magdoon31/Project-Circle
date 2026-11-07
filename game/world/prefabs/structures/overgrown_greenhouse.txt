@@ -1,0 +1,13 @@
+@name overgrown_greenhouse
+@biomes underground_garden
+@items random
+; A glass greenhouse underground. Plants grew through the roof long ago.
+; Legend: # wall/glass frame  _ floor  T plant  * glowing mushroom  x dead plant  I item  $ gold
+
+ ###########
+ #__T___T__#
+ #_*_____*_#
+ #___xIx___#
+ #_*_____*_#
+ #__T_$_T__#
+ #####_#####

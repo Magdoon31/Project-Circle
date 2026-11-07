@@ -1,0 +1,31 @@
+@name core_chamber
+@biome the_core
+; FIXED last section of the Core (always the same): the core itself, Milo in front of it,
+; and behind it the sealed way down to the Void.
+;   E = the door where the random part of the Core connects (top)
+;   B = Milo (boss)          P = portal to the Void (sealed until Milo is beaten with the Peace Gun)
+;   O = the core   p = pipes   e = glowing cables   m = machines   # walls   _ metal plates
+
+#############__E__#############
+#pp__________e___e__________pp#
+#p___________e___e___________p#
+#____##______e___e______##____#
+#____##______e___e______##____#
+#____________e___e____________#
+#m___________eeBee___________m#
+#m____________e_e____________m#
+#______________e______________#
+#____##____ppp_e_ppp____##____#
+#____##___p_eeeeeee_p___##____#
+#________p_e_OOOOO_e_p________#
+#________pee_OOOOO_eep________#
+#________p_e_OOOOO_e_p________#
+#__________e_OOOOO_e__________#
+#________p_e_OOOOO_e_p________#
+#________pee_OOOOO_eep________#
+#________p_e_OOOOO_e_p________#
+#____##___p_eeeeeee_p___##____#
+#____##____ppp_e_ppp____##____#
+#m_____________e_____________m#
+#pp____________P____________pp#
+###############################

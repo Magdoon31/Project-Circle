@@ -1,0 +1,170 @@
+{
+    "_comment": "Milo at the entrance of Sugarwood Grove (after the Rainbow Fields boss). Still kind, but starts asking questions.",
+    "partner": "milo",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:milo_candy"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:milo_candy"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Hey. Two guards down. People are going to start telling stories about you."
+                },
+                {
+                    "who": "milo",
+                    "pose": "pointing",
+                    "text": "This is the Sugarwood Grove. Trees made of candy, rivers of syrup, and the worst toothache of your life."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Everything here is sweet. Everything. Even the things that shouldn't be."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "...Can I ask you something?"
+                },
+                {
+                    "who": "player",
+                    "pose": "serious",
+                    "text": "Sure."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Do you like it here? This place. The whole... everything."
+                },
+                {
+                    "who": "player",
+                    "pose": "thinking",
+                    "text": "I think so. Why?"
+                },
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "No reason! People leave, sometimes. Go too far. I like it when people stay, that's all."
+                }
+            ],
+            "then": "hub"
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "The candy makers here are nice. Sticky handshakes, though."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Don't drink from the syrup river. I'm not saying why. Just don't."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "I like watching people walk by. You're the only one who walks that way, though."
+                },
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "You know what I like about this place? Nothing ever changes. Nothing."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Tell me about the candy makers.",
+                    "goto": "makers"
+                },
+                {
+                    "text": "What's past the forest?",
+                    "goto": "past"
+                },
+                {
+                    "text": "Bye, Milo.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "hub": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Anyway! What else?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Tell me about the candy makers.",
+                    "goto": "makers"
+                },
+                {
+                    "text": "What's past the forest?",
+                    "goto": "past"
+                },
+                {
+                    "text": "Bye, Milo.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "makers": {
+            "do": {
+                "flag": "milo_candy:makers"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "laugh",
+                    "text": "They make everything out of sugar. Houses, chairs, spoons. One of them made a sugar hat. It melted in the rain."
+                },
+                {
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "They're nice. They smile a lot. Maybe a little too much. Ever seen someone smile while sleeping? Like that."
+                }
+            ],
+            "then": "hub"
+        },
+        "past": {
+            "do": {
+                "flag": "milo_candy:past"
+            },
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "A village. Smaller than mine. Quieter."
+                },
+                {
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "After that the road splits. You'll see."
+                }
+            ],
+            "then": "hub"
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "milo",
+                    "pose": "grin",
+                    "text": "Watch your teeth."
+                }
+            ]
+        }
+    }
+}

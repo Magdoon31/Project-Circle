@@ -1,0 +1,14 @@
+@name collapsed_lab
+@biomes underground_garden
+@items random
+@npcs clue_lab
+; A small lab with broken machines. Someone left in a hurry - papers everywhere.
+; One of the 3 places of Wren's investigation (quest "wren"): N = the spot you examine. ALWAYS in the Garden.
+
+ ####.######
+ #___r___m_#
+ #_m_N___m_#
+ #____I____.
+ ._$__r____#
+ #_____#####
+ #######

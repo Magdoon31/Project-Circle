@@ -1,0 +1,15 @@
+@name gingerbread_hut
+@biomes sugarwood_grove
+@items random
+@npcs gus
+; A gingerbread house with a candy fence. Warm, sweet... and a bit too quiet.
+; Gus the candy maker stands in front of it. ALWAYS in Sugarwood Grove (surface_map.py REQUIRED_STRUCTURES).
+
+   fffffffff
+  ff__HHH__ff
+  f___HHH___f
+  f___HDH___f
+  f_N_____$_f
+  f____I____f
+  ffff___ffff
+     .,,,.

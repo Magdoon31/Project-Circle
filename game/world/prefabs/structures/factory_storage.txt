@@ -1,0 +1,12 @@
+@name factory_storage
+@biomes toy_factory
+@items random
+; A locked storage room - the lock is broken. Crates of toys nobody ever shipped.
+; Legend: # wall  _ floor  k crate  I item  $ gold
+
+ #######
+ #k_k_k#
+ #_____#
+ #k_I_k#
+ #_$___#
+ ###_###

@@ -1,0 +1,395 @@
+{
+    "_comment": "Lucky - the barker of the lunapark (smooth, fast, a bit sly). Wheel of fortune (minigame wheel_10 / 50 / 100, the number is the stake, gold only, ~90% comes back on average). Tells you about the Mascot in the big tent.",
+    "partner": "lucky",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:lucky"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:lucky"
+            },
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "wave",
+                    "text": "Step right up, step right up! A new face! A lucky face!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Name's Lucky. Lucky by name, lucky by nature - and today, friend, maybe lucky by association!"
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "This place is... empty."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "laugh",
+                    "text": "Empty? It's exclusive! Every ride, every stall, every prize - all for you. No queues!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "pointing",
+                    "text": "And the star of the show: the Wheel of Fortune. Put in a little gold, take out a lot of gold. Sometimes."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Mostly sometimes. Want a spin?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Spin for 10$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_10",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 50$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_50",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 100$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "How does it work?",
+                    "goto": "rules"
+                },
+                {
+                    "text": "What's in the big tent?",
+                    "goto": "tent"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "wave",
+                    "text": "Welcome back, welcome back! The wheel missed you. I could tell. It squeaked."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "laugh",
+                    "text": "Ah, my favourite customer! My only customer, but still my favourite!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Feeling lucky? Of course you are. Everybody's lucky at Lucky's."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Spin for 10$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_10",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 50$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_50",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 100$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "How does it work?",
+                    "goto": "rules"
+                },
+                {
+                    "text": "What's in the big tent?",
+                    "goto": "tent"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "hub": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Another spin? The wheel's still warm!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "pointing",
+                    "text": "The next one's the one. Probably."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "laugh",
+                    "text": "Round and round it goes! Where it stops - well, you know."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Spin for 10$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_10",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 50$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_50",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 100$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "How does it work?",
+                    "goto": "rules"
+                },
+                {
+                    "text": "What's in the big tent?",
+                    "goto": "tent"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "rules": {
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "pointing",
+                    "text": "Easy as candy! You pay, you spin, the wheel decides."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Grey - nothing. Blue - half back. White - your money back. Green - double. Gold - triple."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "laugh",
+                    "text": "And the pink one... the JACKPOT. Six times your gold. I've seen it happen! Once. Maybe twice."
+                }
+            ],
+            "then": "hub"
+        },
+        "tent": {
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "nervous",
+                    "text": "The big tent? Ah. That's where the Mascot sleeps."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "nervous",
+                    "text": "Biggest plush you've ever seen. Used to wave at the kids. Now it... doesn't really wave anymore."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "If you wake it up, it'll want to play. And it plays rough. But they say whoever beats it gets a prize!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "nervous",
+                    "text": "I don't go in there. Bad for business. Bad for my teeth."
+                }
+            ],
+            "then": "hub"
+        },
+        "won": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "laugh",
+                    "text": "A WINNER! Look at that! Ladies and gentlemen - well, you - a winner!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Ha! See? I told you. Lucky's never lies. Rarely lies."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "pointing",
+                    "text": "Beginner's luck? Expert's luck! Spin again while it's hot!"
+                }
+            ],
+            "then": "hub"
+        },
+        "lost": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "pointing",
+                    "text": "Ooh! So close! Did you see that? SO close!"
+                },
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Not this time, friend. But the wheel remembers who keeps trying."
+                },
+                {
+                    "who": "lucky",
+                    "pose": "nervous",
+                    "text": "Oof. Well. The wheel giveth, and mostly the wheel taketh."
+                }
+            ],
+            "then": "hub"
+        },
+        "poor": {
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Ah-ah-ah. No gold, no go. Come back with heavier pockets, friend!"
+                }
+            ],
+            "then": "hub_poor"
+        },
+        "hub_poor": {
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "grin",
+                    "text": "Something else I can do for you?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Spin for 10$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_10",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 50$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_50",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "Spin for 100$.",
+                    "do": {
+                        "minigame": {
+                            "type": "wheel_100",
+                            "win": "won",
+                            "lose": "lost",
+                            "poor": "poor"
+                        }
+                    }
+                },
+                {
+                    "text": "How does it work?",
+                    "goto": "rules"
+                },
+                {
+                    "text": "What's in the big tent?",
+                    "goto": "tent"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "bye"
+                }
+            ]
+        },
+        "bye": {
+            "lines": [
+                {
+                    "who": "lucky",
+                    "pose": "wave",
+                    "text": "Come back soon! The wheel never sleeps! Unlike the Mascot."
+                }
+            ]
+        }
+    }
+}

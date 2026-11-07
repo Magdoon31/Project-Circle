@@ -1,0 +1,215 @@
+{
+    "_comment": "Hal's antenna #3 (prefab antenna_c). The 1st antenna you fix has 4 wires, the 2nd 5, the 3rd 6.",
+    "partner": "antenna",
+    "start": [
+        {
+            "if": {
+                "flag": "antenna_3:fixed"
+            },
+            "goto": "working"
+        },
+        {
+            "if": {
+                "quest": "hal"
+            },
+            "goto": "broken_quest"
+        },
+        "broken"
+    ],
+    "nodes": {
+        "broken": {
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "broken",
+                    "text": "A tall radio antenna, covered in frost. The box at its foot hangs open. Dead wires everywhere."
+                },
+                {
+                    "who": "antenna",
+                    "pose": "broken",
+                    "text": "Somebody must care about this thing."
+                }
+            ]
+        },
+        "broken_quest": {
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "broken",
+                    "text": "One of Hal's antennas. The junction box is open and the wires are all the wrong way round."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Fix the wires.",
+                    "if": {
+                        "counter_below": [
+                            "hal_antennas",
+                            1
+                        ]
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wires_4",
+                            "win": "won",
+                            "lose": "lost"
+                        }
+                    }
+                },
+                {
+                    "text": "Fix the wires.",
+                    "if": {
+                        "counter_at_least": [
+                            "hal_antennas",
+                            1
+                        ],
+                        "counter_below": [
+                            "hal_antennas",
+                            2
+                        ]
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wires_5",
+                            "win": "won",
+                            "lose": "lost"
+                        }
+                    }
+                },
+                {
+                    "text": "Fix the wires.",
+                    "if": {
+                        "counter_at_least": [
+                            "hal_antennas",
+                            2
+                        ]
+                    },
+                    "do": {
+                        "minigame": {
+                            "type": "wires_6",
+                            "win": "won",
+                            "lose": "lost"
+                        }
+                    }
+                },
+                {
+                    "text": "Leave it for now.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "won": {
+            "do": {
+                "flag": "antenna_3:fixed",
+                "count": "hal_antennas"
+            },
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "working",
+                    "text": "Click. Click. The antenna starts to hum."
+                }
+            ],
+            "then": [
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "hal_antennas",
+                            3
+                        ]
+                    },
+                    "goto": "step3"
+                },
+                {
+                    "if": {
+                        "counter_at_least": [
+                            "hal_antennas",
+                            2
+                        ]
+                    },
+                    "goto": "step2"
+                },
+                "step1"
+            ]
+        },
+        "step1": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "hal",
+                        "fix1"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "working",
+                    "text": "Somewhere far away, a radio crackles: '...copy that! One up! Over!'"
+                }
+            ]
+        },
+        "step2": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "hal",
+                        "fix2"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "working",
+                    "text": "The radio crackles again: '...two! Two up! Keep going, stranger. Over.'"
+                }
+            ]
+        },
+        "step3": {
+            "do": {
+                "quest": {
+                    "step": [
+                        "hal",
+                        "return"
+                    ]
+                }
+            },
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "working",
+                    "text": "All three antennas hum together now. The air itself seems to listen."
+                },
+                {
+                    "who": "antenna",
+                    "pose": "working",
+                    "text": "Better get back to Hal."
+                }
+            ]
+        },
+        "lost": {
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "broken",
+                    "text": "Sparks. Ouch. The frozen wires slip out of place again."
+                },
+                {
+                    "who": "antenna",
+                    "pose": "broken",
+                    "text": "Try again when your fingers warm up."
+                }
+            ]
+        },
+        "working": {
+            "lines": [
+                {
+                    "who": "antenna",
+                    "pose": "working",
+                    "text": "The antenna hums quietly. Hal's static has somewhere to go now."
+                }
+            ]
+        }
+    }
+}

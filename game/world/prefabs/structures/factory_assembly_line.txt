@@ -1,0 +1,14 @@
+@name factory_assembly_line
+@biomes toy_factory
+@items random
+; A small assembly line still running. It carries half-finished toys into the wall.
+
+ ##########
+ #_________
+ #>>>>>>>>#
+ #________#
+ #_m__I_m_#
+ #________#
+ #<<<<<<<<#
+ _________#
+ ##########

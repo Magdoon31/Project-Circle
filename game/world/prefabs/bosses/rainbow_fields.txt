@@ -1,0 +1,15 @@
+@name boss_rainbow_fields
+@biomes rainbow_fields
+; RAINBOW BOSS: an open marble pavilion - a ring of white pillars in a sea of flowers. No walls, nowhere to hide.
+
+    ***.,.***
+  **r..,,..r**
+ *....,,,,....*
+ *.r.,,,,,,.r.*
+ ...,,_____,,...
+ *r.,,__B__,,r.*
+ ...,,_____,,...
+ *.r.,,,,,,.r.*
+ *....,,,,....*
+  **r..,,..r**
+    ***.,.***

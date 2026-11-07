@@ -1,0 +1,77 @@
+{
+    "_comment": "Wren in the Separated Village (until the Garden is open). A curious researcher: fast, precise, asks questions. Only a teaser here.",
+    "partner": "wren",
+    "start": [
+        {
+            "if": {
+                "flag": "talked:wren"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:wren"
+            },
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "surprised",
+                    "text": "Wait - you came from the Candy side? Through the forest?"
+                },
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "Did the monsters there look... right to you?"
+                },
+                {
+                    "who": "player",
+                    "pose": "neutral",
+                    "text": "Right?"
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "Normal. Like monsters should look. I've been drawing them for years. They're changing. Every year a little stranger."
+                },
+                {
+                    "who": "wren",
+                    "pose": "serious",
+                    "text": "More teeth. More eyes. Colours that don't belong to them. Nobody else sees it. Or nobody wants to."
+                },
+                {
+                    "who": "wren",
+                    "pose": "neutral",
+                    "text": "I'm Wren. If you go further - down, or up north - look at things. Really look."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "And then come tell me. Wherever I am."
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "who": "wren",
+                    "pose": "thinking",
+                    "text": "Still drawing. The new ones have too many teeth."
+                },
+                {
+                    "who": "wren",
+                    "pose": "neutral",
+                    "text": "North or down - either way, look carefully. Then tell me."
+                },
+                {
+                    "who": "wren",
+                    "pose": "smile",
+                    "text": "Did you see anything strange? Everything's strange. That's the problem."
+                }
+            ]
+        }
+    }
+}

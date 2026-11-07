@@ -1,0 +1,16 @@
+@name forest_cabin
+@biomes village
+@items random
+; A small cabin in the woods with a fenced yard. Someone left in a hurry.
+; Legend: . grass , path _ floor H house D door f fence T tree $ gold I item N npc
+
+   TTT     TTT
+  T.........T
+ ..fffffffff..
+ ..f__HHH__f..
+ ..f__HDH__f..
+ ..f_$___I_f..
+ ..f_______f..
+ ..ffff_ffff..
+ ......,......
+  T...,,,...T

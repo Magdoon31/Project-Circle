@@ -1,0 +1,12 @@
+@name gardener_hut
+@biomes underground_garden
+@npcs gardener
+; A tiny hut overgrown with vines. The gardener still tends the plants down here.
+; ALWAYS in the Garden (cellar_map.py REQUIRED_GARDEN_STRUCTURES). Quest "gardener".
+
+  T.......T
+ ...HHHHH...
+ ...HHDHH...
+ .*.__N__.*.
+ ..*_____*..
+  T...,...T

@@ -1,0 +1,15 @@
+@name flower_tower
+@biomes rainbow_fields
+@npcs sunny
+; Sunny's tower of flowers: a wobbly heap in the middle of a meadow. ALWAYS in Rainbow Fields (surface_map.py REQUIRED_STRUCTURES).
+; The flowers around it are picked bare in a ring - she's been at it for a while.
+
+   *******
+  **.....**
+ **...F...**
+ *...FFF...*
+ *..FFFFF..*
+ *..FFFFF.N*
+ **.......**
+  ***.,.***
+     .,.

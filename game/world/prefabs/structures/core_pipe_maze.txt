@@ -1,0 +1,14 @@
+@name core_pipe_maze
+@biomes the_core
+@gold 250-450
+; Pipes everywhere, hissing. Somebody hid their savings between them.
+
+ ppppppppppp
+ p___p_____p
+ p_p_p_ppp_p
+ p_p___p$p_p
+ p_ppppp_p_p
+ p_______p_p
+ ppppp_ppp_p
+     p_____p
+     ppp_ppp

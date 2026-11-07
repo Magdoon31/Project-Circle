@@ -1,0 +1,14 @@
+@name buried_playground
+@biomes underground_garden
+@items random
+@npcs clue_playground
+; A slide and a fence, half swallowed by roots. Bright paint under the moss.
+; One of the 3 places of Wren's investigation (quest "wren"): N = the spot you examine. ALWAYS in the Garden.
+
+ ffff.ffff
+ f__H____f
+ f__HN_x_f
+ f_____I_f
+ f_x_____f
+ fff___fff
+    ...
