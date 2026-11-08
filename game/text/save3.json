@@ -1,0 +1,249 @@
+{
+    "player": {
+        "x": 7760.5,
+        "y": 4191.5,
+        "money": 1405,
+        "playtime": 4405.616666686704
+    },
+    "inventory": {
+        "active_items": [
+            "Rifle A4",
+            "Samurai Plating",
+            "Dices"
+        ],
+        "active_trinket2": null,
+        "items": [
+            "Simple Pistol",
+            "Tape",
+            "Shotgun R15",
+            "Hunter's Sniper",
+            "Nail Gun"
+        ]
+    },
+    "map": {
+        "seed": 27294524,
+        "seed_text": "",
+        "level": "surface",
+        "levels": {
+            "surface": {
+                "collected": [
+                    [
+                        20,
+                        138
+                    ],
+                    [
+                        35,
+                        173
+                    ],
+                    [
+                        37,
+                        174
+                    ],
+                    [
+                        38,
+                        175
+                    ],
+                    [
+                        56,
+                        158
+                    ],
+                    [
+                        58,
+                        160
+                    ],
+                    [
+                        61,
+                        29
+                    ],
+                    [
+                        62,
+                        30
+                    ],
+                    [
+                        78,
+                        184
+                    ],
+                    [
+                        79,
+                        185
+                    ],
+                    [
+                        84,
+                        236
+                    ],
+                    [
+                        85,
+                        236
+                    ],
+                    [
+                        97,
+                        210
+                    ],
+                    [
+                        108,
+                        172
+                    ],
+                    [
+                        111,
+                        171
+                    ],
+                    [
+                        135,
+                        61
+                    ]
+                ],
+                "defeated": [
+                    [
+                        48,
+                        239
+                    ],
+                    [
+                        53,
+                        92
+                    ],
+                    [
+                        96,
+                        141
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
+            },
+            "cellar": {
+                "collected": [
+                    [
+                        43,
+                        105
+                    ],
+                    [
+                        43,
+                        134
+                    ],
+                    [
+                        43,
+                        182
+                    ],
+                    [
+                        46,
+                        181
+                    ],
+                    [
+                        58,
+                        134
+                    ],
+                    [
+                        58,
+                        135
+                    ],
+                    [
+                        82,
+                        91
+                    ],
+                    [
+                        84,
+                        99
+                    ],
+                    [
+                        84,
+                        100
+                    ],
+                    [
+                        87,
+                        131
+                    ],
+                    [
+                        88,
+                        132
+                    ],
+                    [
+                        102,
+                        165
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
+            }
+        },
+        "flags": [
+            "boss:candy",
+            "boss:rainbow_fields",
+            "boss:village",
+            "found:factory_hall",
+            "gus:snapped",
+            "path:factory",
+            "quest_done:foreman",
+            "quest_done:gus",
+            "talked:foreman",
+            "talked:milo_village",
+            "talked:wren",
+            "visited:candy",
+            "visited:factory",
+            "visited:garden",
+            "visited:separated",
+            "wren_sigil"
+        ]
+    },
+    "quests": {},
+    "counters": {
+        "sigils": {
+            "owned": [
+                "overflow",
+                "lucky_charm"
+            ],
+            "active": {
+                "craft": "overflow",
+                "fortune": "lucky_charm"
+            }
+        },
+        "biome_wins": {
+            "village": 5,
+            "sugarwood_grove": 15,
+            "toy_factory": 7
+        },
+        "shop": {
+            "stage": [
+                "boss:candy",
+                "boss:rainbow_fields",
+                "boss:village"
+            ],
+            "shelves": [
+                {
+                    "item": "Fire Ring",
+                    "biome": "toy_factory",
+                    "sold": false
+                },
+                {
+                    "item": "Samurai Plating",
+                    "biome": "toy_factory",
+                    "sold": true
+                },
+                {
+                    "item": "Shotgun S4",
+                    "biome": "sugarwood_grove",
+                    "sold": false
+                },
+                {
+                    "item": "Medieval Armor I",
+                    "biome": "rainbow_fields",
+                    "sold": false
+                },
+                {
+                    "item": "Old Pistol",
+                    "biome": "village",
+                    "sold": false
+                }
+            ],
+            "used": 3,
+            "greeted": [
+                "boss:candy",
+                "boss:rainbow_fields",
+                "boss:village"
+            ]
+        },
+        "gus_talks": 10
+    },
+    "game": {
+        "hard_mode": false
+    }
+}

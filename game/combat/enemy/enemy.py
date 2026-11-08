@@ -1,12 +1,13 @@
 import pygame, math, random, copy
 from game.combat.projectile import projectile as prjt
 
-CONTACT_KNOCKBACK = 45         # px the player is pushed away when an enemy touches them
+CONTACT_KNOCKBACK = 35         # px the player is pushed away when an enemy touches them
 TELEGRAPH_SPEED = 1.3          # a telegraphed (aimed) shot flies this much faster
 AIM_LOCK_SHARE = 0.35          # the last 35% of the aiming time the line doesn't follow you any more
 PULSE = [45, 15]               # pulsing ring: frames flying out, frames flying back ("3 steps forward, 1 back")
 POISON_FIRST = 30               # frames from putting poison on to its first hit (then every 60)
 PHASE_INVULN = 60               # frames a boss can't be hurt (and doesn't shoot) when it changes phase
+FADING = {"line_soldier", "line_beetle", "scrap_beetle"}   # (8.11) the toys a machine makes fewer of late in a phase
 MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (the player runs 8)
 
 # ATTACK TYPES (the key in the enemy's attack dict decides what it does):
@@ -30,7 +31,26 @@ MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (
 #             while one of them lives (a shield ring is drawn); "amount": [1, 2] = random; "after_death": s - new
 #             guards only this long after the last one died; "chase": speed - while shielded it walks at you
 #   wave + "bounce": n  the line bounces off the screen edges n times; + "opposite": True  a second one straight back
+#   ice_walls {"count", "hits", "life": s, "long", "thick"}  walls of ice rise in random spots: they stop you, the
+#             boss and every bullet; your shots break them (hits), or they melt after "life" s (Frost Golem)
+#   ground_crack {"speed", "length", "every": px, "bullets": {...}}  a stomp: a crack runs along the ground at you and
+#             throws bullets out to both sides every "every" px (Frost Golem; drawn like a zap)
+#   spawn + "at": [[fx, fy], ...]  the spawned ones stand at these spots (share of the arena); "replace": True  the
+#             old guards are taken away first; "enemy_name" can be a list (a random one each); "belt": True  they come
+#             in at the start of a random conveyor belt (Combat places them) (8.11, Assembly Line)
+#   spawn + "open_damage": share  when all its guards are broken it is open only until it took this share of its
+#             max HP, then sealed (no guards) for "rebuild" s, then new guards; "no_drops": True  they drop nothing
+#   vents     {"count", "warn", "pattern": "ring" / "line", "bullets", "every", "speed", "damage", "width", "type"}
+#             vents in the bottom edge glow, then shoot a half ring up or a row at you (so you can't hide down there)
+#   "kind": "spawn"  any attack can say which type it is - so a boss can have two spawns ("spawn" + "bombers")
+#   fuse      {"cooldown": s}  after this long the enemy blows up by itself (its death attack goes off) - bomb crates
+#   nozzles   {"lanes": n, "warn": frames, "rows", "bullets", "every": frames, "speed", "damage", "width", "type"}
+#             nozzles in the side walls light up for `warn` frames, then shoot a stream along n random belts
 # Any attack can also have "repeat": [times, gap in s] - a series (the cooldown starts after the last one).
+# ARENA (bosses, per phase: "arena": {...}): "ice": True = slippery floor; "blizzard": [on, every] frames = a snowstorm
+#   (you only see a circle around you) for `on` frames out of every `every`; "belts": {"lanes": [[top, bottom, dir],
+#   ...] (share of the height; dir 1 = to the right), "speed": px per frame, "reverse": [every, warn] frames} =
+#   conveyor belts across the arena that carry you, the small enemies and the bullets (8.11). Combat reads enemy.arena.
 #
 # BOSS PHASES (7.11): EnemyDB.boss_info[name] = {"name": shown over the big HP bar, "phases": [{"at": 0.6, ...}]}.
 # When the HP drops to "at" x max HP the boss gets that phase: new "attacks" (replace the old ones; "hard": more
@@ -82,10 +102,20 @@ class Enemy:
         self.boss_name = None          # bosses: the name over the big HP bar
         self.phases = []               # bosses: the phases still to come (EnemyDB.boss_info), highest "at" first
         self.phase_marks = []          # where the phase lines are drawn on the HP bar
+        self.phase_started = 0         # (8.11) attack_timer when this phase began
+        self.owner = None              # (8.11) the boss that made this one (Assembly Line's machines)
+        self.behind_wall = False       # (8.11) a wall stands between it and its target (Combat sets it)
         self.invuln = 0                # frames left of a phase change (no damage, no shots, blinking)
         self.airborne = False          # a "leap": up in the air (off the screen, can't be hit)
         self.leap_shadow = None        # (x, y, 0..1) where it will land
         self.guards = []               # enemies that shield this one while alive ("guards" spawn)
+        self.arena = {}                # boss: what the arena does in this phase (see the top)
+        self.new_walls = []            # ice walls made this frame (Combat takes them)
+        self.new_cracks = []           # ground cracks started this frame (Combat runs them)
+        self.new_nozzles = []          # (8.11) wall nozzles started this frame (Combat runs them)
+        self.open_left = None          # (8.11) guards with "open_damage": damage it can still take before it seals
+        self.sealed_at = None          # (8.11) attack_timer when it sealed again (no guards yet - they come back soon)
+        self.shape = None              # (8.11) "square" = drawn as a box (machines, crates, turrets)
         self.guards_gone_at = None     # attack_timer when the last guard died
         self.guard_chase = 0           # speed while shielded (walks at the player, hurts by touch)
         self.phase_event = False       # Combat: a phase just started (clear the bullets, flash, sound)
@@ -104,6 +134,10 @@ class Enemy:
             a = self.aiming.get("aim_angle", 0)
             locked = self.aiming.get("aim_left", 0) <= self.aiming["telegraph"] * AIM_LOCK_SHARE
             end = (self.x + math.cos(a) * 2500, self.y + math.sin(a) * 2500)
+            for wall in getattr(self, "_walls", []):           # (8.11) the line stops at a wall (so does the shot)
+                hit = wall["rect"].clipline((self.x, self.y), end)
+                if hit:
+                    end = hit[0]
             pygame.draw.line(screen, (255, 40, 40) if locked else (255, 130, 130), (self.x, self.y), end, 3 if locked else 1)
         if getattr(self, "dash_preview", None):                   # a boss about to jump: where it lands
             a, dist, k = self.dash_preview
@@ -118,10 +152,16 @@ class Enemy:
             shade = pygame.Surface((int(r * 2), int(r * 1.2)), pygame.SRCALPHA)
             pygame.draw.ellipse(shade, (0, 0, 0, int(60 + 90 * k)), shade.get_rect())
             screen.blit(shade, shade.get_rect(center=(sx, sy + self.width * 0.3)))
-        if any(g.hp > 0 for g in self.guards):                    # shielded by its guards
+        if self.shielded():                                       # shielded by its guards
             pygame.draw.circle(screen, (120, 200, 255), (self.x, self.y), self.width + 10, 4)
         if not (self.invuln and (self.invuln // 5) % 2):          # blinking while changing phase
-            pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
+            if self.shape == "square":                            # (8.11) machines, crates, turrets
+                box = pygame.Rect(0, 0, self.width * 2, self.width * 2)
+                box.center = (self.x, self.y)
+                pygame.draw.rect(screen, self.color, box, 0, 6)
+                pygame.draw.rect(screen, (40, 40, 48), box, 4, 6)
+            else:
+                pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
         self.hp_bar(screen)
         die = self.handle_effects()[1]  
         self.draw_effects(screen)
@@ -179,8 +219,12 @@ class Enemy:
         return text, self.hp <= 0
                 
 
+    def shielded(self):
+        """Its guards still stand - or (open_damage guards) it sealed itself again and waits for new ones."""
+        return any(g.hp > 0 and not getattr(g, "remove_me", False) for g in self.guards) or self.sealed_at is not None
+
     def take_damage(self, amount, effects = {}):
-        if self.invuln > 0 or self.airborne or any(g.hp > 0 for g in self.guards):
+        if self.invuln > 0 or self.airborne or self.shielded():
             return [True]                     # changing phase / in the air / shielded: the bullet does nothing
         
              
@@ -203,7 +247,13 @@ class Enemy:
                 elif effect_name == "bullseye" and self.hp <= self.max_hp*effect[0]:
                     self.hp = 0
 
-        self.hp -= amount * 100 / (100 + max(0, self.defence))     # % defence: def 100 = half damage
+        dealt = amount * 100 / (100 + max(0, self.defence))       # % defence: def 100 = half damage
+        if self.open_left is not None:                            # (8.11) open only for so much damage, then sealed
+            dealt = min(dealt, self.open_left)
+            self.open_left -= dealt
+            if self.open_left <= 0:
+                self.open_left, self.sealed_at = None, self.attack_timer
+        self.hp -= dealt
         if self.phases and self.hp < self.max_hp * self.phases[0]["at"]:
             self.hp = self.max_hp * self.phases[0]["at"]              # a phase is never skipped by one big hit
         if self.hp < 0:
@@ -218,7 +268,7 @@ class Enemy:
 
     def move(self, target_x, target_y, screen):
         self.screen_size = screen.get_size()
-        if self.guard_chase and any(g.hp > 0 for g in self.guards):
+        if self.guard_chase and self.shielded():
             d = math.hypot(target_x - self.x, target_y - self.y)       # shielded: walks straight at you
             if d > 1:
                 self.x += (target_x - self.x) / d * self.guard_chase
@@ -446,10 +496,13 @@ class Enemy:
         (aiming a fast shot, or a burst / spin / line that lasts a few frames)."""
         projectiles, enemies = [], []
         aim_angle = math.atan2(aim.y - self.y, aim.x - self.x)
+        name = info.get("kind", name)                      # (8.11) e.g. a 2nd spawn: "bombers": {"kind": "spawn"}
 
         if name == "basic" and info.get("telegraph"):
             # FAST SHOT (6.11): a red aiming line first (follows you, then locks), then a faster bullet
             left = info.get("aim_left")
+            if left is None and self.behind_wall:
+                return [], [], True                        # (8.11) no aiming at a wall: it goes round first
             if left is None:
                 left = info["telegraph"]
             left -= 1
@@ -602,16 +655,37 @@ class Enemy:
 
         elif name == "spawn":
             if info.get("guards"):
-                if any(g.hp > 0 for g in self.guards):
+                if any(g.hp > 0 and not getattr(g, "remove_me", False) for g in self.guards):
                     info["last_used"] = self.attack_timer      # the old guards still stand: no new ones yet
                     return projectiles, enemies, True
-                if self.guards:                                # they all died: wait "after_death" s from then
+                if self.guards and info.get("open_damage"):
+                    # (8.11, Assembly Line) all broken: open for open_damage x max HP of damage, then sealed again
+                    # (shielded, no guards) for "rebuild" s, then new guards
+                    if self.sealed_at is not None:
+                        if self.attack_timer - self.sealed_at < info.get("rebuild", 0) * 60:
+                            return projectiles, enemies, True
+                        self.sealed_at = None
+                    else:
+                        if self.open_left is None:
+                            self.open_left = info["open_damage"] * self.max_hp
+                            # (8.11) don't seal a hair before the next phase: if what would be left of the phase
+                            # after this window is small, stay open until the phase changes
+                            floor = self.max_hp * self.phases[0]["at"] if self.phases else 0
+                            rest = self.hp - floor
+                            if rest - self.open_left < self.open_left * 0.5:
+                                self.open_left = rest + 1
+                        return projectiles, enemies, True
+                elif self.guards:                              # they all died: wait "after_death" s from then
                     if self.guards_gone_at is None:
                         self.guards_gone_at = self.attack_timer
                     if self.attack_timer - self.guards_gone_at < info.get("after_death", 0) * 60:
                         return projectiles, enemies, True
                 self.guards_gone_at = None
                 self.guard_chase = info.get("chase", 0)
+            if info.get("replace"):
+                for g in self.guards + getattr(self, "old_guards", []):   # (8.11) the old ones are taken away
+                    g.remove_me = True
+                self.old_guards = []
             corners = None
             if info.get("corners") and self.screen_size:
                 w, h = self.screen_size
@@ -621,17 +695,75 @@ class Enemy:
             if isinstance(amount, (list, tuple)):
                 amount = random.randint(*amount)               # e.g. [1, 2]: one or two
             for i in range(amount):
-                enemy = enemy_db.get_enemy(info["enemy_name"])
-                if corners:
+                kind = info["enemy_name"]
+                kind = random.choice(kind) if isinstance(kind, (list, tuple)) else kind
+                if info.get("fade") and self.owner and kind in FADING:
+                    # (8.11) the boss's phase has lasted fade[0] s: fewer small toys (up to fade[2] skipped after
+                    # another fade[1] s) - the fight can't drown you in them
+                    age = (self.owner.attack_timer - self.owner.phase_started) / 60 - info["fade"][0]
+                    if age > 0 and random.random() < min(info["fade"][2], age / info["fade"][1]):
+                        continue
+                enemy = enemy_db.get_enemy(kind)
+                enemy.owner = self
+                if info.get("at") and self.screen_size:
+                    spot = info["at"][i % len(info["at"])]
+                    enemy.x, enemy.y = spot[0] * self.screen_size[0], spot[1] * self.screen_size[1]
+                elif info.get("belt"):
+                    enemy.x, enemy.y = self.x, self.y
+                    enemy.belt_entry = True                    # Combat puts it at the start of a belt
+                elif corners:
                     enemy.x, enemy.y = corners[i % 4]
                 else:
                     enemy.x = self.x + (-1)**i*20*i
                     enemy.y = self.y + (-1)**i*self.width
                 if info.get("color"):
                     enemy.color = tuple(info["color"])
+                if info.get("no_drops"):
+                    enemy.no_drops = True                      # (8.11) a boss's helpers drop nothing
                 enemies.append(enemy)
             if info.get("guards"):
                 self.guards = list(enemies)
+            info["last_used"] = self.attack_timer
+
+        elif name == "ice_walls":
+            # ICE WALLS (7.11, Frost Golem): a stomp - walls of ice rise in random spots (not on you, not on it)
+            w, h = self.screen_size or (1920, 1080)
+            lng, thick = info.get("long", 200), info.get("thick", 44)
+            for _ in range(info["count"]):
+                for _try in range(30):
+                    ww, hh = (lng, thick) if random.random() < 0.5 else (thick, lng)
+                    r = pygame.Rect(random.randint(80, w - 80 - ww), random.randint(120, h - 80 - hh), ww, hh)
+                    p = getattr(self, "_player", None)
+                    near_p = p is not None and r.inflate(p.width * 4, p.width * 4).collidepoint(p.x, p.y)
+                    others = self.new_walls + list(getattr(self, "_walls", []))     # (8.11) also the walls still standing
+                    apart = not any(r.inflate(60, 60).colliderect(o["rect"]) for o in others)
+                    if apart and not near_p and not r.inflate(self.width * 2, self.width * 2).collidepoint(self.x, self.y):
+                        self.new_walls.append({"rect": r, "hits": info["hits"], "max": info["hits"], "life": int(info["life"] * 60)})
+                        break
+            info["last_used"] = self.attack_timer
+
+        elif name == "fuse":
+            # (8.11) a bomb crate: time's up - it blows (its death attack goes off when Combat sees hp <= 0)
+            self.hp = 0
+            info["last_used"] = self.attack_timer
+
+        elif name == "vents":
+            # (8.11, Assembly Line) vents in the floor at the bottom glow, then shoot (half ring up / a row at you)
+            self.new_nozzles.append({k: v for k, v in info.items() if k not in ("cooldown", "last_used")}
+                                    | {"damage": self.damage * info["damage"], "vent": True})
+            info["last_used"] = self.attack_timer
+
+        elif name == "nozzles":
+            # (8.11, Assembly Line) wall nozzles light up, then shoot along random belts (Combat runs them)
+            self.new_nozzles.append({k: v for k, v in info.items() if k not in ("cooldown", "last_used")}
+                                    | {"damage": self.damage * info["damage"]})
+            info["last_used"] = self.attack_timer
+
+        elif name == "ground_crack":
+            # GROUND CRACK (8.11, Frost Golem): a stomp - a crack runs from it towards you, bullets out to both sides
+            self.new_cracks.append({"x": self.x, "y": self.y, "angle": aim_angle, "speed": info["speed"],
+                                    "max": info["length"], "every": info["every"], "start": self.width,
+                                    "bullets": {**info["bullets"], "damage": self.damage * info["bullets"]["damage"]}})
             info["last_used"] = self.attack_timer
 
         elif name == "burst":
@@ -714,6 +846,7 @@ class Enemy:
     # --- boss phases (7.11) --------------------------------------------------------------------------------
     def set_phases(self, info):
         self.boss_name = info.get("name")
+        self.arena = dict(info.get("arena", {}))           # phase 1's arena
         self.phases = sorted((dict(p) for p in info.get("phases", [])), key=lambda p: -p["at"])
         self.phase_marks = [p["at"] for p in self.phases]
 
@@ -735,14 +868,18 @@ class Enemy:
             self.color = tuple(phase["color"])
         if "contact" in phase:
             self.contact_dmg = phase["contact"]
+        self.arena = dict(phase.get("arena", {}))
         self.aiming = None
         self.glow = 0
         self.dash_preview = None
+        self.old_guards = self.guards                       # ("replace" spawns can still take them away)
         self.guards = []                                    # a new phase: old guards don't shield any more
+        self.open_left = self.sealed_at = None
         self.guard_chase = 0
         if self.airborne:                                   # (can't happen mid-air - no damage up there - but safe)
             self.airborne, self.leap_shadow = False, None
         self.invuln = PHASE_INVULN
+        self.phase_started = self.attack_timer
         self.phase_event = True
 
     def burst(self, info):

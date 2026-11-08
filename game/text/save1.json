@@ -1,28 +1,32 @@
 {
     "player": {
-        "x": 8084.568162695069,
-        "y": 9731.951721909114,
-        "money": 1451,
-        "playtime": 2136.616666666261
+        "x": 4301.7566417924145,
+        "y": 13350.355521866582,
+        "money": 8969,
+        "playtime": 11343.266666585749
     },
     "inventory": {
         "active_items": [
-            "Laser SMG",
-            "Samurai Jacket",
-            "Flavoured Candy"
+            "Pocket AK",
+            "Heroic Armor",
+            "Magic Dust"
         ],
-        "active_trinket2": null,
+        "active_trinket2": "Frozen Ring",
         "items": [
             "Simple Pistol",
-            "Shotgun S4",
             "Martini",
-            "Glue Gun"
+            "Toxic Ring",
+            "Pale Orb",
+            "Combat Sniper",
+            "Peace Gun",
+            "Flavoured Candy",
+            "Ghost Rifle"
         ]
     },
     "map": {
         "seed": 660828180,
         "seed_text": "",
-        "level": "surface",
+        "level": "cellar",
         "levels": {
             "surface": {
                 "collected": [
@@ -107,8 +111,32 @@
                         155
                     ],
                     [
+                        152,
+                        174
+                    ],
+                    [
+                        152,
+                        175
+                    ],
+                    [
+                        168,
+                        145
+                    ],
+                    [
+                        181,
+                        122
+                    ],
+                    [
+                        182,
+                        122
+                    ],
+                    [
                         196,
                         150
+                    ],
+                    [
+                        202,
+                        101
                     ]
                 ],
                 "defeated": [
@@ -123,36 +151,221 @@
                     [
                         102,
                         143
-                    ]
-                ],
-                "away": [
-                    [
-                        50,
-                        237
                     ],
                     [
-                        102,
-                        143
+                        187,
+                        98
                     ]
                 ],
+                "away": [],
                 "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
+            },
+            "lunapark": {
+                "collected": [
+                    [
+                        8,
+                        24
+                    ],
+                    [
+                        13,
+                        18
+                    ],
+                    [
+                        15,
+                        27
+                    ],
+                    [
+                        29,
+                        12
+                    ],
+                    [
+                        33,
+                        12
+                    ],
+                    [
+                        37,
+                        12
+                    ],
+                    [
+                        49,
+                        27
+                    ],
+                    [
+                        58,
+                        24
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNpjYBgFtASMhMCoETQ2gpFUMHyNYBwII0bBKBgFo4BcwAAA8OcGLw=="
+            },
+            "cellar": {
+                "collected": [
+                    [
+                        119,
+                        60
+                    ],
+                    [
+                        120,
+                        49
+                    ],
+                    [
+                        141,
+                        42
+                    ],
+                    [
+                        142,
+                        198
+                    ],
+                    [
+                        142,
+                        200
+                    ],
+                    [
+                        267,
+                        129
+                    ],
+                    [
+                        280,
+                        133
+                    ]
+                ],
+                "defeated": [
+                    [
+                        51,
+                        162
+                    ],
+                    [
+                        198,
+                        78
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
+            },
+            "pale_cellar": {
+                "collected": [],
+                "defeated": [],
+                "away": [],
+                "explored": "eNrt3LENwzAMAEFl/6WzgZL4gViy7gdgcYUhsvAYkiRJkiRJkiRJkiRJkqQ1ek3j0/wANj5+/O7k48ePHz9+l8fwi2P48eN3k993Hvz48ePHjx8/fvwe7MiPH79H+Q1+zW82gZ+TND9++/txSoCUih+j4kcoAfJJgHQkSZIkSZKkMTmioeHHjx8/8ePHj5/48ePHT5/8CFY/gNEPYPQDGP0A8uPHj5/48ePHTz/44eS3kCCtBgirAbJqgKgaICl+voC7vwIpVj+A0Q9h1uTEjx8/frKN2Eb2fA3Siq9pXHEb4eWc4KCwuyAwfvz48RM/fvz48QP4vw0OYeTjx48fv1P5+PHjty8fP378+J3Kx48fv+X9/PIu+dHhx4/foX5w+PHb1o8NP378DvVDw0+SJEmSJEmSJEmSJEmSJEmSJEmSJEmSJEmSJEmSJEmSJEkn9wYv+hSW"
+            },
+            "pale_nowhere": {
+                "collected": [],
+                "defeated": [],
+                "away": [],
+                "explored": "eNpjYBgFlAFG3IBS/QTBqP5R/aP6KdNPiQlUKgJGwSgYBaNgFIw4AABMjgO5"
+            },
+            "pale_nowhere2": {
+                "collected": [],
+                "defeated": [],
+                "away": [],
+                "explored": "eNrt1KESwCAMRMG8///pqpoaZnEdOM0aksvMNy3CIAYxiEEMYhCDGMQgfP6Kjop+aptj2Jm0L5Pvq1fCW+fF9tsxes5WYkTMzT/yAEdHBDQ="
+            },
+            "pale_hash": {
+                "collected": [
+                    [
+                        15,
+                        9
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNpjYKAIMOICo7KjsuTKAgBMogH1"
+            },
+            "core": {
+                "collected": [
+                    [
+                        29,
+                        15
+                    ],
+                    [
+                        36,
+                        63
+                    ],
+                    [
+                        36,
+                        64
+                    ],
+                    [
+                        64,
+                        65
+                    ],
+                    [
+                        65,
+                        65
+                    ],
+                    [
+                        106,
+                        77
+                    ],
+                    [
+                        113,
+                        80
+                    ]
+                ],
+                "defeated": [
+                    [
+                        70,
+                        120
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwTENAAAAw6DUv+nZ2AEUAAAAAAAAAAAAAAAAAAAAAAD8GCfkRxk="
+            },
+            "void": {
+                "collected": [
+                    [
+                        118,
+                        112
+                    ],
+                    [
+                        120,
+                        112
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8DCxlbaQ=="
             }
         },
         "flags": [
+            "antenna_1:fixed",
+            "antenna_2:fixed",
+            "antenna_3:fixed",
+            "arrived:garden_tundra",
             "asked_hook:dot",
             "boss:candy",
+            "boss:core",
+            "boss:factory",
+            "boss:garden",
             "boss:rainbow_fields",
+            "boss:tundra",
             "boss:village",
             "explained_price:dot",
             "gus:snapped",
+            "lucky:golden",
+            "open:garden_backroom",
+            "pale_orb:revealed",
             "path:tundra",
             "quest_done:gus",
+            "quest_done:hal",
             "quest_done:hook",
+            "ring:heard",
+            "talked:ferris",
+            "talked:hal",
+            "talked:lucky",
             "talked:milo_separated",
             "talked:milo_village",
+            "talked:oliver",
+            "talked:wanderer",
             "talked:wren",
             "visited:candy",
+            "visited:core",
+            "visited:factory",
+            "visited:garden",
+            "visited:lunapark",
             "visited:separated",
+            "void_unlocked",
             "wren_sigil"
         ]
     },
@@ -160,40 +373,66 @@
     "counters": {
         "sigils": {
             "owned": [
-                "overflow"
+                "overflow",
+                "close_call",
+                "haggler",
+                "headstart",
+                "spare_pocket"
             ],
-            "active": {}
+            "active": {
+                "warden": "headstart",
+                "craft": "spare_pocket",
+                "fortune": "haggler"
+            }
         },
         "shop": {
             "stage": [
+                "boss:candy",
+                "boss:core",
+                "boss:garden",
                 "boss:rainbow_fields",
+                "boss:tundra",
                 "boss:village"
             ],
             "shelves": [
                 {
-                    "item": "Laser SMG",
-                    "biome": "sugarwood_grove",
-                    "sold": true
+                    "item": "Power Bank",
+                    "biome": "the_core",
+                    "sold": false
                 },
                 {
-                    "item": "Book",
-                    "biome": "sugarwood_grove",
+                    "item": "Hourglass",
+                    "biome": "the_core",
                     "sold": false
+                },
+                {
+                    "item": "Magic Ring",
+                    "biome": "underground_garden",
+                    "sold": false
+                },
+                {
+                    "item": "Old-World Vest",
+                    "biome": "silverpine_tundra",
+                    "sold": false
+                },
+                {
+                    "item": "Shotgun S4",
+                    "biome": "sugarwood_grove",
+                    "sold": true
                 },
                 {
                     "item": "Apprentice Armor",
                     "biome": "rainbow_fields",
                     "sold": false
-                },
-                {
-                    "item": "Vest",
-                    "biome": "village",
-                    "sold": false
                 }
             ],
-            "used": 1,
+            "used": 2,
             "greeted": [
+                "boss:candy",
+                "boss:core",
+                "boss:garden",
                 "boss:rainbow_fields",
+                "boss:tundra",
                 "boss:village"
             ]
         },
@@ -201,10 +440,24 @@
         "memory_wins": 1,
         "biome_wins": {
             "village": 1,
-            "rainbow_fields": 2,
-            "sugarwood_grove": 8
+            "rainbow_fields": 3,
+            "sugarwood_grove": 10,
+            "silverpine_tundra": 10,
+            "the_core": 4,
+            "underground_garden": 3
         },
-        "gus_talks": 10
+        "gus_talks": 10,
+        "shortcuts": [
+            "candy"
+        ],
+        "wheel_plays": 16,
+        "wheel_wins": 8,
+        "wires_plays": 3,
+        "wires_wins": 3,
+        "hal_antennas": 3,
+        "fishing_ready_at": 8799.783333293793,
+        "fishing_plays": 1,
+        "fishing_wins": 1
     },
     "game": {
         "hard_mode": false

@@ -36,7 +36,7 @@ COLUMNS = [
          "secret": True},
         {"id": "bullet_time", "name": "Bullet Time", "text": "Enemy bullets fly 15% slower.",
          "how": "In one fight in The Core,\nlet 30 bullets fly right past you."},
-        {"id": "close_call", "name": "Close Call", "text": "An enemy bullet flying right past you\nreloads your weapon instantly.",
+        {"id": "close_call", "name": "Close Call", "text": "Dodged enemy bullet reloads your\nweapon but enemies hurt you 50% more.",
          "how": "Win a fight in the Silverpine Tundra\nwith 10% HP or less."},
     ]},
     {"id": "tribe", "name": "Tribe", "image": "tribe.png", "sigils": [
@@ -60,6 +60,8 @@ NEAR_MISSES = 30                # Bullet Time: near misses in one Core fight
 HEADSTART_FRAMES = 90           # 1.5 s
 BULLET_TIME_SPEED = 0.85
 CLOSE_CALL_DISTANCE = 2.6       # x the player's radius: closer than this (but no hit) = a close call
+CLOSE_CALL_COOLDOWN = 60        # (8.11) frames: Close Call reloads at most once a second (Flare Gun + a line of icicles)
+CLOSE_CALL_HURT = 1.5           # (8.11) the price: with Close Call on, enemies hurt you x1.5
 VIGOR_HP = 1.15
 MIGHT_DMG = 1.10
 SWIFT_SPEED = 1.10

@@ -19,11 +19,13 @@ from game.world.void_map import VoidMap
 from game.world.lunapark_map import LunaparkMap
 from game.world.tiles import TILES, tile_color, pale_color
 from game.world import pale_world as PALE
+from game.lib import snow_overlay as SNOW
 from game.world import surface_layout as L
 
 TILES_ON_SCREEN_Y = 13          # start screen shows the fenced square + ~2 tiles (author's decision)
 BOSS_NAME = "boss1"             # TEMPORARY: boss spots without a real boss yet use boss1
-BOSS_OF_ZONE = {"village": "slime_king", "rainbow_fields": "prism", "candy": "shroom_mother"}    # the real bosses (7.11, one by one): gate "from" -> EnemyDB.bosses
+BOSS_OF_ZONE = {"village": "slime_king", "rainbow_fields": "prism", "candy": "shroom_mother", "tundra": "frost_golem",
+                "factory": "assembly_line"}    # the real bosses (7.11, one by one): gate "from" -> EnemyDB.bosses
 FOG_COLOR = (18, 18, 22)        # unexplored part of the world map
 CONVEYOR_ANIM_SPEED = 60        # pixels per second the chevrons on conveyor belts move (just looks)
 
@@ -52,6 +54,7 @@ LEVEL_OVERLAYS = {"cellar": "assets/img/map/cellar_overlay.png", "void": "assets
 # how many times the overlay is layered in a biome (2 = darker). Changes smoothly when crossing biomes.
 BIOME_OVERLAY_STRENGTH = {"underground_garden": 2.0, "the_void": 3.0}
 OVERLAY_FADE = 0.03             # per frame
+SNOW_BIOMES = {"silverpine_tundra"}     # (8.11) Filip's animated snow overlay over these biomes (fades in/out)
 
 
 class LevelView:
@@ -102,6 +105,7 @@ class Map:
         self._icon_cache = {}
         self._overlay_cache = {}
         self.overlay_strength = 1.0
+        self.snow_strength = 0.0           # Tundra snow overlay (0..1, fades with the biome)
         self.font = pygame.font.Font("assets/font/Nexa-Heavy.ttf", max(12, self.tile_size // 4))
 
     # --- generating / loading ---------------------------------------------------------
@@ -261,6 +265,23 @@ class Map:
         # circle vs tiles: check the centre and 8 points on the edge
         points = [(x, y)] + [(x + math.cos(a) * radius, y + math.sin(a) * radius) for a in [i * math.pi / 4 for i in range(8)]]
         return not any(self.blocked(*self.tile_at(px, py)) for px, py in points)
+
+    def floor_color(self, biome):
+        """(8.11) Colour of the biome's ground (its most common walkable tile on this level) - the fight floor."""
+        cache = self.__dict__.setdefault("_floor_cache", {})
+        key = (self.level, biome, getattr(self.world, "pale", False))
+        if key not in cache:
+            counts = {}
+            for ty in range(self.world.height):
+                row = self.world.tiles[ty]
+                for tx in range(self.world.width):
+                    char = row[tx]
+                    if not TILES[char]["solid"] and self.world.biome_at(tx, ty) == biome:
+                        counts[char] = counts.get(char, 0) + 1
+            char = max(counts, key=counts.get) if counts else "."
+            color = tile_color(char, biome)
+            cache[key] = pale_color(color) if key[2] else color
+        return cache[key]
 
     def biome_at(self, x, y):
         tx, ty = self.tile_at(x, y)
@@ -573,6 +594,10 @@ class Map:
 
     def draw_overlay(self):
         """Darkening overlay of the current level (e.g. the cellar). Call after the player, before the UI."""
+        target = 1.0 if self.player.biome in SNOW_BIOMES and not getattr(self.world, "pale", False) else 0.0
+        self.snow_strength += max(-OVERLAY_FADE, min(OVERLAY_FADE, target - self.snow_strength))
+        if self.snow_strength > 0.01:
+            SNOW.draw(self.screen, 255 * self.snow_strength)          # snowfall over the Tundra
         path = LEVEL_OVERLAYS.get(self.level)
         if not path:
             return

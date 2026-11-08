@@ -31,6 +31,14 @@ def fight_points(biome, hard_mode, rnd=random):
     return round(count * avg)
 
 
+BELTS = [[0.30, 0.40, 1], [0.52, 0.62, -1], [0.74, 0.84, 1]]     # (8.11) Assembly Line's conveyor belts (share of the height)
+MACHINES = {"assembly_machine_1", "assembly_machine_2", "assembly_machine_3"}   # stand still - belts don't move them
+BELT_RIDERS = {"belt_turret", "bomb_crate"}   # only ride the belts; gone when carried off the far end
+SQUARE = MACHINES | BELT_RIDERS                # drawn as boxes
+WALL_BOUNCE = {"frozen_orb"}     # (8.11) these enemies' bullets bounce off walls (room obstacles, ice walls)
+WALL_PASS = {"generator"}        # (8.11) these enemies' bullets fly through walls (it can't move to see you)
+
+
 def spawn_points(w, h, rnd=random):
     """MAX_ENEMIES points in a ring around the centre of the screen (where the player starts), in random order."""
     turn = rnd.uniform(0, math.tau)
@@ -85,6 +93,27 @@ class EnemyDB:
             "candy_shroom": [0,0,490,24,"enemy",0.8,59,20,25,"plant","random_normal",
                 {"sprinkler": {"damage": 44, "cooldown": 2.0, "last_used": 0, "width": 12, "speed": 7, "range": 3500, "streams": 3, "duration": 2.0, "every": 8, "turn": 9, "effects": {"poison":[185,15]}, "type":["spore"], "stop_move":[20,10]}}],
 
+            # ASSEMBLY LINE's machines (8.11, Factory boss): stand at the top, put products on the belts; while one
+            # stands the core can't be hurt. _1 = small toys, _2 = + turrets and bomb crates, _3 = everything, faster
+            "assembly_machine_1": [0,0,500,42,"enemy",0,60,0,150,"mechanical","random_normal",
+                {"spawn": {"enemy_name": ["line_soldier", "line_beetle", "scrap_beetle"], "amount": 1, "belt": True, "no_drops": True, "fade": [30, 30, 0.85], "cooldown": 3.0, "last_used": -150}}],
+
+            "assembly_machine_2": [0,0,500,42,"enemy",0,60,0,150,"mechanical","random_normal",
+                {"spawn": {"enemy_name": ["line_soldier", "line_beetle", "scrap_beetle", "belt_turret", "bomb_crate", "bomb_crate"], "amount": 1, "belt": True, "no_drops": True, "fade": [30, 30, 0.85], "cooldown": 2.6, "last_used": -150}}],
+
+            "assembly_machine_3": [0,0,420,42,"enemy",0,60,0,150,"mechanical","random_normal",
+                {"spawn": {"enemy_name": ["line_soldier", "line_beetle", "scrap_beetle", "belt_turret", "bomb_crate", "bomb_crate"], "amount": 1, "belt": True, "no_drops": True, "fade": [30, 30, 0.85], "cooldown": 2.4, "last_used": -150}}],
+
+            # ... and what they make (no gold, nothing drops): small toys walk at you, turrets and crates just ride
+            "line_soldier": [0,0,260,16,"enemy",2.2,140,0,0,"mechanical","to_player_normal",
+                {"basic": {"damage": 270, "cooldown": 2.6, "last_used": -60, "width": 14, "speed": 12, "range": 3000, "effects": {}, "type": ["bullet_red"]}}],
+            "line_beetle": [0,0,180,12,"enemy",4.6,200,0,25,"mechanical","to_player_normal", {}],
+            "belt_turret": [0,0,600,24,"enemy",0,100,0,25,"mechanical","random_normal",
+                {"line": {"damage": 250, "cooldown": 2.4, "last_used": -40, "width": 12, "speed": 13, "range": 4000, "bullets": 3, "every": 5, "effects": {}, "type": ["bullet_red"]}}],
+            "bomb_crate": [0,0,300,22,"enemy",0,60,0,0,"mechanical","random_normal",
+                {"fuse": {"cooldown": 4.0, "last_used": 0},
+                 "death_spiral": {"damage": 250, "cooldown": 0, "last_used": 0, "width": 13, "speed": 7, "range": 3000, "bullets": 12, "effects": {}, "type": ["normal_red"]}}],
+
             # Shroom Mother's guards (boss phase 2): stand in a corner, 2 spinning streams; not in normal fights
             "shroom_guard": [0,0,490,30,"enemy",0,90,0,25,"mystical","random_normal",
                 {"sprinkler": {"damage": 70, "cooldown": 3.0, "last_used": -60, "width": 12, "speed": 7, "range": 5000,
@@ -106,7 +135,7 @@ class EnemyDB:
                 {"spawn": {"enemy_name":"toy_soldier","amount" : 1,"cooldown": 7.5, "last_used": 0},
                 "spiral": {"damage": 220, "cooldown": 3.5, "last_used": 0, "width": 12, "speed": 6, "range": 3800, "bullets": 14, "effects": {}, "type":["normal_red"]}}],
 
-            "robo-tesla": [0,0,650,23,"enemy",1.8,140,30,25,"mechanical","random_normal",
+            "robo-tesla": [0,0,320,23,"enemy",1.8,140,30,25,"mechanical","random_normal",
                            {"wave": {"damage": 300, "cooldown": 1.5, "last_used": 0, "width": 8, "speed": 13, "range": 2600, "bullets": 8, "every": 4, "amp": 28, "period": 36, "double": True, "effects": {"weakness":[120,0.2]}, "type":["normal_blue"]},
                             "spiral": {"damage": 300, "cooldown": 1.0, "last_used": 0, "width": 5, "speed": 11, "range": 1800, "bullets": 16, "effects": {"weakness":[120,0.2]}, "type":["normal_blue"]}}],
 
@@ -249,12 +278,54 @@ class EnemyDB:
             "shroom_mother": [960, 400, 6000, 80, "boss", 1.0, 90, 220, 0, "mystical", "random_normal",
                 {"burst": {**{"bullets": 48, "speed": [5, 11], "decay": 0.988, "min_speed": 1.5, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 3.5, "last_used": -120},
                  "leap": {"cooldown": 6.0, "last_used": 0, "up": 30, "air": 70, "land_damage": 120, "burst": {"bullets": 48, "speed": [5, 11], "decay": 0.988, "min_speed": 1.5, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}}}],
+            # FROST GOLEM (tundra, 3 phases, each different): 1) stomps - 3 ice walls rise in random spots (they stop
+            # everything; your shots break them in 5 hits, they melt after 8 s) + a ground crack that runs at you and
+            # throws icicles out to both sides. 2) the floor turns to ice (you slide) - pulsing ring + a quick row of
+            # icicles. 3) a short snowstorm (3 s every 12 s: you only see around you) - everything at once, faster. ~19000 HP = ~75 s at the Tundra 1.0x weapon (324 DPS).
+            "frost_golem": [960, 300, 19000, 85, "boss", 1.2, 270, 360, 25, "mystical", "to_player",
+                {"ice_walls": {"count": 3, "hits": 5, "life": 8, "long": 200, "thick": 44, "cooldown": 5.0, "last_used": -180},
+                 "ground_crack": {"cooldown": 3.0, "last_used": -60, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [40, 0.2]}, "type": ["arrow_blue"]}}}],
+            # ASSEMBLY LINE (factory, 8.11): a core at the top of a factory hall with conveyor belts across it. It can't
+            # be hurt while its machines stand (def 150; they put toys / turrets / bomb crates on the belts - fewer toys once a phase lasts 30 s);
+            # phases 33/33/33 %; break them -> the core is open for 16.5% of its HP, then sealed 2 s, then new machines
+            # (2 rounds a phase); at most 2 turrets at once;
+            # phase 3: vents in the bottom edge shoot up (no hiding down there); the side nozzles: one belt at a time. 1) 2 machines, small toys. 2) + turrets and bomb crates,
+            # nozzles in the walls shoot along a belt. 3) 3 machines, faster belts that turn round, nozzles, a spiral.
+            "assembly_line": [960, 175, 9000, 70, "boss", 0, 270, 380, 25, "mechanical", "to_player",
+                {"spawn": {"enemy_name": "assembly_machine_1", "amount": 2, "guards": True, "replace": True,
+                           "at": [[0.2, 0.17], [0.8, 0.17]], "open_damage": 0.165, "rebuild": 2.0, "color": [150, 150, 165], "cooldown": 1.0, "last_used": -60},
+                 "line": {"damage": 270, "cooldown": 2.6, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]}}],
             "boss1": [900, 900,10,40,"boss",4.2,5,200,0,"undead","to_player",{"basic" : {"damage": 3, "cooldown": 2.0, "last_used": 0, "width": 30, "speed": 9, "range": 2000, "effects" : {"homing":[2],"slow":[180,0.1]}, "type":["missile_blue"]}, 
                                                 "spiral1" : {"damage": 2, "cooldown": 3.2, "last_used": 0, "width": 24, "speed": 6, "range": 2000, "bullets": 12, "effects" : {"poison" : [600,2]}, "type":["normal_green"]},
                                                 "spiral2" : {"damage": 1, "cooldown": 2.8, "last_used": 0, "width": 8, "speed": 7, "range": 2000, "bullets": 36, "effects" : {"glued" : [60,0.5]}, "type":["normal_yellow"]},
                                                 "minigun": {"damage": 1,"cooldown": 2.5,"last_used": 0,"width": 8,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 0.03,"last_shot": 2500,"is_bursting": False, "range": 2000, "effects" : {"confusion" : [180,0.5]},"type":["bullet_blue"]}}]
         }
         self.boss_info = {
+            "assembly_line": {"name": "Assembly Line", "arena": {"belts": {"lanes": BELTS, "speed": 2}}, "phases": [
+                {"at": 0.67, "color": [255, 170, 90], "arena": {"belts": {"lanes": BELTS, "speed": 2.6}}, "attacks": {
+                    "spawn": {"enemy_name": "assembly_machine_2", "amount": 2, "guards": True, "replace": True,
+                              "at": [[0.2, 0.17], [0.8, 0.17]], "open_damage": 0.165, "rebuild": 2.0, "color": [170, 150, 120], "cooldown": 1.0, "last_used": -60},
+                    "line": {"damage": 270, "cooldown": 2.6, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]},
+                    "nozzles": {"cooldown": 4.5, "last_used": -120, "lanes": 1, "warn": 45, "rows": 2, "bullets": 10, "every": 5,
+                                "speed": 15, "damage": 250, "width": 13, "range": 3000, "type": ["bullet_red"]}}},
+                {"at": 0.33, "color": [255, 110, 70], "arena": {"belts": {"lanes": BELTS, "speed": 3, "reverse": [480, 75]}}, "attacks": {
+                    "spawn": {"enemy_name": "assembly_machine_3", "amount": 3, "guards": True, "replace": True,
+                              "at": [[0.2, 0.17], [0.8, 0.17], [0.5, 0.93]], "open_damage": 0.165, "rebuild": 2.0, "color": [190, 130, 110], "cooldown": 1.0, "last_used": -60},
+                    "line": {"damage": 270, "cooldown": 2.0, "last_used": -30, "width": 13, "speed": 15, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]},
+                    "nozzles": {"cooldown": 3.5, "last_used": -60, "lanes": 1, "warn": 45, "rows": 2, "bullets": 10, "every": 5,
+                                "speed": 16, "damage": 250, "width": 13, "range": 3000, "type": ["bullet_red"]},
+                    "vents": {"cooldown": 3.0, "last_used": -90, "count": 1, "warn": 40, "pattern": "ring", "bullets": 9, "speed": 7, "damage": 230, "width": 13, "range": 3000, "type": ["normal_red"]},
+                    "vents_line": {"kind": "vents", "cooldown": 3.6, "last_used": -200, "count": 1, "warn": 40, "pattern": "line", "bullets": 6, "every": 5, "speed": 14, "damage": 230, "width": 12, "range": 3000, "type": ["bullet_red"]},
+                    "spiral": {"damage": 220, "cooldown": 4.0, "last_used": -120, "width": 13, "speed": 7, "range": 4000, "bullets": 16, "effects": {}, "type": ["normal_red"]}}}]},
+            "frost_golem": {"name": "Frost Golem", "phases": [
+                {"at": 0.8, "speed": 1.6, "color": [200, 230, 255], "arena": {"ice": True}, "attacks": {
+                    "pulse": {"damage": 250, "cooldown": 3.2, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {}, "type": ["flower_blue"]},
+                    "line": {"damage": 250, "cooldown": 2.4, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {}, "type": ["arrow_blue", "laser_blue"]}}},
+                {"at": 0.4, "speed": 1.6, "color": [235, 245, 255], "arena": {"blizzard": [180, 720]}, "attacks": {
+                    "ice_walls": {"count": 3, "hits": 5, "life": 8, "long": 200, "thick": 44, "cooldown": 4.0, "last_used": -60},
+                    "ground_crack": {"cooldown": 2.4, "last_used": 0, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [40, 0.2]}, "type": ["arrow_blue"]}},
+                    "pulse": {"damage": 250, "cooldown": 2.6, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {}, "type": ["flower_blue"]},
+                    "line": {"damage": 250, "cooldown": 2.0, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {}, "type": ["arrow_blue", "laser_blue"]}}}]},
             "shroom_mother": {"name": "Shroom Mother", "phases": [
                 {"at": 0.8, "speed": 2.2, "movement": "to_player", "color": [255, 170, 210], "attacks": {
                     "spawn": {"enemy_name": "shroom_guard", "amount": [1, 2], "corners": True, "guards": True, "color": [230, 120, 170],
@@ -344,6 +415,14 @@ class EnemyDB:
         e = self.enemies[name]
         enemy = Enemy(*e[:-1],copy.deepcopy(e[-1]),self.sfx, self.bullet_type_info)
         enemy.name = name   # needed for drops
+        if name in SQUARE:                                     # (8.11) Assembly Line's machines and products
+            enemy.shape = "square"
+        enemy.machine = name in MACHINES
+        enemy.ride_off = name in BELT_RIDERS
+        if name in BELT_RIDERS:
+            enemy.color = (110, 110, 125) if name == "belt_turret" else (200, 150, 80)
+        if name in ("line_soldier", "line_beetle"):
+            enemy.color = (205, 95, 85) if name == "line_soldier" else (150, 120, 90)
         return enemy
     def get_boss(self, name):
         b = self.bosses[name]

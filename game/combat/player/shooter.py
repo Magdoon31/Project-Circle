@@ -3,6 +3,9 @@ from game.combat.projectile import projectile as prjt
 from game.inventory import sigils as SG
 
 IMM_AFTER_HIT = 30                 # frames you can't be hurt after a hit (0.5 s; Magic Dust: 80)
+# How fast you speed up / slow down (share of the speed per frame). The slide distance goes with (1 - k) / k.
+COMBAT_GRIP = (0.5, 0.25)          # (8.11) a light slide: 1/3 of the map's (map: ACCELERATION 0.25, FRICTION 0.1)
+ICE_GRIP = (0.083, 0.055)          # ice floor (a boss arena): 1.1x the old ice slide (was 0.09, 0.06)
 INFINITE_FRAMES = 60 * 60 * 60     # "never wears off" in a fight (1 hour) - Toxic Gas
 
 class Shooter :
@@ -17,6 +20,8 @@ class Shooter :
         self.og_defence = self.defence
         self.speed = 8
         self.og_speed = self.speed
+        self.ice = False                   # slippery floor (set by Combat from the boss arena)
+        self.slide_x = self.slide_y = 0.0  # your sliding speed (a little everywhere, a lot on ice)
         self.rate_of_fire = (active_items["weapon"].rate_of_fire if active_items["weapon"] else 99999)
 
         self.og_rate_of_fire = self.rate_of_fire
@@ -248,6 +253,8 @@ class Shooter :
                 self.nodmg_time = 0
                 self.imm_frames = IMM_AFTER_HIT if "imm_frames" not in self.trinket_effect else self.trinket_effect["imm_frames"][0]
 
+                if "close_call" in self.sigils:            # (8.11) Close Call's price: enemies hurt you more
+                    amount *= SG.CLOSE_CALL_HURT
                 amount = max(amount-self.defence, 1)
                 if "guard" in self.armor_effect and self.hp >= self.max_hp * self.armor_effect["guard"][0]:
                     amount *= 1-self.armor_effect["guard"][1]
@@ -455,8 +462,16 @@ class Shooter :
             vx /= length
             vy /= length
 
-        self.x += vx * self.speed
-        self.y += vy * self.speed
+        grip = ICE_GRIP if self.ice else COMBAT_GRIP     # ice: you speed up and stop slowly
+        k = grip[0] if (vx or vy) else grip[1]
+        self.slide_x += (vx * self.speed - self.slide_x) * k
+        self.slide_y += (vy * self.speed - self.slide_y) * k
+        if abs(self.slide_x) < 0.05:
+            self.slide_x = 0.0
+        if abs(self.slide_y) < 0.05:
+            self.slide_y = 0.0
+        self.x += self.slide_x
+        self.y += self.slide_y
         if self.x < 0 + self.width:
             self.x = 0 + self.width
         if self.x > screen.get_width()-self.width:
@@ -492,6 +507,16 @@ class Shooter :
             projectiles += [self.side_copy(p) for p in projectiles]
         return True, projectiles
 
+    def reload_left(self):
+        """ms until the weapon can shoot again (0 = ready)."""
+        now = pygame.time.get_ticks()
+        if "burst" in self.weapon_effect:
+            shots, gap = self.weapon_effect["burst"]
+            if self.burst_left > 0:
+                return max(0, gap * 1000 - (now - self.last_shot_time))
+            return max(0, self.rate_of_fire * shots * 1000 - (now - self.burst_start))
+        return max(0, self.rate_of_fire * 1000 - (now - self.last_shot_time))
+
     def reload_now(self):
         """Close Call sigil: the weapon is ready to shoot again right now."""
         self.last_shot_time = self.burst_start = -10 ** 9
@@ -516,6 +541,8 @@ class Shooter :
 
     def make_projectiles(self):
         mouse_x, mouse_y = pygame.mouse.get_pos()
+        cam = getattr(self, "cam", (0, 0))           # (8.11) big fight rooms: the screen shows a part of the room
+        mouse_x, mouse_y = mouse_x + cam[0], mouse_y + cam[1]
         base = math.atan2(mouse_y - self.y, mouse_x - self.x)
         angles = []
         if "shotgun" not in self.weapon_effect:

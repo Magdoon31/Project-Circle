@@ -67,6 +67,18 @@ class projectile:
         self.dir_x, self.dir_y = (self.target_x - self.x) / length, (self.target_y - self.y) / length
         self.base_x, self.base_y = self.x, self.y
 
+    def bounce_off(self, rect):
+        """(8.11) Off a wall (Frozen Orb's bullets): back to where it was, the side it hit turns it around."""
+        px, py = self.x - self.vx, self.y - self.vy
+        if not rect.left <= px <= rect.right:               # came from the left / right
+            self.vx, self.dir_x, self.target_x = -self.vx, -self.dir_x, 2 * self.x - self.target_x
+        else:                                               # from above / below
+            self.vy, self.dir_y, self.target_y = -self.vy, -self.dir_y, 2 * self.y - self.target_y
+        self.x, self.y = px, py
+        m = self.motion
+        if m and m.get("kind") == "wave":                    # a wave line turns its middle line too
+            self.base_x, self.base_y = px, py
+
     def set_velocity(self):
         dx = self.target_x - self.x
         dy = self.target_y - self.y

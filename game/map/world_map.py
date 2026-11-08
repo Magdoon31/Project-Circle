@@ -11,6 +11,7 @@ MAX_ZOOM = 28             # screen pixels per tile
 START_ZOOM = 9
 DEBUG_REVEAL_KEY = True     # TEST ONLY: with the world map open (M), the ' key uncovers the whole level. False before release.
 DEBUG_CLICK_TELEPORT = True # TEST ONLY: RIGHT click on the world map = teleport there (any level tab). False before release.
+SHORTCUT_BADGE = 14         # (8.11) px radius of a bought shortcut's badge on the map (the name shows on hover)
 BACKGROUND = (18, 18, 22)   # same as the fog (map.FOG_COLOR) - unexplored land is invisible
 # places shown on the map from FAR AWAY (even unexplored) while a quest is on one of the given steps:
 #   structure -> (quest, steps, icon, label)
@@ -269,6 +270,9 @@ class WorldMap:
             if sc["level"] != view.level or sc["tile"] is None or not (sc["owned"] or self.ferris):
                 continue
             x, y = self.tile_to_screen(sc["tile"][0] + 0.5, sc["tile"][1] + 0.5)
+            if sc["owned"]:                             # (8.11) bought: just a small badge, the name on hover
+                self.draw_owned_shortcut(sc, int(x), int(y))
+                continue
             name = self.font_small.render(sc["name"], True, (255, 255, 255))
             sub_text = "Travel" if sc["owned"] else f"{sc['price']}$"
             can = sc["owned"] or self.get_money() >= sc["price"]
@@ -284,6 +288,24 @@ class WorldMap:
             self.screen.blit(name, name.get_rect(midtop=(rect.centerx, rect.top + 6)))
             self.screen.blit(sub, sub.get_rect(midbottom=(rect.centerx, rect.bottom - 6)))
             self.buttons.append((rect, sc))
+
+    def draw_owned_shortcut(self, sc, x, y):
+        """A bought shortcut: a small round badge (gold rim, white arrow); hover = its name in a small label."""
+        rect = pygame.Rect(0, 0, 2 * SHORTCUT_BADGE, 2 * SHORTCUT_BADGE)
+        rect.center = (x, y)
+        hover = rect.inflate(8, 8).collidepoint(pygame.mouse.get_pos())
+        pygame.draw.circle(self.screen, (70, 50, 110) if hover else (40, 30, 70), rect.center, SHORTCUT_BADGE)
+        pygame.draw.circle(self.screen, (255, 200, 80), rect.center, SHORTCUT_BADGE, 3)
+        a = SHORTCUT_BADGE * 0.45                       # a little "travel" arrow
+        pygame.draw.polygon(self.screen, (255, 255, 255), [(x - a, y - a), (x + a, y), (x - a, y + a), (x - a * 0.3, y)])
+        if hover:
+            name = self.font_small.render(f"{sc['name']} - Travel", True, (255, 255, 255))
+            label = pygame.Rect(0, 0, name.get_width() + 20, name.get_height() + 10)
+            label.midbottom = (x, rect.top - 6)
+            pygame.draw.rect(self.screen, (40, 30, 70), label, 0, 8)
+            pygame.draw.rect(self.screen, (255, 200, 80), label, 2, 8)
+            self.screen.blit(name, name.get_rect(center=label.center))
+        self.buttons.append((rect.inflate(8, 8), sc))
 
     def draw_confirm(self):
         sc = self.confirm

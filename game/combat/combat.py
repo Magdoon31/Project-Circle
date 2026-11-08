@@ -6,6 +6,10 @@ import pygame
 from game.combat.decoy import Decoy
 from game.combat.projectile import projectile as prjt
 from game.inventory import sigils as SG
+from game.lib import snow_overlay as SNOW
+from game.combat import rooms as ROOMS
+from game.combat import wall_tactics as TACTICS
+from game.combat.enemy.enemy_database import WALL_BOUNCE, WALL_PASS
 
 # RUNNING AWAY: hold R in a normal fight. Every frame there is a chance to escape (no win, no death).
 # While holding R the player can't shoot.
@@ -21,6 +25,14 @@ FLAVOURS_GOOD = ["strength", "speed", "regen", "invulnerable"]
 FLAVOURS_BAD = ["burn", "slow", "weakness", "confusion"]
 FLAVOUR_STRENGTH = {"strength": 0.3, "speed": 0.25, "slow": 0.3, "weakness": 0.3}
 INVULN_FLAVOUR = 180            # frames
+CRACK_FADE = 50                # frames a finished ground crack stays and fades
+BLIZZARD_SIGHT = 230           # px you can see around you in a snowstorm (boss arena)
+CAMERA_EASE = 0.12            # (8.11) big rooms: how fast the camera follows you (share per frame)
+ARROW_COLOR = (200, 40, 40)   # (8.11) big rooms: arrows at the screen edge pointing at enemies you can't see
+PRODUCT_LIMITS = {"belt_turret": 2}   # (8.11) Assembly Line: at most this many of a product in the fight at once
+BELT_BULLETS = 1.0             # (8.11) enemy bullets on a conveyor belt move this share of the belt's speed
+BELT_COLOR, BELT_EDGE, BELT_ARROW = (74, 72, 80), (42, 40, 46), (112, 110, 120)
+NOZZLE_COLOR, NOZZLE_HOT = (90, 88, 96), (255, 120, 60)
 PHASE_FLASH = 18              # frames of the white flash when a boss changes phase
 FLAWLESS_GOLD = 1.2           # no damage taken in a normal fight: x1.2 gold (not in hard mode)     # bosses are only fought on purpose (you walk into them)
 
@@ -28,7 +40,11 @@ FLAWLESS_GOLD = 1.2           # no damage taken in a normal fight: x1.2 gold (no
 class Combat:
 
     def __init__(self, screen, player, enemies, enemy_db, hard_mode, sfx=None, boss=None, assets=None):
+        # (8.11) `screen` = the room everything is drawn in (the display, or a bigger picture in a big room);
+        # `view` = the display. In a big room the camera shows the part around the player (setup_room).
         self.screen = screen
+        self.view = screen
+        self.cam = [0.0, 0.0]
         self.player = player
         self.boss = boss
         self.player_projectiles = []
@@ -71,6 +87,47 @@ class Combat:
         self.pending_bullets = []     # death attacks waiting to go off ([frames left, bullets, pos, size])  # Atom: small explosions waiting to go off ([frames left, pos, effect, type, effects])
         self.decoy = None             # Mascot Plush: dropped on the first frame (the enemies are known by then)
         self.decoy_image = getattr(assets, "decoy_img", None)
+
+    def setup_room(self, biome):
+        """(8.11) A normal fight: a bigger room for more than 3 enemies (the camera follows you) and, sometimes,
+        obstacles in the biome's look (see rooms.py)."""
+        sw, sh = self.view.get_size()
+        w, h = ROOMS.room_size(len(self.enemies), (sw, sh))
+        if (w, h) != (sw, sh):
+            self.screen = pygame.Surface((w, h))
+            for e in self.enemies:                      # the spawn ring grows with the room
+                e.x, e.y = e.x * w / sw, e.y * h / sh
+        self.walls, start = ROOMS.make_obstacles(biome, (w, h))
+        self.player.x, self.player.y = start                  # the middle, or next to a pillar standing there
+        for _ in range(3):
+            for e in self.enemies:
+                self.push_out_of_walls(e)
+        self.follow_camera(instant=True)
+
+    def follow_camera(self, instant=False):
+        """Big room: the camera moves smoothly after the player and stops at the room's edges."""
+        (w, h), (sw, sh) = self.screen.get_size(), self.view.get_size()
+        goal = (min(max(0, self.player.x - sw / 2), w - sw), min(max(0, self.player.y - sh / 2), h - sh))
+        k = 1 if instant else CAMERA_EASE
+        self.cam = [self.cam[0] + (goal[0] - self.cam[0]) * k, self.cam[1] + (goal[1] - self.cam[1]) * k]
+        self.player.cam = (int(self.cam[0]), int(self.cam[1]))     # aiming: the mouse is on the screen
+
+    def draw_view(self):
+        """Big room: shows the part of the room around the player + arrows to the enemies off the screen."""
+        sw, sh = self.view.get_size()
+        cx, cy = int(self.cam[0]), int(self.cam[1])
+        self.view.blit(self.screen, (0, 0), pygame.Rect(cx, cy, sw, sh))
+        for e in self.enemies:
+            ex, ey = e.x - cx, e.y - cy
+            if -e.width < ex < sw + e.width and -e.width < ey < sh + e.width:
+                continue
+            a = math.atan2(ey - sh / 2, ex - sw / 2)
+            k = min((sw / 2 - 30) / max(1e-6, abs(math.cos(a))), (sh / 2 - 30) / max(1e-6, abs(math.sin(a))))
+            px, py = sw / 2 + math.cos(a) * k, sh / 2 + math.sin(a) * k
+            tip = (px + math.cos(a) * 14, py + math.sin(a) * 14)
+            left = (px + math.cos(a + 2.5) * 12, py + math.sin(a + 2.5) * 12)
+            right = (px + math.cos(a - 2.5) * 12, py + math.sin(a - 2.5) * 12)
+            pygame.draw.polygon(self.view, ARROW_COLOR, (tip, left, right))
 
     def target(self):
         """What the enemies go for: the Mascot Plush while it lives, else the player."""
@@ -136,13 +193,42 @@ class Combat:
                 self.finished = True
                 return
         keys = pygame.key.get_pressed()
+        self.arena = {}
+        for e in self.enemies:                          # what the bosses' arena does now (ice floor, snowstorm)
+            self.arena.update(getattr(e, "arena", {}))
+        if self.arena.get("belts"):
+            self.last_belts = self.arena["belts"]
+        elif getattr(self, "last_belts", None):
+            self.arena["belts"] = self.last_belts      # (8.11) the belts stay after the boss is gone
+        self.player.ice = bool(self.arena.get("ice"))
         self.player.move(keys, self.screen)
+        self.walls = getattr(self, "walls", [])
+        for wall in self.walls[:]:                      # ice walls melt / break (room walls stay, crates break)
+            if wall.get("solid"):
+                continue
+            wall["life"] -= 1
+            wall["hits"] = max(0, wall["hits"])
+            if wall["life"] <= 0 or wall["hits"] <= 0:
+                self.walls.remove(wall)
+        self.push_out_of_walls(self.player)
+        self.update_belts()
+        if self.screen is not self.view:
+            self.follow_camera()
+        self.update_cracks()
+        self.update_nozzles()
         if len(self.enemies) > 32:
             # hard cap: newest extra enemies just vanish (no death attacks, so no chain spawning)
             del self.enemies[32:]
 
         for projectile in self.player_projectiles[:]:
             projectile.update(self.enemies)
+            wall = self.wall_at(projectile.x, projectile.y)
+            if wall:                                    # your shot cracks the ice wall / a crate (room walls: just stops)
+                if not wall.get("solid"):
+                    wall["hits"] = max(0, wall["hits"] - 1)
+                self.player_projectiles.remove(projectile)
+                self.sfx.play("hit")
+                continue
             if (
                 projectile.x < 0
                 or projectile.x > self.screen.get_width()
@@ -214,6 +300,13 @@ class Combat:
     
             target = self.target()
             projectile.update([target])
+            wall = None if "throw" in projectile.effects or getattr(projectile, "wall_pass", False) \
+                else self.wall_at(projectile.x, projectile.y)
+            if wall and getattr(projectile, "wall_bounce", False):
+                projectile.bounce_off(wall["rect"])             # (8.11) Frozen Orb's bullets bounce off
+            elif wall:
+                self.enemy_projectiles.remove(projectile)       # stopped by a wall (thrown bombs fly over)
+                continue
             kids = projectile.split_now()               # (7.11) a splitting bullet bursts into smaller ones
             if kids is not None:
                 self.slow_bullets(kids)
@@ -251,7 +344,10 @@ class Combat:
                     < self.player.width * SG.CLOSE_CALL_DISTANCE:
                 projectile.grazed = True                     # a near miss (counted for the Bullet Time sigil)
                 self.near_misses += 1
-                if "close_call" in self.player.sigils:       # Close Call sigil: it reloads the weapon
+                # Close Call sigil: it reloads the weapon - (8.11) at most once a second, and only when it helps
+                if "close_call" in self.player.sigils and self.player.reload_left() > 0 \
+                        and self.timer - getattr(self, "close_call_at", -10 ** 9) >= SG.CLOSE_CALL_COOLDOWN:
+                    self.close_call_at = self.timer
                     self.player.reload_now()
                     self.sfx.play("gain_effect")
 
@@ -277,16 +373,43 @@ class Combat:
             if frozen:
                 continue
             target = self.target()
-            enemy.move(target.x, target.y, self.screen)
+            self.move_enemy(enemy, target)                  # (8.11) with the walls in mind (wall_tactics.py)
+            enemy.behind_wall = not TACTICS.sees((enemy.x, enemy.y), (target.x, target.y), getattr(self, "walls", []))
+            enemy._walls = getattr(self, "walls", [])          # (8.11) new ice walls keep away from the standing ones
             proj,enemies = enemy.attack(self.timer, self.player, self.hard_mode, self.enemy_db, aim=target)
             self.slow_bullets(proj)
+            if getattr(enemy, "name", None) in WALL_BOUNCE:
+                for p in proj:
+                    p.wall_bounce = True                      # (8.11) Frozen Orb: its bullets bounce off walls
+            if getattr(enemy, "name", None) in WALL_PASS:
+                for p in proj:
+                    p.wall_pass = True                        # (8.11) the Generator stands still: its bullets go through
             if "friendly_fire" in self.player.trinket_effect and "confusion" in enemy.effects:
                 for p in proj:
                     p.friendly_fire = enemy          # Magic Ring: a confused enemy's shots also hurt the others
             if target is not self.player and self.timer % 10 == 0 and math.dist((enemy.x, enemy.y), (target.x, target.y)) < enemy.width + target.width:
                 target.take_damage(enemy.contact_dmg)      # biting the plush
             self.enemy_projectiles.extend(proj)
+            enemies = self.within_product_limits(enemies)
+            for e in enemies:
+                if getattr(e, "belt_entry", False):
+                    self.put_on_belt(e)                         # (8.11) a product comes in at the start of a belt
             self.enemies.extend(enemies)
+            if enemy.new_nozzles:                           # (8.11) Assembly Line's wall nozzles
+                for nozzle in enemy.new_nozzles:
+                    self.start_nozzles(nozzle)
+                enemy.new_nozzles = []
+            if enemy.new_cracks:                            # Frost Golem's ground cracks
+                for crack in enemy.new_cracks:
+                    crack.update(length=crack["start"], next=crack["start"] + crack["every"], segs=[], life=CRACK_FADE)
+                self.cracks = getattr(self, "cracks", []) + enemy.new_cracks
+                enemy.new_cracks = []
+                self.sfx.play("explosion")
+            if enemy.new_walls:                             # Frost Golem's ice walls
+                self.walls.extend(enemy.new_walls)
+                enemy.new_walls = []
+                self.sfx.play("explosion")
+            self.push_out_of_walls(enemy)
             if enemy.phase_event:                           # a boss changed phase (7.11): a breath, a flash
                 enemy.phase_event = False
                 self.enemy_projectiles = []
@@ -294,6 +417,13 @@ class Combat:
                 self.sfx.play("boss_phase" if "boss_phase" in self.sfx.sfx else "overclock")
             if enemy.hp <= 0:    
                 self.kill_enemy(enemy)
+                if enemy.type == "boss":                    # (8.11) its machines and products go with it
+                    for other in self.enemies:
+                        if getattr(other, "machine", False) or getattr(other, "ride_off", False) or other in enemy.guards:
+                            other.remove_me = True
+        gone = [e for e in self.enemies if getattr(e, "remove_me", False)]
+        for e in gone:                                      # taken away quietly (rebuilt machines, products off the belt)
+            self.enemies.remove(e)
 
         # any damage source (bullets, explosions, contact, poison...) is checked here
         self.check_player_death()
@@ -346,6 +476,308 @@ class Combat:
                 self.player.x -= move_x * 0.5
                 self.player.y -= move_y * 0.5
            
+    # --- boss arenas (7.11): ice walls, snowstorm ----------------------------------------------------------
+    def move_enemy(self, enemy, target):
+        """(8.11) One enemy's step: chasers walk round the walls, shooters keep you in sight, throwers stay in cover
+        (wall_tactics.py)."""
+        walls = getattr(self, "walls", [])
+        plan = TACTICS.plan(enemy, target, walls, self.screen.get_size(), self.timer)
+        before = (enemy.x, enemy.y)
+        if plan.chase:
+            self.walk_straight(enemy, plan.goal)
+        else:
+            enemy.move(*plan.goal, self.screen)
+        if TACTICS.step_breaks_rule(plan, enemy, before, target, walls):
+            enemy.x, enemy.y = before
+
+    def walk_straight(self, enemy, goal):
+        """The enemy walks at `goal` whatever its own way of moving is (it keeps its speed)."""
+        own = enemy.movement_type
+        enemy.movement_type = "to_player_normal"
+        try:
+            enemy.move(*goal, self.screen)
+        finally:
+            enemy.movement_type = own
+
+    # --- conveyor belts and wall nozzles (8.11, Assembly Line) ------------------------------------------------
+    def belt_lanes(self):
+        """[(top px, bottom px, dir)] of the belts in this arena now, or []."""
+        belts = getattr(self, "arena", {}).get("belts")
+        if not belts:
+            return []
+        h = self.screen.get_height()
+        flip = self.belt_flipped(belts)
+        return [(top * h, bottom * h, -d if flip else d) for top, bottom, d in belts["lanes"]]
+
+    def belt_flipped(self, belts):
+        rev = belts.get("reverse")
+        if not rev:
+            return False
+        if getattr(self, "belt_since", None) is None:
+            self.belt_since = self.timer
+        return ((self.timer - self.belt_since) // rev[0]) % 2 == 1
+
+    def update_belts(self):
+        """The belts carry you, the small enemies (not the boss / its machines) and the enemy bullets."""
+        lanes = self.belt_lanes()
+        if not lanes:
+            self.belt_since = None
+            return
+        speed = self.arena["belts"]["speed"]
+        w = self.screen.get_width()
+        def lane_of(y):
+            return next((d for top, bottom, d in lanes if top <= y <= bottom), 0)
+        d = lane_of(self.player.y)
+        if d:
+            self.player.x = min(w - self.player.width, max(self.player.width, self.player.x + d * speed))
+        for e in self.enemies[:]:
+            if e.type == "boss" or getattr(e, "machine", False):
+                continue
+            d = lane_of(e.y)
+            if d:
+                e.x = min(w - e.width, max(e.width, e.x + d * speed))
+                if getattr(e, "ride_off", False):
+                    e.belt_travel = getattr(e, "belt_travel", 0) + speed
+                    at_end = e.x <= e.width + 1 if d < 0 else e.x >= w - e.width - 1
+                    if at_end and e.belt_travel > 200:
+                        e.remove_me = True                  # carried off the far end of the belt
+        for p in self.enemy_projectiles:
+            d = lane_of(p.y)
+            if d:
+                p.x += d * speed * BELT_BULLETS
+                if hasattr(p, "base_x"):
+                    p.base_x += d * speed * BELT_BULLETS
+
+    def within_product_limits(self, spawned):
+        """Drops new products over PRODUCT_LIMITS (counting the ones already in the fight)."""
+        counts = {}
+        for e in self.enemies:
+            counts[e.name] = counts.get(e.name, 0) + 1
+        kept = []
+        for e in spawned:
+            limit = PRODUCT_LIMITS.get(getattr(e, "name", None))
+            if limit is not None and counts.get(e.name, 0) >= limit:
+                continue
+            counts[e.name] = counts.get(e.name, 0) + 1
+            kept.append(e)
+        return kept
+
+    def put_on_belt(self, e):
+        lanes = self.belt_lanes()
+        if not lanes:
+            return
+        top, bottom, d = random.choice(lanes)
+        if tuple(e.color) == (255, 255, 255):                  # a normal enemy (scrap beetle, robo-bomber): a colour
+            e.color = (random.randint(100, 200), random.randint(100, 200), random.randint(100, 200))
+        w = self.screen.get_width()
+        e.x = e.width + 2 if d > 0 else w - e.width - 2
+        e.y = random.uniform(top + e.width, bottom - e.width) if bottom - top > 2 * e.width else (top + bottom) / 2
+
+    def start_nozzles(self, spec):
+        """Nozzles at the start of n random belts glow for `warn` frames, then shoot a stream along the belt.
+        Vents (spec "vent"): spots in the bottom edge glow, then shoot up."""
+        self.nozzles = getattr(self, "nozzles", [])
+        if spec.get("vent"):
+            if self.vent_busy(spec.get("pattern")):
+                return                                      # (8.11) one ring and one row from below at a time
+            w, h = self.screen.get_size()
+            for _ in range(spec.get("count", 1)):
+                self.nozzles.append({"vent": True, "x": random.uniform(0.12, 0.88) * w, "y": h - 14, "warn": spec["warn"],
+                                     "left": spec["bullets"] if spec.get("pattern") == "line" else 1, "next": 0, "spec": spec})
+            return
+        lanes = self.belt_lanes()
+        if not lanes or any(not n.get("vent") for n in self.nozzles):
+            return                                      # (8.11) only one belt shoots at a time
+        for top, bottom, d in random.sample(lanes, min(spec.get("lanes", 1), len(lanes))):
+            self.nozzles.append({"top": top, "bottom": bottom, "dir": d, "warn": spec["warn"], "left": spec["bullets"],
+                                 "next": 0, "spec": spec})
+
+    def vent_busy(self, pattern):
+        return any(n.get("vent") and n["spec"].get("pattern") == pattern for n in getattr(self, "nozzles", []))
+
+    def update_nozzles(self):
+        w = self.screen.get_width()
+        for n in getattr(self, "nozzles", [])[:]:
+            if n["warn"] > 0:
+                n["warn"] -= 1
+                continue
+            if n["next"] > 0:
+                n["next"] -= 1
+                continue
+            spec = n["spec"]
+            if n.get("vent"):
+                x, y = n["x"], n["y"]
+                if spec.get("pattern") == "line":               # a row at you
+                    a = math.atan2(self.player.y - y, self.player.x - x)
+                    angles = [a]
+                else:                                          # a half ring, upwards
+                    k = spec["bullets"]
+                    angles = [math.pi + math.pi * (i + 0.5) / k for i in range(k)]
+                for a in angles:
+                    self.enemy_projectiles.append(prjt(x, y, x + math.cos(a) * 1000, y + math.sin(a) * 1000, spec["speed"],
+                                                       spec["damage"], "enemy", spec["width"], spec["range"],
+                                                       self.enemy_db.bullet_type_info, spec["type"]))
+                n["left"] -= 1
+                n["next"] = spec.get("every", 4)
+                if n["left"] <= 0:
+                    self.nozzles.remove(n)
+                continue
+            x = 4 if n["dir"] > 0 else w - 4
+            rows = spec.get("rows", 1)
+            for r in range(rows):
+                y = n["top"] + (n["bottom"] - n["top"]) * (r + 1) / (rows + 1)
+                self.enemy_projectiles.append(prjt(x, y, x + n["dir"] * 1000, y, spec["speed"], spec["damage"], "enemy",
+                                                   spec["width"], spec["range"], self.enemy_db.bullet_type_info, spec["type"]))
+            n["left"] -= 1
+            n["next"] = spec["every"]
+            if n["left"] <= 0:
+                self.nozzles.remove(n)
+
+    def draw_belts(self):
+        lanes = self.belt_lanes()
+        if not lanes:
+            return
+        w = self.screen.get_width()
+        belts = self.arena["belts"]
+        speed = belts["speed"]
+        rev = belts.get("reverse")
+        warn = False
+        if rev and getattr(self, "belt_since", None) is not None:
+            t = (self.timer - self.belt_since) % rev[0]
+            warn = t >= rev[0] - rev[1] and (self.timer // 8) % 2 == 0          # about to turn round: arrows blink
+        step = 80
+        for top, bottom, d in lanes:
+            rect = pygame.Rect(0, int(top), w, int(bottom - top))
+            pygame.draw.rect(self.screen, BELT_COLOR, rect)
+            pygame.draw.line(self.screen, BELT_EDGE, rect.topleft, rect.topright, 6)
+            pygame.draw.line(self.screen, BELT_EDGE, rect.bottomleft, rect.bottomright, 6)
+            show = -d if warn else d
+            off = (self.timer * speed * d) % step
+            cy, hh = rect.centery, rect.height * 0.28
+            colour = (255, 190, 90) if warn else BELT_ARROW
+            for x in range(-step, w + step, step):
+                x0 = x + off
+                pygame.draw.lines(self.screen, colour, False,
+                                  [(x0 - show * 12, cy - hh), (x0 + show * 12, cy), (x0 - show * 12, cy + hh)], 6)
+        for n in getattr(self, "nozzles", []):                 # vents in the bottom edge: glow before they shoot
+            if n.get("vent"):
+                hot = n["warn"] > 0 and (self.timer // 4) % 2 == 0
+                pygame.draw.rect(self.screen, NOZZLE_HOT if hot or n["warn"] <= 0 else NOZZLE_COLOR, (n["x"] - 26, n["y"] - 10, 52, 24), 0, 6)
+                pygame.draw.rect(self.screen, BELT_EDGE, (n["x"] - 26, n["y"] - 10, 52, 24), 3, 6)
+        for top, bottom, d in lanes:                           # the nozzles in the side walls (start of every belt)
+            cy = (top + bottom) / 2
+            for n_x in (0, w - 26):
+                hot = any(not n.get("vent") and n["top"] == top and (n["dir"] > 0) == (n_x == 0) for n in getattr(self, "nozzles", []))
+                pygame.draw.rect(self.screen, NOZZLE_HOT if hot and (self.timer // 4) % 2 == 0 else NOZZLE_COLOR,
+                                 (n_x, cy - 22, 26, 44), 0, 4)
+                pygame.draw.rect(self.screen, BELT_EDGE, (n_x, cy - 22, 26, 44), 3, 4)
+
+    def update_cracks(self):
+        """Ground cracks grow along the floor and throw out bullets to both sides as they go."""
+        for crack in getattr(self, "cracks", [])[:]:
+            if crack["length"] < crack["max"]:
+                crack["length"] = min(crack["max"], crack["length"] + crack["speed"])
+                ca, sa = math.cos(crack["angle"]), math.sin(crack["angle"])
+                while crack["next"] <= crack["length"]:
+                    px, py = crack["x"] + ca * crack["next"], crack["y"] + sa * crack["next"]
+                    spec = crack["bullets"]
+                    for side in (1, -1):
+                        a = crack["angle"] + side * math.pi / 2
+                        self.enemy_projectiles.append(prjt(px, py, px + math.cos(a) * 1000, py + math.sin(a) * 1000,
+                                                           spec["speed"], spec["damage"], "enemy", spec["width"],
+                                                           spec["range"], self.enemy_db.bullet_type_info, spec["type"],
+                                                           effects=copy.deepcopy(spec.get("effects", {}))))
+                    crack["next"] += crack["every"]
+                w, h = self.screen.get_size()
+                ex, ey = crack["x"] + ca * crack["length"], crack["y"] + sa * crack["length"]
+                if not (0 <= ex <= w and 0 <= ey <= h):
+                    crack["max"] = crack["length"]               # it runs off the arena: done
+            else:
+                crack["life"] -= 1
+                if crack["life"] <= 0:
+                    self.cracks.remove(crack)
+
+    def draw_cracks(self):
+        """Like a zap, but every piece stays the same in its place (picked once)."""
+        segments = self.assets.crack_segments if self.assets else []
+        for crack in getattr(self, "cracks", []):
+            ca, sa = math.cos(crack["angle"]), math.sin(crack["angle"])
+            n = int((crack["length"] - crack["start"]) // 60)
+            while len(crack["segs"]) < n:
+                crack["segs"].append(random.randrange(len(segments)) if segments else 0)
+            alpha = 255 if crack["length"] < crack["max"] else int(255 * crack["life"] / CRACK_FADE)
+            for i, k in enumerate(crack["segs"]):
+                d = crack["start"] + 30 + i * 60
+                x, y = crack["x"] + ca * d, crack["y"] + sa * d
+                if segments:
+                    img = pygame.transform.rotate(segments[k], -math.degrees(crack["angle"]))
+                    img.set_alpha(alpha)
+                    self.screen.blit(img, img.get_rect(center=(x, y)))
+                else:
+                    pygame.draw.line(self.screen, (40, 40, 50), (x - ca * 30, y - sa * 30), (x + ca * 30, y + sa * 30), 3)
+
+    def wall_at(self, x, y):
+        for wall in getattr(self, "walls", []):
+            if wall["rect"].collidepoint(x, y):
+                return wall
+        return None
+
+    def push_out_of_walls(self, body):
+        """Keeps a round body (the player, an enemy) out of the ice walls."""
+        for wall in getattr(self, "walls", []):
+            r = wall["rect"]
+            cx, cy = min(max(body.x, r.left), r.right), min(max(body.y, r.top), r.bottom)
+            dx, dy = body.x - cx, body.y - cy
+            d = math.hypot(dx, dy)
+            if d < body.width:
+                if d == 0:                                  # the centre is inside: out the nearest side
+                    sides = [(body.x - r.left, -1, 0), (r.right - body.x, 1, 0), (body.y - r.top, 0, -1), (r.bottom - body.y, 0, 1)]
+                    depth, sx, sy = min(sides)
+                    body.x += sx * (depth + body.width)
+                    body.y += sy * (depth + body.width)
+                else:
+                    body.x += dx / d * (body.width - d)
+                    body.y += dy / d * (body.width - d)
+                if hasattr(body, "slide_x"):
+                    body.slide_x = body.slide_y = 0.0
+
+    def draw_walls(self):
+        for wall in getattr(self, "walls", []):
+            if wall.get("theme"):                          # (8.11) room obstacles in the biome's look
+                ROOMS.draw_obstacle(self.screen, wall)
+                continue
+            r = wall["rect"]
+            fade = min(1.0, wall["life"] / 40)
+            colour = (int(150 + 60 * (1 - fade)), int(205 + 30 * (1 - fade)), 245)
+            pygame.draw.rect(self.screen, colour, r, 0, 6)
+            pygame.draw.rect(self.screen, (90, 150, 200), r, 3, 6)
+            cracks = min(wall["max"], wall["max"] - wall["hits"])   # more cracks the more you hit it (a shotgun: max)
+            for i in range(cracks):
+                k = (i + 1) / (wall["max"] + 1)
+                if r.w > r.h:
+                    x = r.left + r.w * k
+                    pygame.draw.line(self.screen, (60, 110, 160), (x, r.top + 4), (x + 8, r.bottom - 4), 2)
+                else:
+                    y = r.top + r.h * k
+                    pygame.draw.line(self.screen, (60, 110, 160), (r.left + 4, y), (r.right - 4, y + 8), 2)
+
+    def draw_blizzard(self):
+        on, every = self.arena.get("blizzard", (0, 1))
+        t = self.timer % every
+        if t >= on:
+            return
+        k = min(1.0, t / 40, (on - t) / 40)              # the storm comes and goes smoothly
+        sw, sh = self.screen.get_size()
+        fog = pygame.Surface((sw, sh), pygame.SRCALPHA)
+        fog.fill((235, 240, 248, int(250 * k)))
+        for r, a in ((BLIZZARD_SIGHT, 170), (BLIZZARD_SIGHT - 45, 90), (BLIZZARD_SIGHT - 90, 0)):   # a soft hole around you
+            pygame.draw.circle(fog, (235, 240, 248, int(a * k)), (self.player.x, self.player.y), r)
+        self.screen.blit(fog, (0, 0))
+        SNOW.draw(self.screen, 255 * k)                   # Filip's falling snow over the storm
+        for e in self.enemies:                            # the boss bar stays readable
+            if e.type == "boss":
+                e.hp_bar(self.screen)
+
     def flavoured_candy(self, frames):
         """Flavoured Candy (7.11, Shroom Mother's trinket): a random effect for `frames` at the start of the fight -
         half good, half bad (the burn can kill you if you are already hurt)."""
@@ -377,6 +809,12 @@ class Combat:
             self.feats.add("firefly_dash")             # killed in the middle of a dash (Lucky Coin sigil)
         projectiles,enemies_spawn = enemy.attack(self.timer, enemy_db=self.enemy_db)
         self.slow_bullets(projectiles)
+        if getattr(enemy, "name", None) in WALL_BOUNCE:
+            for p in projectiles:
+                p.wall_bounce = True
+        if getattr(enemy, "name", None) in WALL_PASS:
+            for p in projectiles:
+                p.wall_pass = True
         blast = enemy.attacks.get("death_blast")
         if blast:                        # (7.11) a blast that pushes everyone away - comes with the same warning
             blast = {**blast, "damage": blast["damage"] * enemy.damage}
@@ -385,7 +823,8 @@ class Combat:
             self.pending_bullets.append([DEATH_ATTACK_DELAY, projectiles, (enemy.x, enemy.y), enemy.width])
         self.enemies.extend(enemies_spawn)
         self.enemies.remove(enemy)
-        self.loot.extend(self.enemy_db.roll_drops(enemy))
+        if not getattr(enemy, "no_drops", False):
+            self.loot.extend(self.enemy_db.roll_drops(enemy))
 
     def check_player_death(self):
         # Emergency Protocol (Mecha-King Armor) saves the player once per fight
@@ -403,7 +842,12 @@ class Combat:
 
     def draw(self):
 
-        self.screen.fill((230, 250, 200))
+        # (8.11) the floor has the colour of the biome's ground (Game sets `floor`); ice arena: light blue
+        floor = getattr(self, "floor", None) or (230, 250, 200)
+        self.screen.fill(floor if not getattr(self, "arena", {}).get("ice") else (214, 236, 248))
+        self.draw_belts()
+        self.draw_cracks()
+        self.draw_walls()
         for projectile in self.player_projectiles:
             projectile.draw(self.screen)
         for projectile in self.enemy_projectiles:
@@ -420,6 +864,8 @@ class Combat:
         for enemy in self.enemies[:]:
             if enemy.draw(self.screen):
                 self.kill_enemy(enemy)
+        if getattr(self, "arena", {}).get("blizzard") and not (self.finished and not self.win):
+            self.draw_blizzard()                            # (boss arena) a snowstorm over everything (not on the death screen)
         
 
         note = getattr(self, "flavour_note", None)           # Flavoured Candy: what it did this time
@@ -427,12 +873,6 @@ class Combat:
             note[1] -= 1
             label = self.font_heavy["small"].render(note[0], True, (40, 140, 60) if note[2] else (170, 40, 40))
             self.screen.blit(label, label.get_rect(midbottom=(self.player.x, self.player.y - self.player.width - 22)))
-        if getattr(self, "phase_flash", 0) > 0:             # boss phase change: a white flash fading out
-            self.phase_flash -= 1
-            veil = pygame.Surface(self.screen.get_size())
-            veil.fill((255, 255, 255))
-            veil.set_alpha(int(200 * self.phase_flash / PHASE_FLASH))
-            self.screen.blit(veil, (0, 0))
         for zap_data in self.zapped_enemies[:]:
             if zap_data["duration"] > 0:
 
@@ -454,14 +894,30 @@ class Combat:
                     self.zapped_enemies.remove(zap_data)
 
         self.ExplosionEffect()
-
         if self.trying_to_run and not self.finished:
-            # dashed ring around the player + text = "trying to run away"
-            for i in range(12):
+            for i in range(12):                             # dashed ring around the player = "trying to run away"
                 angle = math.radians(i * 30 + self.timer * 6)
                 x = self.player.x + math.cos(angle) * (self.player.width + 14)
                 y = self.player.y + math.sin(angle) * (self.player.width + 14)
                 pygame.draw.circle(self.screen, (70, 70, 70), (x, y), 4)
+
+        world = self.screen                                 # (8.11) from here on: on the display, not in the room
+        if world is not self.view:
+            self.draw_view()
+        self.screen = self.view
+        self.draw_hud()
+        self.screen = world
+        pygame.display.flip()
+
+    def draw_hud(self):
+        if getattr(self, "phase_flash", 0) > 0:             # boss phase change: a white flash fading out
+            self.phase_flash -= 1
+            veil = pygame.Surface(self.screen.get_size())
+            veil.fill((255, 255, 255))
+            veil.set_alpha(int(200 * self.phase_flash / PHASE_FLASH))
+            self.screen.blit(veil, (0, 0))
+
+        if self.trying_to_run and not self.finished:
             run_text = self.font_heavy["mid"].render("Running away...", True, (60, 60, 60))
             self.screen.blit(run_text, (self.screen.get_width() / 2 - run_text.get_width() / 2, self.screen.get_height() / 12))
         elif self.boss and not self.finished and pygame.key.get_pressed()[RUN_KEY] and not self.can_run():
@@ -506,8 +962,6 @@ class Combat:
             # died = Game Over; ran away = just "CLICK" to go on
             end_text = self.font_heavy["giant"].render("Game Over" if self.player.hp <= 0 else "CLICK", True, (255,255,255))
             self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
-
-        pygame.display.flip()
 
     def zap(self, effect, enemy_hit):
 

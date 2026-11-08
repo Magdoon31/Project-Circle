@@ -1,49 +1,237 @@
 {
     "player": {
-        "x": 407.14718625761384,
-        "y": 840.4852813742386,
-        "money": 11224,
-        "playtime": 5132.833333342788
+        "x": 7760.5,
+        "y": 4191.5,
+        "money": 2416,
+        "playtime": 1389.1499999990654
     },
     "inventory": {
         "active_items": [
-            "Water Hose",
-            "Magic Dust"
+            "Rifle A4",
+            "Cyber Suit",
+            "Book"
         ],
+        "active_trinket2": null,
         "items": [
-            "Toxic Ring",
-            "Cyber Armor",
-            "Plate Armor",
-            "Samurai Armor",
-            "Frost Armor",
-            "Tribe Armor",
-            "Heroic Armor",
-            "Shoe",
-            "Scrap Armor",
-            "Crown",
-            "Electro Armor",
-            "Holy Orb",
-            "Laser Arrow",
-            "Mecha-King Armor",
-            "Rose",
-            "Simple Pistol"
+            "Fire Ring",
+            "Poison Gun",
+            "Nail Gun"
         ]
     },
     "map": {
-        "layout": [
-            "1122111222",
-            "1111122112",
-            "2221121112",
-            "1211111122",
-            "2112221112",
-            "2111111112",
-            "2111111112",
-            "2111111312",
-            "2111111112",
-            "2222222222"
+        "seed": 44776681,
+        "seed_text": "",
+        "level": "surface",
+        "levels": {
+            "surface": {
+                "collected": [
+                    [
+                        36,
+                        120
+                    ],
+                    [
+                        37,
+                        190
+                    ],
+                    [
+                        38,
+                        121
+                    ],
+                    [
+                        39,
+                        122
+                    ],
+                    [
+                        39,
+                        192
+                    ],
+                    [
+                        43,
+                        214
+                    ],
+                    [
+                        55,
+                        64
+                    ],
+                    [
+                        59,
+                        64
+                    ],
+                    [
+                        75,
+                        214
+                    ],
+                    [
+                        76,
+                        214
+                    ],
+                    [
+                        93,
+                        148
+                    ],
+                    [
+                        94,
+                        149
+                    ],
+                    [
+                        103,
+                        91
+                    ],
+                    [
+                        110,
+                        178
+                    ],
+                    [
+                        113,
+                        177
+                    ],
+                    [
+                        124,
+                        26
+                    ],
+                    [
+                        126,
+                        195
+                    ],
+                    [
+                        126,
+                        196
+                    ]
+                ],
+                "defeated": [
+                    [
+                        45,
+                        231
+                    ],
+                    [
+                        57,
+                        84
+                    ],
+                    [
+                        107,
+                        144
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
+            },
+            "cellar": {
+                "collected": [
+                    [
+                        40,
+                        123
+                    ],
+                    [
+                        41,
+                        154
+                    ],
+                    [
+                        86,
+                        165
+                    ],
+                    [
+                        111,
+                        80
+                    ],
+                    [
+                        119,
+                        103
+                    ],
+                    [
+                        120,
+                        103
+                    ],
+                    [
+                        120,
+                        115
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
+            }
+        },
+        "flags": [
+            "asked_hook:dot",
+            "boss:candy",
+            "boss:rainbow_fields",
+            "boss:village",
+            "explained_price:dot",
+            "found:factory_hall",
+            "path:factory",
+            "quest_done:foreman",
+            "quest_done:hook",
+            "talked:ferris",
+            "talked:foreman",
+            "talked:milo_village",
+            "talked:wren",
+            "visited:candy",
+            "visited:factory",
+            "visited:separated",
+            "wren_sigil"
         ]
     },
+    "quests": {},
+    "counters": {
+        "sigils": {
+            "owned": [
+                "overflow",
+                "lucky_charm"
+            ],
+            "active": {
+                "craft": "overflow",
+                "fortune": "lucky_charm"
+            }
+        },
+        "shop": {
+            "stage": [
+                "boss:candy",
+                "boss:rainbow_fields",
+                "boss:village"
+            ],
+            "shelves": [
+                {
+                    "item": "Minigun",
+                    "biome": "toy_factory",
+                    "sold": false
+                },
+                {
+                    "item": "Dices",
+                    "biome": "toy_factory",
+                    "sold": false
+                },
+                {
+                    "item": "Cotton Candy",
+                    "biome": "sugarwood_grove",
+                    "sold": false
+                },
+                {
+                    "item": "Apprentice Armor",
+                    "biome": "rainbow_fields",
+                    "sold": false
+                },
+                {
+                    "item": "Flintlock",
+                    "biome": "village",
+                    "sold": false
+                }
+            ],
+            "used": 1,
+            "greeted": [
+                "boss:candy",
+                "boss:rainbow_fields",
+                "boss:village"
+            ]
+        },
+        "biome_wins": {
+            "village": 2,
+            "rainbow_fields": 3,
+            "toy_factory": 6
+        },
+        "memory_plays": 1,
+        "memory_wins": 1
+    },
     "game": {
-        "hard_mode": "True"
+        "hard_mode": false
     }
 }

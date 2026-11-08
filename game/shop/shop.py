@@ -6,14 +6,16 @@
 #   right: 6 shelves (game/shop/stock.py), a 7th item on the counter sometimes (the Foreman's Meter).
 #   mouse: click a shelf = buy, point at it = what it is. Reroll button. Esc / B / Leave = back to the map.
 # SELL page (7.11, after the Rainbow Fields boss - tabs Buy / Sell at the top): another person, the BUYER, sits
+#   (8.11: Filip's buyer in a green apron - assets/img/shopkeeper/buyer_<normal / happy / bored>.png;
+#   happy for 3 s after a sale until you have seen the Separated Village, bored in the Void, else normal)
 #   there instead; the right side shows your inventory (not what you wear). Click an item = sell it for
 #   SELL_SHARE of its shop price. Story / quest items can't be sold. ctx: can_sell, inventory(), sell_price(name), sell(item)
 # Music: Game crossfades to the shop music and back (the biome music goes on where it stopped).
 #
 # The shopkeeper: assets/img/shopkeeper/shopkeeper_<normal / happy>.png (per line: "pose"), a small bounce
 # after every purchase. PLACEHOLDER pictures - drawn by code until these files exist (assets/img/shop/):
-#   background.png (whole screen),
-#   brb_sign.png (the Void), shelf.png (one shelf board, under each item), counter.png (the counter, bottom left)
+#   background.png (whole screen; 8.11 drawn), background_sell.png (the Sell page; 8.11 drawn),
+#   brb_sign.png (the Void; 8.11 drawn - stands on the counter), shelf.png (one shelf board, under each item), counter.png (the counter, bottom left)
 
 import json, math, os, random
 import pygame
@@ -33,6 +35,7 @@ RARE_CHANCE = 0.08            # a rare (Pale World) line instead of a greeting
 TYPE_SPEED = 1.5              # letters per frame
 NOTE_FRAMES = 120             # how long a small note ("Inventory full") stays
 BUY_COOLDOWN = 180            # frames (3 s) after buying before the next thing can be bought
+BUYER_HAPPY_FRAMES = 180      # (8.11) the buyer smiles this long after you sell him something
 BRB_TEXT = "BRB, or not."
 SELL_COOLDOWN = 20            # frames between two sales (no double clicks)
 BUYER_COAT, BUYER_EYES = (52, 78, 66), (150, 230, 160)   # PLACEHOLDER buyer: the keeper's shape, other colours
@@ -81,7 +84,7 @@ class Shop:
         self.font_small = pygame.font.Font("assets/font/Nexa-ExtraLight.ttf", max(14, sh // 48))
         self.font_small_bold = pygame.font.Font("assets/font/Nexa-Heavy.ttf", max(14, sh // 48))
         self.images = {name: _load_image(name) for name in
-                       ("background.png", "keeper.png", "keeper_happy.png", "keeper_calm.png", "keeper_neutral.png",
+                       ("background.png", "background_sell.png", "keeper.png", "keeper_happy.png", "keeper_calm.png", "keeper_neutral.png",
                         "brb_sign.png", "shelf.png", "counter.png")}
         self._scaled = {}
         self.voice = None
@@ -92,6 +95,7 @@ class Shop:
         self.note, self.note_timer = "", 0
         self.buy_cooldown = 0
         self.bounce = 0                  # frames of the after-purchase bounce left
+        self.buyer_happy = 0             # (8.11) frames the buyer still smiles after a sale
         self.keeper_pics = {}            # file -> picture cut to its visible part (None = no file)
         self.hover = None                # ("shelf", i) / ("counter", i) / ("inv", i) / "reroll" / "leave" / ("tab", page)
         self.page = "buy"                # "buy" / "sell"
@@ -208,6 +212,9 @@ class Shop:
         self.ctx["play_sfx"]("buy")
         self.buy_cooldown = SELL_COOLDOWN
         self.say(self.pick("sell_" + self.rarity(item.name)))
+        self.buyer_happy = BUYER_HAPPY_FRAMES
+        if self.buyer_pose() == "happy":
+            self.bounce = BOUNCE_FRAMES                  # (8.11) a happy little bob, like the shopkeeper
 
     def click(self, target):
         ctx = self.ctx
@@ -267,6 +274,8 @@ class Shop:
             self.buy_cooldown -= 1
         if self.bounce > 0:
             self.bounce -= 1
+        if self.buyer_happy > 0:
+            self.buyer_happy -= 1
 
     # --- drawing ------------------------------------------------------------------------------------
     def image(self, name, size):
@@ -289,7 +298,7 @@ class Shop:
         screen = self.screen
         sw, sh = screen.get_size()
         self.rects = {}
-        bg = self.image("background.png", (sw, sh))
+        bg = (self.page == "sell" and self.image("background_sell.png", (sw, sh))) or self.image("background.png", (sw, sh))
         if bg:
             screen.blit(bg, (0, 0))
         else:                                                   # PLACEHOLDER: a dim wooden shop
@@ -320,12 +329,12 @@ class Shop:
         screen = self.screen
         centre = (int(sw * 0.2), int(sh * 0.56))
         size = (int(sh * 0.42), int(sh * 0.5))
-        if not self.keeper_here:                                # the Void: only a sign
+        if not self.keeper_here:                                # the Void: only a sign, standing on the counter
             sign = self.image("brb_sign.png", (int(sh * 0.3), int(sh * 0.22)))
             rect = pygame.Rect(0, 0, int(sh * 0.3), int(sh * 0.16))
-            rect.center = centre
+            rect.midbottom = (centre[0], int(sh * 0.8) - int(sh * 0.12))
             if sign:
-                screen.blit(sign, sign.get_rect(center=centre))
+                screen.blit(sign, sign.get_rect(midbottom=(centre[0], int(sh * 0.8) + 2)))   # its legs touch the counter
             else:
                 pygame.draw.line(screen, (90, 60, 40), rect.midbottom, (rect.centerx, rect.bottom + sh * 0.12), 8)
                 pygame.draw.rect(screen, (170, 130, 90), rect, 0, 6)
@@ -372,15 +381,26 @@ class Shop:
             self.screen.blit(img, img.get_rect(center=rect.center))
             x = rect.right + 12
 
+    def buyer_pose(self):
+        """(8.11) The buyer: bored in the Void; happy while thanking you for a sale - only until you have seen the
+        Separated Village (then it's nothing special any more: normal); otherwise normal."""
+        if not self.keeper_here:
+            return "bored"
+        if self.buyer_happy > 0 and self.mood == "happy":
+            return "happy"
+        return "normal"
+
     def draw_buyer(self, sw, sh):
-        """PLACEHOLDER buyer (until assets/img/shop/buyer.png exists): the keeper's shape in other colours."""
+        """The buyer (8.11): assets/img/shopkeeper/buyer_<normal / happy / bored>.png, placed like the shopkeeper."""
         screen = self.screen
         centre = (int(sw * 0.2), int(sh * 0.56))
         size = (int(sh * 0.42), int(sh * 0.5))
-        pic = self.image("buyer.png", size)
+        pic = self.keeper_picture(sh, f"buyer_{self.buyer_pose()}.png", "buyer_normal.png")
         if pic:
-            screen.blit(pic, pic.get_rect(center=centre))
-        else:
+            t = BOUNCE_FRAMES - self.bounce
+            dip = sh * BOUNCE_SIZE * math.exp(-t / 22) * math.sin(t / BOUNCE_FRAMES * math.pi * 5) if self.bounce else 0
+            screen.blit(pic, pic.get_rect(midtop=(centre[0], int(sh * KEEPER_TOP + dip))))
+        else:                                                   # PLACEHOLDER: the keeper's shape in other colours
             body = pygame.Rect(0, 0, size[0] * 0.7, size[1] * 0.62)
             body.midbottom = (centre[0], centre[1] + size[1] // 2)
             pygame.draw.rect(screen, BUYER_COAT, body, 0, 40)
@@ -401,8 +421,6 @@ class Shop:
         size = int(min(w, h) * 0.55)
         for i in range(cols * rows):
             cell = pygame.Rect(area.left + (i % cols) * w, area.top + (i // cols) * h, w, h).inflate(-14, -14)
-            pygame.draw.rect(self.screen, (60, 45, 42), cell, 0, 10)
-            pygame.draw.rect(self.screen, (90, 66, 58), cell, 2, 10)
             if i >= len(items):
                 continue
             item = items[i]
@@ -422,12 +440,13 @@ class Shop:
             tag = self.font_small_bold.render(label, True, (150, 240, 160) if price is not None else (150, 130, 125))
             self.screen.blit(tag, tag.get_rect(midtop=(cell.centerx, spot.bottom + 6)))
 
-    def keeper_picture(self, sh):
-        """The shopkeeper for his mood, cut to its visible part and scaled to KEEPER_HEIGHT (kept in memory)."""
-        pose = (self.line or {}).get("pose", "normal")
-        name = f"shopkeeper_{pose}.png"
+    def keeper_picture(self, sh, name=None, fallback="shopkeeper_normal.png"):
+        """The shopkeeper for his line (or another picture from KEEPER_DIR, e.g. the buyer), cut to its visible
+        part and scaled to KEEPER_HEIGHT (kept in memory)."""
+        if name is None:
+            name = f"shopkeeper_{(self.line or {}).get('pose', 'normal')}.png"
         if not os.path.exists(os.path.join(KEEPER_DIR, name)):
-            name = "shopkeeper_normal.png"
+            name = fallback
         key = (name, sh)
         if key not in self.keeper_pics:
             path = os.path.join(KEEPER_DIR, name)

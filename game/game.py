@@ -555,6 +555,7 @@ class Game:
                     wins[self.player.biome] = wins.get(self.player.biome, 0) + 1
             else:
                 # lost: back to the village start (on the surface)
+                self.map.snow_strength = 0.0            # (8.11) no Tundra snow fading out over the village
                 if self.map.level != "surface":
                     self.map.switch_level("surface")
                 self.player.set_position(*self.map.start_position())
@@ -1048,9 +1049,11 @@ class Game:
         self.enemy_db.dropped_now = set()
         self.enemy_db.luck = self.luck()
         self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.hard_mode, self.sfx, assets=self.combat_assets)
+        self.combat.floor = self.map.floor_color(self.player.biome)     # (8.11) the fight floor = the biome's ground
         enemies, money = self.enemy_db.provoke_enemies(self.player.biome, self.hard_mode, self.screen)
         self.combat.enemies.extend(enemies)
         self.combat.money = money
+        self.combat.setup_room(self.player.biome)                        # (8.11) bigger rooms, rare obstacles
         self.state = GameState.COMBAT
         self.music.stop()
         self.music.play(f"boss_fight{random.randint(1,2)}")
@@ -1066,6 +1069,7 @@ class Game:
             boss.hard = True                                                # (phases may add "hard" attacks)
         self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.hard_mode, self.sfx, boss_name, assets=self.combat_assets)
         self.combat.money += boss.money
+        self.combat.floor = self.map.floor_color(self.player.biome)
         self.state = GameState.COMBAT
         self.music.stop()
         self.music.play(f"boss_fight{random.randint(1,2)}")
