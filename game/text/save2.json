@@ -2,114 +2,88 @@
     "player": {
         "x": 7760.5,
         "y": 4191.5,
-        "money": 2416,
-        "playtime": 1389.1499999990654
+        "money": 4919,
+        "playtime": 1394.4833333323938
     },
     "inventory": {
         "active_items": [
             "Rifle A4",
-            "Cyber Suit",
-            "Book"
+            "Living Armor",
+            "Shoe"
         ],
         "active_trinket2": null,
         "items": [
-            "Fire Ring",
-            "Poison Gun",
-            "Nail Gun"
+            "Simple Pistol",
+            "Dices",
+            "Cotton Candy",
+            "Blaster 2.0",
+            "G-Launcher"
         ]
     },
     "map": {
-        "seed": 44776681,
+        "seed": 956512627,
         "seed_text": "",
         "level": "surface",
         "levels": {
             "surface": {
                 "collected": [
                     [
-                        36,
-                        120
-                    ],
-                    [
-                        37,
-                        190
-                    ],
-                    [
-                        38,
-                        121
-                    ],
-                    [
-                        39,
-                        122
-                    ],
-                    [
-                        39,
-                        192
-                    ],
-                    [
-                        43,
-                        214
-                    ],
-                    [
-                        55,
-                        64
-                    ],
-                    [
-                        59,
-                        64
-                    ],
-                    [
-                        75,
-                        214
-                    ],
-                    [
-                        76,
-                        214
-                    ],
-                    [
-                        93,
-                        148
-                    ],
-                    [
-                        94,
-                        149
-                    ],
-                    [
-                        103,
-                        91
-                    ],
-                    [
-                        110,
-                        178
-                    ],
-                    [
-                        113,
-                        177
+                        109,
+                        176
                     ],
                     [
                         124,
-                        26
+                        197
                     ],
                     [
-                        126,
-                        195
+                        128,
+                        138
                     ],
                     [
-                        126,
-                        196
+                        149,
+                        146
+                    ],
+                    [
+                        150,
+                        146
+                    ],
+                    [
+                        151,
+                        146
+                    ],
+                    [
+                        152,
+                        126
+                    ],
+                    [
+                        153,
+                        126
+                    ],
+                    [
+                        198,
+                        148
+                    ],
+                    [
+                        199,
+                        124
+                    ],
+                    [
+                        199,
+                        125
                     ]
                 ],
                 "defeated": [
                     [
-                        45,
-                        231
+                        51,
+                        233
                     ],
                     [
-                        57,
-                        84
+                        68,
+                        95
                     ],
                     [
-                        107,
-                        144
+                        106,
+                        148
                     ]
                 ],
                 "away": [],
@@ -118,55 +92,47 @@
             "cellar": {
                 "collected": [
                     [
-                        40,
-                        123
+                        59,
+                        127
                     ],
                     [
-                        41,
-                        154
+                        71,
+                        126
+                    ],
+                    [
+                        71,
+                        127
                     ],
                     [
                         86,
-                        165
-                    ],
-                    [
-                        111,
-                        80
-                    ],
-                    [
-                        119,
-                        103
-                    ],
-                    [
-                        120,
-                        103
-                    ],
-                    [
-                        120,
-                        115
+                        133
                     ]
                 ],
                 "defeated": [],
                 "away": [],
                 "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
+            },
+            "lunapark": {
+                "collected": [],
+                "defeated": [],
+                "away": [],
+                "explored": "eNpjYBgFo2AUjIIhDxhxg1EjRo0YNWKIGgEAIv4Blg=="
             }
         },
         "flags": [
-            "asked_hook:dot",
             "boss:candy",
             "boss:rainbow_fields",
             "boss:village",
-            "explained_price:dot",
             "found:factory_hall",
+            "lucky:golden",
             "path:factory",
-            "quest_done:foreman",
-            "quest_done:hook",
-            "talked:ferris",
-            "talked:foreman",
+            "talked:milo_island",
             "talked:milo_village",
+            "talked:oliver",
             "talked:wren",
             "visited:candy",
             "visited:factory",
+            "visited:lunapark",
             "visited:separated",
             "wren_sigil"
         ]
@@ -183,6 +149,8 @@
                 "fortune": "lucky_charm"
             }
         },
+        "fishing_ready_at": 314.8000000000003,
+        "fishing_plays": 1,
         "shop": {
             "stage": [
                 "boss:candy",
@@ -191,45 +159,43 @@
             ],
             "shelves": [
                 {
-                    "item": "Minigun",
+                    "item": "Fire Ring",
                     "biome": "toy_factory",
                     "sold": false
                 },
                 {
-                    "item": "Dices",
+                    "item": "Laser Cannon",
                     "biome": "toy_factory",
                     "sold": false
                 },
                 {
-                    "item": "Cotton Candy",
+                    "item": "Book",
                     "biome": "sugarwood_grove",
                     "sold": false
                 },
                 {
-                    "item": "Apprentice Armor",
+                    "item": "Martini",
                     "biome": "rainbow_fields",
                     "sold": false
                 },
                 {
-                    "item": "Flintlock",
+                    "item": "Shoe",
                     "biome": "village",
-                    "sold": false
+                    "sold": true
                 }
             ],
-            "used": 1,
+            "used": 4,
             "greeted": [
                 "boss:candy",
                 "boss:rainbow_fields",
                 "boss:village"
             ]
         },
+        "wheel_plays": 8,
+        "wheel_wins": 4,
         "biome_wins": {
-            "village": 2,
-            "rainbow_fields": 3,
             "toy_factory": 6
-        },
-        "memory_plays": 1,
-        "memory_wins": 1
+        }
     },
     "game": {
         "hard_mode": false

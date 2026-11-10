@@ -53,7 +53,8 @@ MAZE_GAP = 6                                  # maze paths at least this far fro
 POCKET_R = 3.6                                # the pale pocket: how far around its path the terrain is kept
 DECOR = {"T", "r", "*", "x", "k", "m", "p", "e"}
 NEW_DECOR = {"village": "T", "tundra": "T", "garden": "T"}
-BACKROOM_FLAG = "open:garden_backroom"        # Game sets it once the Garden boss is beaten
+BACKROOM_FLAG = "open:garden_backroom"        # Game sets it once the Garden boss is beaten (old name; since 10.11 it
+                                              # opens the way down to ### - the Peace Gun - not Spare Pocket's room)
 LOOT_LEVEL = {"village": "underground_garden", "tundra": "underground_garden"}   # surface secrets pay like the Garden
 GOLD_PILES = 3                                # piles on a "gold" enclave
 MUSIC = {NOWHERE: "nowhere", NOWHERE2: "nowhere", HASH: "silence"}     # "silence" = no such music; other pale levels: "pale_world"
@@ -381,8 +382,6 @@ def _enclave_link(b, zone, role):
         w.pickups.append({"pos": back, "type": "sigil", "sigil": "spare_pocket"})
     gid = f"{b.level}_{role}"
     far = _stone(gid + "_far", e_stone, e_stand, role + "_far", zone)
-    if role == "backroom":
-        far.update(needs=BACKROOM_FLAG, hint="garden_backroom")     # (checked only on the way IN, from the pale side)
     main = b.path(stand, e_stand)
     paths = [main]
     joined = b.join(main)
@@ -673,8 +672,10 @@ class NowhereMap:
         for i, ((tile, stand), target) in enumerate(zip(NOWHERE_SLOTS[name], targets or [])):
             self.tiles[tile[1]][tile[0]] = "Q"
             self.tiles[stand[1]][stand[0]] = "_"
-            self.glitches.append(_stone(f"{name}_{i}", tile, stand, "down" if target[0] == HASH else "up", "nowhere",
-                                        True, target))
+            stone = _stone(f"{name}_{i}", tile, stand, "down" if target[0] == HASH else "up", "nowhere", True, target)
+            if target[0] == HASH:                       # (10.11) ### and its Peace Gun: only after the Garden boss
+                stone.update(needs=BACKROOM_FLAG, hint="garden_backroom")
+            self.glitches.append(stone)
         self.player_start = NOWHERE_SLOTS[name][0][1]
 
     def _hall(self, rnd, slots):

@@ -236,14 +236,23 @@ class projectile:
         rect = rotated_image.get_rect(center=(int(self.x), int(self.y)))
         screen.blit(rotated_image, rect.topleft)
 
+    def hit_reach(self, target):
+        """How close the centres must be for a hit. (10.11) The player's bullets also count their own size, so big
+        ones (Hand Cannon, Laser Cannon) hit with their whole body; enemy bullets keep the old reach (dodging)."""
+        if getattr(self, "fixed_reach", None):              # (10.11) song fights: a smaller, fixed hitbox
+            return self.fixed_reach
+        reach = target.width * 1.3
+        return reach + self.width / 2 if self.type == "player" else reach
+
     def check_collision(self, target):
         distance = math.sqrt((self.x - target.x) ** 2 + (self.y - target.y) ** 2)
+        reach = self.hit_reach(target)
         if "pierce" in self.effects or "throw" in self.effects:
             if target in self.targets_hit or "throw" in self.effects:
                 return False
-            elif distance < target.width*1.3:
+            elif distance < reach:
                 self.targets_hit.append(target)
-        return distance < target.width*1.3
+        return distance < reach
     
     def deal_damage(self, target):
         if self.check_collision(target) and target.type != self.type:

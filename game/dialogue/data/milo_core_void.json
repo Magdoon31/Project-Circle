@@ -1,0 +1,24 @@
+{
+    "_comment": "(10.11) After Milo's fight, when you came with the Peace Gun (core_fight.py -> Game.after_boss). Only Milo speaks. When he first says 'Void' the Void's music starts. The Void portal behind the heart is open now.",
+    "partner": "milo",
+    "start": "talk",
+    "nodes": {
+        "talk": {
+            "lines": [
+                {"who": "milo", "pose": "tired", "text": "Breaking it won't help. It never did."},
+                {"who": "milo", "pose": "sad", "text": "The heart doesn't hold anything down. It only makes us forget."},
+                {"who": "milo", "pose": "serious", "text": "Every time something goes wrong here, the system cuts it out. A bad day. A broken promise. A person who asked too many questions."},
+                {"who": "milo", "pose": "serious", "text": "It all has to go somewhere. There's a place under all of this."},
+                {"who": "milo", "pose": "serious", "text": "The Void.", "do": {"music": "the_void"}},
+                {"who": "milo", "pose": "neutral", "text": "No sky. No ground you can trust. Islands of whatever was left, and bridges that only go where they want to."},
+                {"who": "milo", "pose": "neutral", "text": "You can see across the cracks. You can't cross them. You'll walk in circles and swear you went straight."},
+                {"who": "milo", "pose": "serious", "text": "Nothing there is alive. It's only remembered. And it remembers back."},
+                {"who": "milo", "pose": "sad", "text": "Look away for too long and it forgets you were ever there. Even the way back."},
+                {"who": "milo", "pose": "serious", "text": "Everything the system took is down there. Every answer you came for."},
+                {"who": "milo", "pose": "tired", "text": "I won't stop you anymore. I don't think I could."},
+                {"who": "milo", "pose": "pointing", "text": "The way down is open now. Behind the heart."},
+                {"who": "milo", "pose": "sad", "text": "Go. And if you meet me down there... don't believe everything I say."}
+            ]
+        }
+    }
+}

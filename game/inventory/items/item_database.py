@@ -134,7 +134,7 @@ class ItemDatabase:
                                     # 77 DPS *0.9Recoil +1.6R + 8Bind   |   79p     |   weight 421
             "G-Launcher": Weapon("G-Launcher",
                                     "KABOOM... KABLAOW...",
-                                    "weapon",490,1.0,{"explosion":[60,0.5], "bubble":[0.1]},"Explodes on impact",11000,22,10,["grenade_red"],
+                                    "weapon",490,1.0,{"explosion":[65,0.8], "bubble":[0.1]},"Explodes on impact",11000,22,10,["grenade_red"],
                                     self.load_img("weapon/grenade_launcher.png")),
                                     # 50 DPS + 20Boom +3R           |   73p   |   weight 486
 
@@ -210,7 +210,7 @@ class ItemDatabase:
                                     # 135 DPS *0.85Recoil 2.8R      |   118p   |   weight 680
             "Ultra Blaster": Weapon("Ultra Blaster",
                                     "There is a tiny crack in the casing.\nSomething underneath is glowing.",
-                                    "weapon",740,0.55,{"zap":[2,0.3],"poison":[180,57],"weakness":[180,0.3]},"Zaps, poisons and weakens enemies",10200,18,20,["laser_green"],
+                                    "weapon",740,0.55,{"zap":[2,0.3],"poison":[180,57],"weakness":[180,0.1]},"Zaps, poisons and weakens enemies",10200,18,20,["laser_green"],
                                     self.load_img("weapon/blaster3.png")),
                                     # 118 DPS +12Zap +20Poison +16Weakness  |   166p   |   weight 1409
 
@@ -218,7 +218,7 @@ class ItemDatabase:
 
             "AK-47": Weapon("AK-47",
                                     "A weapon from a world that shouldn't exist here.",
-                                    "weapon",830,0.22,{"weakness":[30,0.15]},"Apply -15% dmg to enemies hit",10900,15,18,["bullet"],
+                                    "weapon",840,0.22,{"weakness":[30,0.15]},"Apply -15% dmg to enemies hit",11100,15,18,["bullet"],
                                     self.load_img("weapon/ak_47.png"),True),
                                     # 264 DPS +10Weakness + 14R +2Auto      |   290p   |   weight 3791
             "Laser Arrow": Weapon("Laser Arrow",
@@ -228,12 +228,12 @@ class ItemDatabase:
                                     # 228 DPS +42Zap +10Slow +30R           |   310p   |   weight 4228
             "Acid Gun": Weapon("Acid Gun",
                                     "The container was empty when you found it.\nSomehow, now it's full.",
-                                    "weapon",1670,0.52,{"acid":[180,1.0],"slow":[100,0.3]},"Destroys enemies defence",11000,20,20,["laser_yellow"],
+                                    "weapon",1670,0.52,{"acid":[180,1.0],"slow":[100,0.3]},"Destroys enemies defence",11300,20,20,["laser_yellow"],
                                     self.load_img("weapon/acid_gun.png")),
                                     # 169 DPS +60Acid +20Slow +14R          |   263p   |   weight 3208
             "Peace Gun": Weapon("Peace Gun",
                                     "The name is handwritten.\nThe rumors say that this gun is\nMilo's worst enemy, no one tried it yet.",
-                                    "weapon",1740,0.85,{"binded":[100,0.33]},"33% chance to bind",9600,12,20,["flower_green"],
+                                    "weapon",1900,0.82,{"binded":[100,0.33]},"33% chance to bind",10200,12,20,["flower_green"],
                                     self.load_img("weapon/peace_gun.png")),
                                     # 106 DPS +80Bind +10R                  |   196p   |   weight 2041
             "Combat Sniper": Weapon("Combat Sniper",
@@ -285,7 +285,7 @@ class ItemDatabase:
         # BALANCE (6.11, see BALANCE.md): an armour x1.0 lets you take ~6 normal hits from enemies of its biome
         # (hits x multiplier: 0.7 weakest ... 1.45 best, Tundra up to 1.5). Defence stays FLAT (dmg - def, min 1):
         # ~1/8 of a normal hit of its biome, so bullets from ~2-3 levels lower do almost nothing.
-        # Regeneration: regen [up to this share of HP, % of max HP every 0.5 s].
+        # Regeneration: regen [up to this share of HP, % of max HP every 0.5 s] - only after 3 s without a hit (10.11).
 
         # --- VILLAGE ---
 
@@ -341,7 +341,7 @@ class ItemDatabase:
                 "Living Plate",
                 "Soft. Warm. Slightly breathing.",
                 "armor", 14,600,
-                {"regen": [0.3, 1.2]}, "Regen I\nRegenerate up to 30% hp (1.2% every 0.5 s)",
+                {"regen": [0.3, 1.2]}, "Regen I\nRegenerate up to 30% hp (1.2% every 0.5 s)\nafter 3 s without a hit",
                 self.load_img("armor/living1.png")
             ),
             "Samurai Jacket": Armor(
@@ -410,7 +410,7 @@ class ItemDatabase:
                 "Living Armor",
                 "It changes shape when nobody is looking.\nAlmost like this world",
                 "armor", 48,1280,
-                {"regen": [0.3, 1.2], "slow_imm": [1]}, "Regen I\nRegenerate up to 30% hp (1.2% every 0.5 s)\nImmune to slowness",
+                {"regen": [0.3, 1.2], "slow_imm": [1]}, "Regen I\nRegenerate up to 30% hp (1.2% every 0.5 s)\nafter 3 s without a hit\nImmune to slowness",
                 self.load_img("armor/living2.png")
             ),
             "Frost Armor": Armor(
@@ -433,35 +433,35 @@ class ItemDatabase:
             "Plate Armor": Armor(
                 "Plate Armor",
                 "Probably the most tanky armor in the game",
-                "armor", 140,5760,
+                "armor", 140,5750,
                 {"guard": [0.5, 0.6], "slow": ["inf", 0.25]}, "Guard III\nIf above 50% health, all dmg -60%\nSlowness - -25% speed",
                 self.load_img("armor/knight3.png")
             ),
             "Saper Armor": Armor(
                 "Saper Armor",
                 "You like KABOOM...?",
-                "armor", 120,2840,
+                "armor", 120,2850,
                 {"explosion_up": [20, 0.1]}, "Buffs Explosions",
                 self.load_img("armor/saper.png")
             ),
             "Tribe Armor": Armor(
                 "Tribe Armor",
                 "It isn't armor.\nYou are wearing it because it allows you to.",
-                "armor", 98,6140,
-                {"regen": [0.5, 1.5], "slow_imm": [1], "poison_imm": [1]}, "Regen II\nRegenerate up to 50% hp (1.5% every 0.5 s)\nImmune to slowness and poison",
+                "armor", 60,6250,
+                {"regen": [0.5, 1.5], "slow_imm": [1], "poison_imm": [1]}, "Regen II\nRegenerate up to 50% hp (1.5% every 0.5 s)\nafter 3 s without a hit\nImmune to slowness and poison",
                 self.load_img("armor/living3.png")
             ),
             "Samurai Armor": Armor(
                 "Samurai Armor",
                 "Did you ever thought it was meant to last?\nStupid world analogy",
-                "armor", 40,5260,
+                "armor", 40,5250,
                 {"focus": [60, 0.15, 0.3, 0.1], "slow_imm": [1], "bind_chance": [0]}, "Focus III\nAfter 1s without dmg:\n+15% speed, +30% dmg, +10% fire rate\nImmune to slowness and binded",
                 self.load_img("armor/samurai3.png")
             ),
             "Cyber Armor": Armor(
                 "Cyber Armor",
                 "There is no serial number. There is no manufacturer.",
-                "armor", 210,3180,
+                "armor", 210,3150,
                 {"overclock": [600, 120, 0.5]}, "Overclock I\nEvery 10s gain a fire rate boost for 2s",
                 self.load_img("armor/cyber2.png")
             ),
@@ -598,6 +598,12 @@ class ItemDatabase:
                 "trinket",
                 {"gus":[1]}, "Bring this to Gus",
                 self.load_img("trinket/sugar_crystal.png")
+            ),
+            "Firefly Jar": Trinket("Firefly Jar",
+                "A jar of fireflies from the Night Bloom.\nThey don't like the dark either.",
+                "trinket",
+                {"fireflies": [180, 0.5], "light": [1]}, "Every 3 s a firefly flies at an enemy\n(50% of your shot). Less dark around you.",
+                self.load_img("trinket/firefly_jar.png")
             ),
             "Flavoured Candy": Trinket("Flavoured Candy",
                 "A sweet from the Shroom Mother.\nEvery bite tastes different. Some bite back.",
@@ -740,7 +746,7 @@ class ItemDatabase:
             "Toxic Gas": Trinket("Toxic Gas",
                 "Bottled from the toxic flowers of the Garden.\nDon't open it indoors.",
                 "trinket",
-                {"toxic_gas":[3, 180, 3]}, "Poison from your weapon never wears off (+3 dmg).\nWeapons without poison: small poison (3 s).",
+                {"toxic_gas":[3, 180, 3]}, "Poison from your weapon never wears off.\nWeapons without poison: small poison (3 s).",
                 self.load_img("trinket/toxic_gas.png")
             ),
 

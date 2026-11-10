@@ -51,7 +51,8 @@ class DialogueContext:
     def __init__(self, has_flag, set_flag, clear_flag, has_item, give_item, take_item,
                  quests=None, add_gold_piles=None, seed_choice=None, on_new_quest=None, on_quest_done=None,
                  format_text=None, reveal_zone=None, get_money=None, pay=None, drop_quest=None,
-                 get_counter=None, add_counter=None, count_item=None, give_sigil=None, open_screen=None):
+                 get_counter=None, add_counter=None, count_item=None, give_sigil=None, open_screen=None,
+                 play_music=None):
         self.has_flag, self.set_flag, self.clear_flag = has_flag, set_flag, clear_flag
         self.has_item, self.give_item, self.take_item = has_item, give_item, take_item
         self.quests = quests                    # QuestLog
@@ -68,6 +69,7 @@ class DialogueContext:
         self.count_item = count_item or (lambda name: 1 if has_item(name) else 0)
         self.give_sigil = give_sigil            # sigil id -> the player gets that sigil
         self.open_screen = open_screen          # name -> a screen opens after the talk (e.g. Ferris: "shortcuts")
+        self.play_music = play_music            # (10.11) name -> this music plays from now on (e.g. Milo says "Void")
 
     def check(self, cond):
         """All must be true (values may be lists):
@@ -124,6 +126,9 @@ class DialogueContext:
         for name in as_list(effects.get("open", [])):           # "open": "shortcuts" - after the talk
             if self.open_screen:
                 self.open_screen(name)
+        for name in as_list(effects.get("music", [])):         # (10.11) "music": "the_void" - from this line on
+            if self.play_music:
+                self.play_music(name)
         for sigil in as_list(effects.get("sigil", [])):         # "sigil": "overflow"
             if self.give_sigil:
                 self.give_sigil(sigil)

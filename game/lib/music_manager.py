@@ -45,6 +45,32 @@ class MusicManager:
     def has(self, name):
         return name in self.music
 
+    def load(self, name, path):
+        """(8.11) Loads a track on demand (big boss tracks: only when the fight starts). False if the file isn't there."""
+        if name not in self.music:
+            if not os.path.exists(path):
+                return False
+            self.music[name] = pygame.mixer.Sound(path)
+            self.music[name].set_volume(self.music_volume)
+        return True
+
+    def crossfade(self, name, ms=1500):
+        """(8.11) The music playing now fades out while `name` fades in (boss phases)."""
+        if name not in self.music or name == self.current:
+            return
+        if self.current in self.music:
+            self.music[self.current].fadeout(ms)
+        self.channel = self.music[name].play(-1, fade_ms=ms)
+        self.current = name
+
+    def play_once(self, name):
+        """(10.11) Plays a track once, from the start (a song fight: the fight ends with the song)."""
+        if name in self.music:
+            self.channel = self.music[name].play(0)
+            self.current = name
+            if self.channel:
+                self.channel.set_volume(1.0)
+
     def play(self, name):
         if name not in self.music:
             name = MUSIC_FALLBACK.get(name, name)

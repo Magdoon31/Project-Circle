@@ -6,6 +6,7 @@ IMM_AFTER_HIT = 30                 # frames you can't be hurt after a hit (0.5 s
 # How fast you speed up / slow down (share of the speed per frame). The slide distance goes with (1 - k) / k.
 COMBAT_GRIP = (0.5, 0.25)          # (8.11) a light slide: 1/3 of the map's (map: ACCELERATION 0.25, FRICTION 0.1)
 ICE_GRIP = (0.083, 0.055)          # ice floor (a boss arena): 1.1x the old ice slide (was 0.09, 0.06)
+REGEN_CALM_FRAMES = 180         # (10.11) armour regen only starts after 3 s without being hit
 INFINITE_FRAMES = 60 * 60 * 60     # "never wears off" in a fight (1 hour) - Toxic Gas
 
 class Shooter :
@@ -57,6 +58,7 @@ class Shooter :
         self.nodmg_time = 0
         self.regen_timer = 0
         self.overclock_timer = 120
+        self.show_hp_bar = True
         self.rnd_buff_timer = 120
         self.emergency_used = 1 if "emergency" in self.armor_effect else 0
 
@@ -243,6 +245,14 @@ class Shooter :
             self.imm_frames = 0
         return die
 
+    def regen_ready(self):
+        """Armour regen ticks every 0.5 s while under its HP share - but only after a calm spell without hits."""
+        if "regen" not in self.armor_effect:
+            return False
+        below_cap = self.hp < self.max_hp * self.armor_effect["regen"][0]
+        calm = self.nodmg_time >= REGEN_CALM_FRAMES
+        return below_cap and calm and self.regen_timer >= 30
+
     def take_damage(self, amount, effects):
         if self.imm_frames <= 0:
             self.imm_frames = IMM_AFTER_HIT                 # (also after a dodge)
@@ -341,7 +351,7 @@ class Shooter :
 
             dmg_mult *= 1 + self.armor_effect["berserk"][1]
 
-        if "regen" in self.armor_effect and self.hp < self.max_hp*self.armor_effect["regen"][0] and self.regen_timer >= 30:
+        if self.regen_ready():
 
             self.hp = min(self.max_hp, self.hp + self.max_hp * self.armor_effect["regen"][1] / 100)   # % of max HP
             self.regen_timer = 0
@@ -404,7 +414,7 @@ class Shooter :
                     self.hp -= effect[1]
 
                 elif effect_name == "regen" and effect[0] % 60 == 0 and not check:
-                    self.hp += effect[1]
+                    self.hp = min(self.max_hp, self.hp + effect[1])      # (10.11) never over 100%
 
                 elif effect_name == "acid":
                     self.defence = self.og_defence * (1-effect[1])
@@ -566,9 +576,11 @@ class Shooter :
         return projectiles
 
     def hp_bar(self, screen):
+        if not self.show_hp_bar:                    # (10.11) not in a song fight (you can't die there)
+            return
         bar_width = 50
         bar_height = 5
-        fill_width = int(bar_width * self.hp / (self.max_hp))
+        fill_width = int(bar_width * min(1.0, max(0.0, self.hp / self.max_hp)))
         pygame.draw.rect(screen, (255, 0, 0), (self.x - bar_width // 2, self.y - self.width - 10, bar_width, bar_height))
         pygame.draw.rect(screen, (0, 255, 0), (self.x - bar_width // 2, self.y - self.width - 10, fill_width, bar_height))
     

@@ -27,7 +27,13 @@ class CombatAssets:
         "emergency": "assets/sfx/combat/emergency.mp3",
     }
     # boss phase change (7.11): put a file here; without it the "overclock" sound plays
-    OPTIONAL_SFX = {"boss_phase": "assets/sfx/combat/boss_phase.wav"}
+    OPTIONAL_SFX = {"boss_phase": "assets/sfx/combat/boss_phase.wav",
+                    "strike1": "assets/sfx/combat/bosses/garden/strike1.mp3",     # (8.11) Night Bloom's lightning
+                    "strike2": "assets/sfx/combat/bosses/garden/strike2.mp3",
+                    "mascot_laser": "assets/sfx/combat/bosses/mascot/laser.ogg",     # (10.11) the Mascot's song fight
+                    "mascot_circle": "assets/sfx/combat/bosses/mascot/circle.ogg",
+                    "mascot_square": "assets/sfx/combat/bosses/mascot/square.ogg",
+                    "core_heart": "assets/sfx/combat/bosses/core/heart.ogg"}     # (10.11) Milo's fight: the heart (louder when faster)
 
     def __init__(self, sfx):
         for name, path in self.COMBAT_SFX.items():

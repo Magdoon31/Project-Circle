@@ -32,7 +32,7 @@ COLUMNS = [
         {"id": "overflow", "name": "Overflow", "text": "Shotguns fire +1 pellet.", "how": "Talk to Wren."},
     ]},
     {"id": "warden", "name": "Warden", "image": "warden.png", "sigils": [
-        {"id": "headstart", "name": "Headstart", "text": "Enemies don't move or shoot\nfor the first 1.5 s of a fight.",
+        {"id": "headstart", "name": "Headstart", "text": "Enemies don't move or shoot\nfor the first 2 s of a fight.",
          "secret": True},
         {"id": "bullet_time", "name": "Bullet Time", "text": "Enemy bullets fly 15% slower.",
          "how": "In one fight in The Core,\nlet 30 bullets fly right past you."},
@@ -57,7 +57,7 @@ LUCKY_COIN_GOLD = 1.2
 LUCKY_CHARM_LUCK = 1            # see Game.luck()
 CLOSE_CALL_HP = 0.10            # Close Call: win a Tundra fight with this share of HP or less
 NEAR_MISSES = 30                # Bullet Time: near misses in one Core fight
-HEADSTART_FRAMES = 90           # 1.5 s
+HEADSTART_FRAMES = 120          # 2 s (10.11, was 1.5 s)
 BULLET_TIME_SPEED = 0.85
 CLOSE_CALL_DISTANCE = 2.6       # x the player's radius: closer than this (but no hit) = a close call
 CLOSE_CALL_COOLDOWN = 60        # (8.11) frames: Close Call reloads at most once a second (Flare Gun + a line of icicles)

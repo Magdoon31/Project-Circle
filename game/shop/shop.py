@@ -37,6 +37,7 @@ NOTE_FRAMES = 120             # how long a small note ("Inventory full") stays
 BUY_COOLDOWN = 180            # frames (3 s) after buying before the next thing can be bought
 BUYER_HAPPY_FRAMES = 180      # (8.11) the buyer smiles this long after you sell him something
 BRB_TEXT = "BRB, or not."
+BUY_SOUND_VOLUME = 0.4        # (10.11) the buy / sell sound is quieter, so it doesn't drown the voice lines
 SELL_COOLDOWN = 20            # frames between two sales (no double clicks)
 BUYER_COAT, BUYER_EYES = (52, 78, 66), (150, 230, 160)   # PLACEHOLDER buyer: the keeper's shape, other colours
 
@@ -190,7 +191,7 @@ class Shop:
         ctx["owned"].add(item_name)
         if mark_sold:
             mark_sold()
-        ctx["play_sfx"]("buy")
+        ctx["play_sfx"]("buy", BUY_SOUND_VOLUME)
         self.buy_cooldown = BUY_COOLDOWN
         self.bounce = BOUNCE_FRAMES
         self.say(self.pick("buy"))
@@ -209,7 +210,7 @@ class Shop:
             self.show_note("He won't take that")
             return
         self.ctx["sell"](item, price)
-        self.ctx["play_sfx"]("buy")
+        self.ctx["play_sfx"]("buy", BUY_SOUND_VOLUME)
         self.buy_cooldown = SELL_COOLDOWN
         self.say(self.pick("sell_" + self.rarity(item.name)))
         self.buyer_happy = BUYER_HAPPY_FRAMES

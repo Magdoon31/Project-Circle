@@ -11,7 +11,7 @@
 #   - you don't move for PALE_WAIT_SECONDS ("until the light forgets you")
 
 
-PALE_WAIT_SECONDS = 10
+PALE_WAIT_SECONDS = 5                 # (10.11, was 10)
 RING_RADIUS = 3              # tiles from the middle of the ring: you are inside
 
 

@@ -13,7 +13,7 @@ class SFXManager:
         self.sfx[name] = pygame.mixer.Sound(path)
         self.last_played_time[name] = 0.0
 
-    def play(self, name):
+    def play(self, name, volume=1.0):
         if name not in self.sfx:
             print("No SFX found")
             return
@@ -31,7 +31,7 @@ class SFXManager:
             else:
                 volume_modifier = 1.0 
             
-            final_volume = self.sfx_volume * volume_modifier
+            final_volume = self.sfx_volume * volume_modifier * volume
             
             channel.set_volume(final_volume)
             

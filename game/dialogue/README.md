@@ -84,6 +84,8 @@ Values can be one name or a list.
 | `"give": "Peace Gun"` | give an item |
 | `"take": "Old Note"` | take one item away |
 | `"gold_piles": 2` | give gold: 2 "piles" of the biome the player is in |
+| `"music": "the_void"` | (10.11) from this line on this music plays (a name in `MusicManager`); after the talk the biome's music comes back |
+| `"open": "boss_fight"` | (10.11) after the talk the boss fight starts (Milo: `BOSS_TALKS` in game.py) |
 | `"count": "gus_talks"` | add 1 to a saved counter (e.g. how many times you talked to someone) |
 | `"pay": 30` | take gold from the player (check `money_at_least` first) |
 | `"reveal_map": "surface:rainbow_fields"` | uncover a zone on the world map (M) |

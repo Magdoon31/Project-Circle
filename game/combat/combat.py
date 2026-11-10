@@ -9,6 +9,8 @@ from game.inventory import sigils as SG
 from game.lib import snow_overlay as SNOW
 from game.combat import rooms as ROOMS
 from game.combat import wall_tactics as TACTICS
+from game.combat.darkness import Darkness
+from game.combat.song import fight as SONG
 from game.combat.enemy.enemy_database import WALL_BOUNCE, WALL_PASS
 
 # RUNNING AWAY: hold R in a normal fight. Every frame there is a chance to escape (no win, no death).
@@ -26,14 +28,22 @@ FLAVOURS_BAD = ["burn", "slow", "weakness", "confusion"]
 FLAVOUR_STRENGTH = {"strength": 0.3, "speed": 0.25, "slow": 0.3, "weakness": 0.3}
 INVULN_FLAVOUR = 180            # frames
 CRACK_FADE = 50                # frames a finished ground crack stays and fades
+CRACK_HURTS_AFTER = 20         # (10.11) Milo's cracks (no bullets) still hurt this many frames after they stop
+CRACK_WIDTH = 12               # px from the crack's line that it hurts
 BLIZZARD_SIGHT = 230           # px you can see around you in a snowstorm (boss arena)
 CAMERA_EASE = 0.12            # (8.11) big rooms: how fast the camera follows you (share per frame)
 ARROW_COLOR = (200, 40, 40)   # (8.11) big rooms: arrows at the screen edge pointing at enemies you can't see
+RAIN_WARNING = (255, 120, 90)  # (8.11) the marks where a row of bullets will come in from a wall
+RAIN_MARK = 40                 # px long
+FIREFLY_SPEED = 9              # (8.11) Firefly Jar: how fast its fireflies fly
+ZAP_REACH = 300               # (8.11) px a zap can jump from one enemy to the next
+ZAP_FALLOFF = 0.7             # (8.11) every next jump of a zap hits this much weaker
 PRODUCT_LIMITS = {"belt_turret": 2}   # (8.11) Assembly Line: at most this many of a product in the fight at once
 BELT_BULLETS = 1.0             # (8.11) enemy bullets on a conveyor belt move this share of the belt's speed
 BELT_COLOR, BELT_EDGE, BELT_ARROW = (74, 72, 80), (42, 40, 46), (112, 110, 120)
 NOZZLE_COLOR, NOZZLE_HOT = (90, 88, 96), (255, 120, 60)
 PHASE_FLASH = 18              # frames of the white flash when a boss changes phase
+SONG_SFX_VOLUME = {"laser": 0.35, "circle": 0.8, "square": 1.0}   # (10.11) the Mascot's sounds, only on the beat
 FLAWLESS_GOLD = 1.2           # no damage taken in a normal fight: x1.2 gold (not in hard mode)     # bosses are only fought on purpose (you walk into them)
 
 
@@ -87,6 +97,10 @@ class Combat:
         self.pending_bullets = []     # death attacks waiting to go off ([frames left, bullets, pos, size])  # Atom: small explosions waiting to go off ([frames left, pos, effect, type, effects])
         self.decoy = None             # Mascot Plush: dropped on the first frame (the enemies are known by then)
         self.decoy_image = getattr(assets, "decoy_img", None)
+        self.darkness = Darkness()      # (8.11) Night Bloom's dark arena (darkness.py)
+        self.song = None                # (10.11) a song fight (the Mascot): song/fight.py - set by Game
+        self.core = None                # (10.11) Milo's fight (core_fight.py) - set by Game
+        self.skip_end_screen = False    # (10.11) Milo: no "Win! CLICK" at the real end
 
     def setup_room(self, biome):
         """(8.11) A normal fight: a bigger room for more than 3 enemies (the camera follows you) and, sometimes,
@@ -138,8 +152,12 @@ class Combat:
 
     def handle_events(self, events, mouse_btn_pressed):
         self.trying_to_run = self.can_run() and pygame.key.get_pressed()[RUN_KEY]
-        if self.trying_to_run:
-            return   # no shooting while trying to run
+        if self.core and self.core.shows_fake_win:
+            if any(e.type == pygame.MOUSEBUTTONDOWN for e in events):
+                self.core.click()
+            return
+        if self.trying_to_run or self.song or (self.core and not self.core.allows_shooting):
+            return   # no shooting while trying to run (or in a song fight: you only dodge)
 
         for event in events:
                 
@@ -165,6 +183,9 @@ class Combat:
 
     def update(self):
         self.timer += 1
+        if self.core and self.core.holds_time:          # (10.11) Milo rewinds time: only that happens now
+            self.update_core()
+            return
         for waiting in self.pending_bullets[:]:
             waiting[0] -= 1
             if waiting[0] <= 0:
@@ -181,7 +202,7 @@ class Combat:
                 self.pending_explosions.remove(waiting)
                 self.explosion(waiting[1], waiting[2], None, waiting[3], waiting[4], True)
                 self.sfx.play("explosion")
-        if self.timer == 1 and "flavour" in self.player.trinket_effect:
+        if self.timer == 1 and "flavour" in self.player.trinket_effect and not self.song:
             self.flavoured_candy(self.player.trinket_effect["flavour"][0])
         if self.timer == 1 and "decoy" in self.player.trinket_effect and self.enemies:
             self.decoy = Decoy.drop(self.screen, self.player, self.enemies, self.player.trinket_effect["decoy"][0], self.decoy_image)
@@ -201,6 +222,8 @@ class Combat:
         elif getattr(self, "last_belts", None):
             self.arena["belts"] = self.last_belts      # (8.11) the belts stay after the boss is gone
         self.player.ice = bool(self.arena.get("ice"))
+        if self.darkness.update(self.arena.get("darkness"), self.player, self.screen.get_size(), self.timer):
+            self.thunder()
         self.player.move(keys, self.screen)
         self.walls = getattr(self, "walls", [])
         for wall in self.walls[:]:                      # ice walls melt / break (room walls stay, crates break)
@@ -216,6 +239,9 @@ class Combat:
             self.follow_camera()
         self.update_cracks()
         self.update_nozzles()
+        self.release_fireflies()
+        self.update_song()
+        self.update_core()
         if len(self.enemies) > 32:
             # hard cap: newest extra enemies just vanish (no death attacks, so no chain spawning)
             del self.enemies[32:]
@@ -270,7 +296,7 @@ class Combat:
                     else:
                         self.sfx.play("hit")
                     break
-        if len(self.enemies) == 0:
+        if self.scripted_end_reached():
             self.win = True
             self.finished = True
 
@@ -357,7 +383,7 @@ class Combat:
 
                 if player_hit[0] == "static":
 
-                    self.zap([999,1.0,player_hit[1]],self.player)
+                    self.zap([999,1.0,player_hit[1]],self.player, reach=0)
 
                 if player_hit[0] == "explosion":
 
@@ -401,10 +427,8 @@ class Combat:
                 enemy.new_nozzles = []
             if enemy.new_cracks:                            # Frost Golem's ground cracks
                 for crack in enemy.new_cracks:
-                    crack.update(length=crack["start"], next=crack["start"] + crack["every"], segs=[], life=CRACK_FADE)
-                self.cracks = getattr(self, "cracks", []) + enemy.new_cracks
+                    self.add_crack(crack)
                 enemy.new_cracks = []
-                self.sfx.play("explosion")
             if enemy.new_walls:                             # Frost Golem's ice walls
                 self.walls.extend(enemy.new_walls)
                 enemy.new_walls = []
@@ -419,13 +443,17 @@ class Combat:
                 self.kill_enemy(enemy)
                 if enemy.type == "boss":                    # (8.11) its machines and products go with it
                     for other in self.enemies:
-                        if getattr(other, "machine", False) or getattr(other, "ride_off", False) or other in enemy.guards:
+                        if getattr(other, "machine", False) or getattr(other, "ride_off", False) or other in enemy.guards \
+                                or getattr(other, "owner", None) is enemy:
                             other.remove_me = True
+        self.hold_anchored()
         gone = [e for e in self.enemies if getattr(e, "remove_me", False)]
         for e in gone:                                      # taken away quietly (rebuilt machines, products off the belt)
             self.enemies.remove(e)
 
         # any damage source (bullets, explosions, contact, poison...) is checked here
+        if self.song:
+            self.song.count_hit(self.player)            # (10.11) a song fight: hits are only counted
         self.check_player_death()
 
     # enemy collision
@@ -477,6 +505,80 @@ class Combat:
                 self.player.y -= move_y * 0.5
            
     # --- boss arenas (7.11): ice walls, snowstorm ----------------------------------------------------------
+    def pause(self):
+        """(10.11) ESC: the fight stands still (Game stops updating it); the clocks that run on real time wait."""
+        self.paused_at = pygame.time.get_ticks()
+
+    def resume(self):
+        """Everything timed in real ms goes on from where it was (bullets' range, the song)."""
+        waited = pygame.time.get_ticks() - self.paused_at
+        for p in self.player_projectiles + self.enemy_projectiles:
+            p.shot_time += waited
+        if self.song:
+            self.song.clock.start_ms += waited
+
+    def scripted_end_reached(self):
+        """All enemies gone - or, in a scripted fight (song / Milo), the script says it's over."""
+        if self.core:
+            if self.core.finished:
+                self.skip_end_screen = True
+            return self.core.finished
+        return len(self.enemies) == 0 and (self.song is None or self.song.finished)
+
+    def update_core(self):
+        """(10.11) Milo's fight: the heart's beat and everything on it (core_fight.py)."""
+        if self.core is None:
+            return
+        hp_before = self.player.hp
+        self.core.update(self)
+        if self.player.hp < hp_before:
+            self.sfx.play("player_hit")                    # hit by a cable / a shock wave (bullets play it themselves)
+        for name, volume in self.core.sounds:
+            if name in self.sfx.sfx:
+                self.sfx.play(name, volume)
+
+    def update_song(self):
+        """(10.11) A song fight: the song's attacks for this frame (song/fight.py)."""
+        if self.song is None:
+            return
+        hp_before = self.player.hp
+        bullets = self.song.update(pygame.time.get_ticks(), self.player, self.enemy_projectiles)
+        if self.player.hp < hp_before:
+            self.sfx.play("player_hit")                    # hit by a laser / shape (bullets play it themselves)
+        self.slow_bullets(bullets)                          # (Bullet Time still works)
+        self.enemy_projectiles.extend(bullets)
+        for name in self.song.sounds:
+            self.sfx.play(f"mascot_{name}", SONG_SFX_VOLUME.get(name, 0.5))
+        self.money = self.song.gold                         # the reward goes with the grade
+
+    def hold_anchored(self):
+        """(8.11) Anchored enemies (Assembly Line's core and machines) stay where they first stood."""
+        for e in self.enemies:
+            if getattr(e, "anchored", False):
+                if e.anchor is None:
+                    e.anchor = (e.x, e.y)
+                e.x, e.y = e.anchor
+
+    def draw_darkness(self):
+        """(8.11) The dark arena over everything; the boss bar stays readable."""
+        if not self.darkness.active:
+            return
+        boss = next((e for e in self.enemies if e.type == "boss"), None)
+        self.darkness.draw(self.screen, self.player, boss, self.player_projectiles + self.enemy_projectiles)
+        if boss is not None:
+            boss.hp_bar(self.screen)
+
+    def release_fireflies(self):
+        """(8.11) Firefly Jar: every few seconds a firefly flies off at the nearest enemy."""
+        jar = self.player.trinket_effect.get("fireflies")
+        if not jar or not self.enemies or self.timer % jar[0]:
+            return
+        target = self.nearest_within(self.enemies, (self.player.x, self.player.y), 0)
+        self.player_projectiles.append(prjt(self.player.x, self.player.y, target.x, target.y, FIREFLY_SPEED,
+                                            self.player.damage * jar[1], "player", 10, 4000,
+                                            self.enemy_db.bullet_type_info, ["normal_yellow"],
+                                            effects={"homing": [0.35, 0.35]}))
+
     def move_enemy(self, enemy, target):
         """(8.11) One enemy's step: chasers walk round the walls, shooters keep you in sight, throwers stay in cover
         (wall_tactics.py)."""
@@ -577,6 +679,9 @@ class Combat:
         """Nozzles at the start of n random belts glow for `warn` frames, then shoot a stream along the belt.
         Vents (spec "vent"): spots in the bottom edge glow, then shoot up."""
         self.nozzles = getattr(self, "nozzles", [])
+        if spec.get("rain"):                                # (8.11) rows from the walls: shown first, then fly
+            self.nozzles.append({"rain": True, "warn": spec["warn"], "bullets": spec["bullets"]})
+            return
         if spec.get("vent"):
             if self.vent_busy(spec.get("pattern")):
                 return                                      # (8.11) one ring and one row from below at a time
@@ -595,11 +700,31 @@ class Combat:
     def vent_busy(self, pattern):
         return any(n.get("vent") and n["spec"].get("pattern") == pattern for n in getattr(self, "nozzles", []))
 
+    def thunder(self):
+        """(8.11) Night Bloom's lightning: a random thunder sound (if Filip's files are there)."""
+        names = [n for n in ("strike1", "strike2") if n in self.sfx.sfx]
+        if names:
+            self.sfx.play(random.choice(names))
+
+    def draw_rain_warnings(self):
+        """(8.11) Where the rows from the walls will come from: blinking marks at the walls (seen in the dark)."""
+        if (self.timer // 5) % 2:
+            return
+        for n in getattr(self, "nozzles", []):
+            if n.get("rain") and n["warn"] > 0:
+                for b in n["bullets"]:
+                    tip = (b.x + b.dir_x * RAIN_MARK, b.y + b.dir_y * RAIN_MARK)
+                    pygame.draw.line(self.screen, RAIN_WARNING, (b.x, b.y), tip, 6)
+
     def update_nozzles(self):
         w = self.screen.get_width()
         for n in getattr(self, "nozzles", [])[:]:
             if n["warn"] > 0:
                 n["warn"] -= 1
+                continue
+            if n.get("rain"):
+                self.enemy_projectiles.extend(n["bullets"])
+                self.nozzles.remove(n)
                 continue
             if n["next"] > 0:
                 n["next"] -= 1
@@ -672,13 +797,20 @@ class Combat:
                                  (n_x, cy - 22, 26, 44), 0, 4)
                 pygame.draw.rect(self.screen, BELT_EDGE, (n_x, cy - 22, 26, 44), 3, 4)
 
+    def add_crack(self, crack, sound=True):
+        """A ground crack starts (Frost Golem; 10.11 also Milo's heart): {x, y, angle, speed, max, every, start, bullets}."""
+        crack.update(length=crack["start"], next=crack["start"] + crack["every"], segs=[], life=CRACK_FADE)
+        self.cracks = getattr(self, "cracks", []) + [crack]
+        if sound:
+            self.sfx.play("explosion")
+
     def update_cracks(self):
         """Ground cracks grow along the floor and throw out bullets to both sides as they go."""
         for crack in getattr(self, "cracks", [])[:]:
             if crack["length"] < crack["max"]:
                 crack["length"] = min(crack["max"], crack["length"] + crack["speed"])
                 ca, sa = math.cos(crack["angle"]), math.sin(crack["angle"])
-                while crack["next"] <= crack["length"]:
+                while crack.get("bullets") and crack["next"] <= crack["length"]:
                     px, py = crack["x"] + ca * crack["next"], crack["y"] + sa * crack["next"]
                     spec = crack["bullets"]
                     for side in (1, -1):
@@ -696,6 +828,20 @@ class Combat:
                 crack["life"] -= 1
                 if crack["life"] <= 0:
                     self.cracks.remove(crack)
+                    continue
+            if crack.get("damage") and self.crack_touches(crack, self.player):
+                self.player.take_damage(crack["damage"], {})
+
+    def crack_touches(self, crack, body):
+        """(10.11) Milo's cracks hurt to touch while they run and a moment after (then they only fade)."""
+        if crack["length"] >= crack["max"] and crack["life"] < CRACK_FADE - CRACK_HURTS_AFTER:
+            return False
+        ca, sa = math.cos(crack["angle"]), math.sin(crack["angle"])
+        along = (body.x - crack["x"]) * ca + (body.y - crack["y"]) * sa
+        if not crack["start"] <= along <= crack["length"]:
+            return False
+        across = abs((body.x - crack["x"]) * sa - (body.y - crack["y"]) * ca)
+        return across < CRACK_WIDTH + body.width * 0.6
 
     def draw_cracks(self):
         """Like a zap, but every piece stays the same in its place (picked once)."""
@@ -799,8 +945,8 @@ class Combat:
 
     def kill_enemy(self, enemy):
         # the ONE place where an enemy dies: sound, death attacks, item drop roll, removal
-        if enemy not in self.enemies:
-            return
+        if enemy not in self.enemies or getattr(enemy, "undying", False):
+            return                                      # (10.11 Milo: his fight script decides when he falls)
         self.sfx.play("enemy_death")
         self.on_death_synergies(enemy)
         dash = enemy.attacks.get("dash")
@@ -839,15 +985,22 @@ class Combat:
         else:
             self.win = False
             self.finished = True
+            self.player_died = True           # (8.11) "Game Over" even if something heals him on the end screen
 
     def draw(self):
 
         # (8.11) the floor has the colour of the biome's ground (Game sets `floor`); ice arena: light blue
         floor = getattr(self, "floor", None) or (230, 250, 200)
+        if self.song:
+            floor = SONG.FLOOR
         self.screen.fill(floor if not getattr(self, "arena", {}).get("ice") else (214, 236, 248))
         self.draw_belts()
         self.draw_cracks()
         self.draw_walls()
+        if self.song:
+            self.song.draw_world(self.screen)
+        if self.core:
+            self.core.draw_world(self.screen, self.core_layer())
         for projectile in self.player_projectiles:
             projectile.draw(self.screen)
         for projectile in self.enemy_projectiles:
@@ -864,6 +1017,10 @@ class Combat:
         for enemy in self.enemies[:]:
             if enemy.draw(self.screen):
                 self.kill_enemy(enemy)
+        if self.song:
+            self.song.draw_flash(self.screen)
+        self.draw_darkness()
+        self.draw_rain_warnings()                           # (over the dark: you always see where rows come from)
         if getattr(self, "arena", {}).get("blizzard") and not (self.finished and not self.win):
             self.draw_blizzard()                            # (boss arena) a snowstorm over everything (not on the death screen)
         
@@ -909,6 +1066,12 @@ class Combat:
         self.screen = world
         pygame.display.flip()
 
+    def core_layer(self):
+        """A see-through picture of the arena's size (Milo's lasers and waves are drawn on it)."""
+        if getattr(self, "_core_layer", None) is None or self._core_layer.get_size() != self.screen.get_size():
+            self._core_layer = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
+        return self._core_layer
+
     def draw_hud(self):
         if getattr(self, "phase_flash", 0) > 0:             # boss phase change: a white flash fading out
             self.phase_flash -= 1
@@ -924,7 +1087,13 @@ class Combat:
             no_run = self.font_heavy["mid"].render("You can't run from a boss!", True, (150, 20, 30))
             self.screen.blit(no_run, (self.screen.get_width() / 2 - no_run.get_width() / 2, self.screen.get_height() / 12))
 
-        if self.win:
+        if self.song and not self.finished:
+            self.song.draw_hud(self.screen, self.font_heavy["small"])
+        if self.core:
+            self.core.draw_hud(self.screen)
+        if self.win and self.song:
+            self.song.draw_result(self.screen, self.font_heavy)
+        elif self.win or (self.core and self.core.shows_fake_win):
 
             pygame.draw.rect(self.screen,(200,200,200),(self.screen.get_width()/2 - self.screen.get_width()/12, self.screen.get_height()/3, self.screen.get_width()/6,self.screen.get_height()/2.9),0,10)
             end_title = self.font_heavy["mid"].render("Win!", True, (0,0,0))
@@ -960,51 +1129,36 @@ class Combat:
         elif self.finished:
 
             # died = Game Over; ran away = just "CLICK" to go on
-            end_text = self.font_heavy["giant"].render("Game Over" if self.player.hp <= 0 else "CLICK", True, (255,255,255))
+            end_text = self.font_heavy["giant"].render("Game Over" if getattr(self, "player_died", False) else "CLICK", True, (255,255,255))
             self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
 
-    def zap(self, effect, enemy_hit):
+    def zap(self, effect, enemy_hit, reach=None):
+        """A chain of lightning from enemy_hit: effect = [jumps, share of the damage, damage].
+        (8.11 nerf) each jump only to an enemy within `reach` px of the last one (ZAP_REACH; None = anywhere),
+        and every jump hits ZAP_FALLOFF x weaker than the one before."""
+        reach = ZAP_REACH if reach is None else reach
+        jumps, share, damage = effect[0], effect[1], effect[2]
+        left = [e for e in self.enemies if e is not enemy_hit]
+        source = enemy_hit
+        hit = damage * share
+        for _ in range(jumps):
+            target = self.nearest_within(left, (source.x, source.y), reach)
+            if target is None:
+                return                                    # nothing close enough: the chain ends
+            target.take_damage(hit)
+            self.zapped_enemies.append({"start_enemy": source, "end_enemy": target, "duration": 8,
+                                        "last_start_pos": (source.x, source.y), "last_end_pos": (target.x, target.y)})
+            left.remove(target)
+            source = target
+            hit *= ZAP_FALLOFF
 
-        e = self.enemies.copy()
-
-        if len(e) > 1:
-
-            if enemy_hit in e:
-                e.remove(enemy_hit)
-                next_enemy = enemy_hit
-            else:
-                next_enemy = None
-
-            last_enemy = enemy_hit
-            pos = (enemy_hit.x,enemy_hit.y)
-
-            for i in range(effect[0]):
-                if len(e) > 0:
-                    dist = 0
-                    nearest = 9999
-                    for enemy in e:
-
-                        dx = pos[0] - enemy.x
-                        dy = pos[1] - enemy.y
-                        dist = math.sqrt(dx*dx+dy*dy)
-                        if dist < nearest:
-                            nearest = dist
-                            next_enemy = enemy
-                        
-                    if next_enemy and next_enemy in self.enemies:
-                        self.enemies[self.enemies.index(next_enemy)].take_damage(effect[2]*effect[1])
-
-                    self.zapped_enemies.append({
-                        "start_enemy": last_enemy,
-                        "end_enemy": next_enemy,
-                        "last_start_pos": (last_enemy.x, last_enemy.y),
-                        "last_end_pos": (next_enemy.x, next_enemy.y),
-                        "duration": 8
-                    })
-
-                    last_enemy = next_enemy
-                    next_enemy = None
-                    e.remove(last_enemy)
+    @staticmethod
+    def nearest_within(candidates, point, reach):
+        """The candidate nearest to `point`, if it is within `reach` px (reach 0 or less = any distance)."""
+        best = min(candidates, key=lambda e: math.dist(point, (e.x, e.y)), default=None)
+        if best is None or (reach > 0 and math.dist(point, (best.x, best.y)) > reach):
+            return None
+        return best
 
     def death_blast(self, pos, blast):
         """(7.11) Firefly Queen's death: everything within the radius is pushed away (enemies get no damage);

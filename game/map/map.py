@@ -25,7 +25,7 @@ from game.world import surface_layout as L
 TILES_ON_SCREEN_Y = 13          # start screen shows the fenced square + ~2 tiles (author's decision)
 BOSS_NAME = "boss1"             # TEMPORARY: boss spots without a real boss yet use boss1
 BOSS_OF_ZONE = {"village": "slime_king", "rainbow_fields": "prism", "candy": "shroom_mother", "tundra": "frost_golem",
-                "factory": "assembly_line"}    # the real bosses (7.11, one by one): gate "from" -> EnemyDB.bosses
+                "factory": "assembly_line", "garden": "night_bloom", "core": "milo"}    # the real bosses (7.11, one by one): gate "from" -> EnemyDB.bosses
 FOG_COLOR = (18, 18, 22)        # unexplored part of the world map
 CONVEYOR_ANIM_SPEED = 60        # pixels per second the chevrons on conveyor belts move (just looks)
 
@@ -608,6 +608,7 @@ class Map:
         base, extra = self._overlay_cache[path]
         # strength follows the biome under the player, smoothly
         target = BIOME_OVERLAY_STRENGTH.get(self.player.biome, 1.0)
+        target = max(min(target, 0.5), target - getattr(self, "light_bonus", 0))   # (8.11) Firefly Jar: less dark
         if abs(target - self.overlay_strength) <= OVERLAY_FADE:
             self.overlay_strength = target
         else:

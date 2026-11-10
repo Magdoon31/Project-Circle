@@ -8,6 +8,7 @@ PULSE = [45, 15]               # pulsing ring: frames flying out, frames flying 
 POISON_FIRST = 30               # frames from putting poison on to its first hit (then every 60)
 PHASE_INVULN = 60               # frames a boss can't be hurt (and doesn't shoot) when it changes phase
 FADING = {"line_soldier", "line_beetle", "scrap_beetle"}   # (8.11) the toys a machine makes fewer of late in a phase
+SLIDE_GRIP = (0.5, 0.25)       # (10.11) wanderers: speed-up / slow-down share per frame (= the player's COMBAT_GRIP)
 MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (the player runs 8)
 
 # ATTACK TYPES (the key in the enemy's attack dict decides what it does):
@@ -43,6 +44,13 @@ MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (
 #   vents     {"count", "warn", "pattern": "ring" / "line", "bullets", "every", "speed", "damage", "width", "type"}
 #             vents in the bottom edge glow, then shoot a half ring up or a row at you (so you can't hide down there)
 #   "kind": "spawn"  any attack can say which type it is - so a boss can have two spawns ("spawn" + "bombers")
+#   spawn + "hard_only": [names]  those kinds only in hard mode (the boss's)
+#   edge_rain {"warn": frames, "sides": ["left", "right", ...], "spacing": px, "gaps": n, "gap": px, "speed", "damage", "width", "type"}
+#             rows of bullets come in from the arena's sides; `gaps` holes (gap px wide) in each side's row are the
+#             only safe lanes (Night Bloom); "side_gaps": {"bottom": 4} = more holes on that side
+#   decoys    {"copies": n, "copy": enemy name, "keep_away": px}  it vanishes and comes back somewhere else, with n
+#             copies (the copies pop into a small ring when hit; the real one casts a shadow) (Night Bloom)
+#   throw + "light": px  the bomb lights a circle round it while it flies / lies (dark arenas)
 #   fuse      {"cooldown": s}  after this long the enemy blows up by itself (its death attack goes off) - bomb crates
 #   nozzles   {"lanes": n, "warn": frames, "rows", "bullets", "every": frames, "speed", "damage", "width", "type"}
 #             nozzles in the side walls light up for `warn` frames, then shoot a stream along n random belts
@@ -105,6 +113,10 @@ class Enemy:
         self.phase_started = 0         # (8.11) attack_timer when this phase began
         self.owner = None              # (8.11) the boss that made this one (Assembly Line's machines)
         self.behind_wall = False       # (8.11) a wall stands between it and its target (Combat sets it)
+        self.anchored = False          # (8.11) stays where it was put (Assembly Line's core and machines)
+        self.anchor = None             # where that is (Combat notes it on the first frame)
+        self.casts_shadow = False      # (8.11) Night Bloom: the real one has a shadow, its copies don't
+        self.copies = []               # (8.11) its copies made by "split"
         self.invuln = 0                # frames left of a phase change (no damage, no shots, blinking)
         self.airborne = False          # a "leap": up in the air (off the screen, can't be hit)
         self.leap_shadow = None        # (x, y, 0..1) where it will land
@@ -154,6 +166,10 @@ class Enemy:
             screen.blit(shade, shade.get_rect(center=(sx, sy + self.width * 0.3)))
         if self.shielded():                                       # shielded by its guards
             pygame.draw.circle(screen, (120, 200, 255), (self.x, self.y), self.width + 10, 4)
+        if self.casts_shadow:                                     # (8.11) the tell of the real Night Bloom
+            shade = pygame.Rect(0, 0, int(self.width * 1.8), int(self.width * 0.6))
+            shade.center = (self.x, self.y + self.width * 0.95)
+            pygame.draw.ellipse(screen, (12, 22, 16), shade)
         if not (self.invuln and (self.invuln // 5) % 2):          # blinking while changing phase
             if self.shape == "square":                            # (8.11) machines, crates, turrets
                 box = pygame.Rect(0, 0, self.width * 2, self.width * 2)
@@ -248,6 +264,7 @@ class Enemy:
                     self.hp = 0
 
         dealt = amount * 100 / (100 + max(0, self.defence))       # % defence: def 100 = half damage
+        self.drop_copies()                                        # (8.11) found the real one: its copies vanish
         if self.open_left is not None:                            # (8.11) open only for so much damage, then sealed
             dealt = min(dealt, self.open_left)
             self.open_left -= dealt
@@ -344,8 +361,12 @@ class Enemy:
                 dx /= new_len
                 dy /= new_len
 
-        self.x += (dx if not "jump" in self.movement_type else self.jump_dx) * current_speed * direction_modifier
-        self.y += (dy if not "jump" in self.movement_type else self.jump_dy) * current_speed * direction_modifier
+        step_x = (dx if not "jump" in self.movement_type else self.jump_dx) * current_speed * direction_modifier
+        step_y = (dy if not "jump" in self.movement_type else self.jump_dy) * current_speed * direction_modifier
+        if "random" in self.movement_type and "jump" not in self.movement_type:
+            step_x, step_y = self.slide(step_x, step_y)       # (10.11) wanderers slide like the player
+        self.x += step_x
+        self.y += step_y
 
         if self.x < 0 + self.width:
             self.x = 0 + self.width
@@ -355,6 +376,13 @@ class Enemy:
             self.y = 0 + self.width
         if self.y > screen.get_height() - self.width:
             self.y = screen.get_height() - self.width
+
+    def slide(self, want_x, want_y):
+        """Eases the step towards the wanted one (speeding up / slowing down like the player in a fight)."""
+        grip = SLIDE_GRIP[0] if (want_x or want_y) else SLIDE_GRIP[1]
+        self.vel_x = getattr(self, "vel_x", 0.0) + (want_x - getattr(self, "vel_x", 0.0)) * grip
+        self.vel_y = getattr(self, "vel_y", 0.0) + (want_y - getattr(self, "vel_y", 0.0)) * grip
+        return self.vel_x, self.vel_y
 
     def is_stopped_by_attack(self):
         # true while any attack is in its stop_move wait (before or after the shot), in a series, or spinning
@@ -490,6 +518,14 @@ class Enemy:
         return {"bullets": c["bullets"], "speed": c["speed"], "damage": self.damage * c["damage"], "width": c["width"],
                 "range": c.get("range", info.get("range", 3000)), "type": c.get("type", info["type"]),
                 "effects": effects, "start": c.get("start", 0)}
+
+    def spawnable(self, info):
+        """The kinds a spawn may make now: "hard_only" ones only when its boss (owner) is in hard mode."""
+        kinds = info["enemy_name"] if isinstance(info["enemy_name"], (list, tuple)) else [info["enemy_name"]]
+        boss = self.owner or self
+        if getattr(boss, "hard", False) or not info.get("hard_only"):
+            return kinds
+        return [k for k in kinds if k not in info["hard_only"]]
 
     def fire(self, name, info, aim, enemy_db):
         """Fires one attack. Returns (bullets, spawned enemies, done) - done = False while it is still going
@@ -695,8 +731,7 @@ class Enemy:
             if isinstance(amount, (list, tuple)):
                 amount = random.randint(*amount)               # e.g. [1, 2]: one or two
             for i in range(amount):
-                kind = info["enemy_name"]
-                kind = random.choice(kind) if isinstance(kind, (list, tuple)) else kind
+                kind = random.choice(self.spawnable(info))
                 if info.get("fade") and self.owner and kind in FADING:
                     # (8.11) the boss's phase has lasted fade[0] s: fewer small toys (up to fade[2] skipped after
                     # another fade[1] s) - the fight can't drown you in them
@@ -740,6 +775,15 @@ class Enemy:
                     if apart and not near_p and not r.inflate(self.width * 2, self.width * 2).collidepoint(self.x, self.y):
                         self.new_walls.append({"rect": r, "hits": info["hits"], "max": info["hits"], "life": int(info["life"] * 60)})
                         break
+            info["last_used"] = self.attack_timer
+
+        elif name == "edge_rain":
+            # (8.11) the rows wait at the walls for "warn" frames (Combat shows where they'll come from)
+            self.new_nozzles.append({"rain": True, "warn": info.get("warn", 0), "bullets": self.edge_rain(info)})
+            info["last_used"] = self.attack_timer
+
+        elif name == "decoys":
+            enemies += self.split(info, aim, enemy_db)
             info["last_used"] = self.attack_timer
 
         elif name == "fuse":
@@ -838,6 +882,8 @@ class Enemy:
                      self.bullet_type_info, info["type"], effects={**copy.deepcopy(info.get("effects", {})), "throw":[1], f"{info['exp_type']}explosion":[info["radius"],1.0]})
             if "ring" in info:                       # (7.11) where it lands: a full ring of bullets
                 p.motion = {"kind": "land_ring", "children": self.children(info, "ring")}
+            if info.get("light"):
+                p.light = info["light"]               # (8.11) a lantern: lights the dark round it
             projectiles.append(p)
             info["last_used"] = self.attack_timer
 
@@ -872,6 +918,9 @@ class Enemy:
         self.aiming = None
         self.glow = 0
         self.dash_preview = None
+        for old in self.copies:                             # (8.11) Night Bloom's copies go; it splits again later
+            old.remove_me = True
+        self.copies = []
         self.old_guards = self.guards                       # ("replace" spawns can still take them away)
         self.guards = []                                    # a new phase: old guards don't shield any more
         self.open_left = self.sealed_at = None
@@ -881,6 +930,59 @@ class Enemy:
         self.invuln = PHASE_INVULN
         self.phase_started = self.attack_timer
         self.phase_event = True
+
+    def edge_rain(self, info):
+        """Rows of bullets from the arena's sides, each with a few holes - the only safe lanes."""
+        w, h = self.screen_size or (1920, 1080)
+        out = []
+        for side in info["sides"]:
+            across = h if side in ("left", "right") else w
+            gaps = info.get("side_gaps", {}).get(side, info["gaps"])     # (8.11) e.g. more holes at the bottom
+            holes = [random.uniform(info["gap"], across - info["gap"]) for _ in range(gaps)]
+            for pos in range(info["spacing"] // 2, int(across), info["spacing"]):
+                if any(abs(pos - hole) < info["gap"] / 2 for hole in holes):
+                    continue
+                start, angle = self.edge_start(side, pos, w, h)
+                out.append(self.shot(angle, info, *start))
+        return out
+
+    @staticmethod
+    def edge_start(side, pos, w, h):
+        """Where a bullet of an edge row starts and which way it flies (into the arena)."""
+        return {"left": ((2, pos), 0.0), "right": ((w - 2, pos), math.pi),
+                "top": ((pos, 2), math.pi / 2), "bottom": ((pos, h - 2), -math.pi / 2)}[side]
+
+    def drop_copies(self):
+        """Night Bloom: once the real one is hit, its copies vanish quietly (no bursts)."""
+        for copy_ in self.copies:
+            copy_.remove_me = True
+        self.copies = []
+
+    def split(self, info, aim, enemy_db):
+        """Vanishes and comes back at a random spot away from you, with copies at other spots."""
+        for old in self.copies:
+            old.remove_me = True
+        spots = self.split_spots(info["copies"] + 1, aim, info.get("keep_away", 320))
+        self.x, self.y = spots[0]
+        self.copies = []
+        for spot in spots[1:]:
+            copy_ = enemy_db.get_enemy(info["copy"])
+            copy_.x, copy_.y = spot
+            copy_.color, copy_.width = self.color, self.width
+            copy_.owner, copy_.no_drops = self, True
+            self.copies.append(copy_)
+        return list(self.copies)
+
+    def split_spots(self, n, aim, keep_away):
+        w, h = self.screen_size or (1920, 1080)
+        spots = []
+        for _ in range(200):
+            p = (random.uniform(self.width + 60, w - self.width - 60), random.uniform(self.width + 120, h - self.width - 60))
+            if math.dist(p, (aim.x, aim.y)) > keep_away and all(math.dist(p, q) > self.width * 3 for q in spots):
+                spots.append(p)
+                if len(spots) == n:
+                    break
+        return spots or [(self.x, self.y)]
 
     def burst(self, info):
         """Spores flying out in random directions at random speeds, each slowing down."""
@@ -907,7 +1009,8 @@ class Enemy:
             if self.boss_name:
                 if not hasattr(Enemy, "_name_font"):
                     Enemy._name_font = pygame.font.Font(None, int(bar_height * 1.3))
-                label = Enemy._name_font.render(self.boss_name, True, (30, 30, 35))
+                dark = bool(getattr(self, "arena", {}).get("darkness"))      # (8.11) readable over the dark
+                label = Enemy._name_font.render(self.boss_name, True, (225, 225, 230) if dark else (30, 30, 35))
                 screen.blit(label, label.get_rect(midbottom=(screen.get_width() // 2, y0 - 2)))
 
     def draw_effects(self, screen):
