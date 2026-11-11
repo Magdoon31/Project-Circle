@@ -1,38 +1,40 @@
 {
     "player": {
-        "x": 17576.50225830078,
-        "y": 9586.5,
-        "money": 17958,
-        "playtime": 7985.549999967942
+        "x": 8079.035578781383,
+        "y": 4026.2100838760884,
+        "money": 103266,
+        "playtime": 16351.733333179533,
+        "biome": "village"
     },
     "inventory": {
         "active_items": [
-            "AK-47",
-            "Heroic Armor",
-            "Hourglass"
+            "Laser SMG v2",
+            "Fallen knight armor",
+            "Crown"
         ],
-        "active_trinket2": null,
+        "active_trinket2": "Mascot Plush",
         "items": [
-            "Simple Pistol",
-            "Fire Ring",
             "Pale Orb",
-            "Saper Armor",
-            "RPG",
             "Toxic Gas",
-            "Ultra Blaster",
-            "Tribe Armor",
-            "Viking Armor",
-            "Acid Gun",
-            "Laser Arrow",
-            "Mascot Plush",
             "Peace Gun",
-            "Combat Sniper"
+            "Laser Arrow",
+            "Heroic Armor",
+            "Pocket AK",
+            "Hourglass",
+            "Missile-3000",
+            "Atom",
+            "Ghost Rifle",
+            "Rose",
+            "Ghost Shotgun",
+            "Ghost Armor",
+            "Mecha-King Armor",
+            "Simple Pistol"
         ]
     },
     "map": {
         "seed": 625824885,
         "seed_text": "",
-        "level": "cellar",
+        "level": "surface",
         "levels": {
             "surface": {
                 "collected": [
@@ -227,12 +229,7 @@
                         115
                     ]
                 ],
-                "away": [
-                    [
-                        213,
-                        115
-                    ]
-                ],
+                "away": [],
                 "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
             },
             "lunapark": {
@@ -340,6 +337,10 @@
                     ],
                     [
                         71,
+                        81
+                    ],
+                    [
+                        71,
                         96
                     ],
                     [
@@ -415,6 +416,38 @@
                 ],
                 "away": [],
                 "explored": "eNrtwTENAAAAw6DUv+nZ2AEUAAAAAAAAAAAAAAAAAAAAAAD8GCfkRxk="
+            },
+            "void": {
+                "collected": [
+                    [
+                        39,
+                        39
+                    ],
+                    [
+                        40,
+                        39
+                    ],
+                    [
+                        41,
+                        39
+                    ],
+                    [
+                        42,
+                        39
+                    ],
+                    [
+                        43,
+                        39
+                    ]
+                ],
+                "defeated": [
+                    [
+                        29,
+                        132
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8DCxlbaQ=="
             }
         },
         "flags": [
@@ -427,8 +460,10 @@
             "boss:lunapark",
             "boss:rainbow_fields",
             "boss:village",
+            "boss:void",
             "explained_price:bramble",
             "explained_price:dot",
+            "found:core_vault",
             "found:factory_hall",
             "mascot:prize",
             "milo:rude",
@@ -452,6 +487,9 @@
             "visited:garden",
             "visited:lunapark",
             "visited:separated",
+            "visited:void",
+            "visited:void_shrine",
+            "void_unlocked",
             "wren_sigil"
         ]
     },
@@ -467,74 +505,90 @@
                 "headstart",
                 "vigor",
                 "spare_pocket",
-                "bullet_time"
+                "bullet_time",
+                "steady_hands"
             ],
-            "active": {}
+            "active": {
+                "tribe": "swift",
+                "warden": "bullet_time",
+                "craft": "spare_pocket",
+                "fortune": "lucky_charm"
+            }
         },
         "shop": {
             "stage": [
                 "boss:candy",
+                "boss:core",
                 "boss:factory",
                 "boss:garden",
                 "boss:rainbow_fields",
-                "boss:village"
+                "boss:village",
+                "boss:void"
             ],
             "shelves": [
                 {
-                    "item": "Combat Sniper",
+                    "item": "Acid Gun",
                     "biome": "the_core",
                     "sold": false
                 },
                 {
-                    "item": "Power Bank",
+                    "item": "AK-47",
                     "biome": "the_core",
                     "sold": false
                 },
                 {
-                    "item": "Shotgun R15",
+                    "item": "Samurai Armor",
                     "biome": "underground_garden",
                     "sold": false
                 },
                 {
-                    "item": "Taser",
+                    "item": "Cyber Suit",
                     "biome": "toy_factory",
                     "sold": false
                 },
                 {
-                    "item": "Hand Cannon",
+                    "item": "Shotgun S4",
                     "biome": "sugarwood_grove",
-                    "sold": true
+                    "sold": false
                 },
                 {
-                    "item": "Medieval Armor I",
+                    "item": "Water Hose",
                     "biome": "rainbow_fields",
-                    "sold": true
+                    "sold": false
                 }
             ],
-            "used": 4,
+            "used": 0,
             "greeted": [
                 "boss:candy",
+                "boss:core",
                 "boss:factory",
                 "boss:garden",
                 "boss:rainbow_fields",
-                "boss:village"
+                "boss:village",
+                "boss:void"
             ]
         },
         "sudoku_plays": 2,
         "sudoku_wins": 1,
         "biome_wins": {
-            "sugarwood_grove": 2,
+            "sugarwood_grove": 4,
             "toy_factory": 8,
-            "underground_garden": 9,
-            "the_core": 4
+            "underground_garden": 10,
+            "the_core": 6,
+            "the_void": 29,
+            "rainbow_fields": 4,
+            "village": 3
         },
-        "wheel_plays": 8,
+        "wheel_plays": 9,
         "wheel_wins": 3,
         "shortcuts": [
-            "factory"
+            "factory",
+            "void",
+            "void_shrine"
         ]
     },
     "game": {
-        "hard_mode": false
+        "hard_mode": false,
+        "name": "Save 1"
     }
 }

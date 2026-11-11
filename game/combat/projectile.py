@@ -13,6 +13,9 @@ import pygame, math, random
 # spec (children) = {"bullets", "speed", "damage" (final), "width", "range", "type", "effects", "start" (degrees)}
 
 
+OFF_VIEW_MARGIN = 160            # px round the drawn area where a bullet is still drawn (its picture's size)
+
+
 def ring_of(x, y, spec, base_angle, bullet_type_info):
     """A full ring of bullets around (x, y); the first one at base_angle + spec["start"] (radians / degrees)."""
     out = []
@@ -229,9 +232,13 @@ class projectile:
         
         if not self.base_image:
             return
+        if not screen.get_clip().inflate(OFF_VIEW_MARGIN, OFF_VIEW_MARGIN).collidepoint(self.x, self.y):
+            return                                  # (11.11) off the camera in a big room: nothing to draw
 
-        angle = math.degrees(math.atan2(-self.vy, self.vx))
-        rotated_image = pygame.transform.rotate(self.base_image, angle)
+        angle = round(math.degrees(math.atan2(-self.vy, self.vx)))
+        if getattr(self, "_turned", None) is None or self._turned[0] != angle:
+            self._turned = (angle, pygame.transform.rotate(self.base_image, angle))   # (11.11) only when it turns
+        rotated_image = self._turned[1]
 
         rect = rotated_image.get_rect(center=(int(self.x), int(self.y)))
         screen.blit(rotated_image, rect.topleft)

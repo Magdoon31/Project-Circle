@@ -1,203 +1,44 @@
 {
     "player": {
-        "x": 7760.5,
-        "y": 4191.5,
-        "money": 4919,
-        "playtime": 1394.4833333323938
+        "x": 7964.166952713471,
+        "y": 4227.310071541646,
+        "money": 0,
+        "playtime": 7.066666666666647,
+        "biome": "village"
     },
     "inventory": {
         "active_items": [
-            "Rifle A4",
-            "Living Armor",
-            "Shoe"
+            "Simple Blaster"
         ],
         "active_trinket2": null,
         "items": [
-            "Simple Pistol",
-            "Dices",
-            "Cotton Candy",
-            "Blaster 2.0",
-            "G-Launcher"
+            "Simple Pistol"
         ]
     },
     "map": {
-        "seed": 956512627,
+        "seed": 681849985,
         "seed_text": "",
         "level": "surface",
         "levels": {
             "surface": {
-                "collected": [
-                    [
-                        109,
-                        176
-                    ],
-                    [
-                        124,
-                        197
-                    ],
-                    [
-                        128,
-                        138
-                    ],
-                    [
-                        149,
-                        146
-                    ],
-                    [
-                        150,
-                        146
-                    ],
-                    [
-                        151,
-                        146
-                    ],
-                    [
-                        152,
-                        126
-                    ],
-                    [
-                        153,
-                        126
-                    ],
-                    [
-                        198,
-                        148
-                    ],
-                    [
-                        199,
-                        124
-                    ],
-                    [
-                        199,
-                        125
-                    ]
-                ],
-                "defeated": [
-                    [
-                        51,
-                        233
-                    ],
-                    [
-                        68,
-                        95
-                    ],
-                    [
-                        106,
-                        148
-                    ]
-                ],
-                "away": [],
-                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
-            },
-            "cellar": {
-                "collected": [
-                    [
-                        59,
-                        127
-                    ],
-                    [
-                        71,
-                        126
-                    ],
-                    [
-                        71,
-                        127
-                    ],
-                    [
-                        86,
-                        133
-                    ]
-                ],
-                "defeated": [],
-                "away": [],
-                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
-            },
-            "lunapark": {
                 "collected": [],
                 "defeated": [],
                 "away": [],
-                "explored": "eNpjYBgFo2AUjIIhDxhxg1EjRo0YNWKIGgEAIv4Blg=="
+                "explored": "eNrtzzENAAAIA7Dh3zQK9pPQOmgCAAAAAAAAAADw2HRubm5ubm5ubm5ubm5uAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwHULI4ABsQ=="
             }
         },
-        "flags": [
-            "boss:candy",
-            "boss:rainbow_fields",
-            "boss:village",
-            "found:factory_hall",
-            "lucky:golden",
-            "path:factory",
-            "talked:milo_island",
-            "talked:milo_village",
-            "talked:oliver",
-            "talked:wren",
-            "visited:candy",
-            "visited:factory",
-            "visited:lunapark",
-            "visited:separated",
-            "wren_sigil"
-        ]
+        "flags": []
     },
     "quests": {},
     "counters": {
         "sigils": {
-            "owned": [
-                "overflow",
-                "lucky_charm"
-            ],
-            "active": {
-                "craft": "overflow",
-                "fortune": "lucky_charm"
-            }
+            "owned": [],
+            "active": {}
         },
-        "fishing_ready_at": 314.8000000000003,
-        "fishing_plays": 1,
-        "shop": {
-            "stage": [
-                "boss:candy",
-                "boss:rainbow_fields",
-                "boss:village"
-            ],
-            "shelves": [
-                {
-                    "item": "Fire Ring",
-                    "biome": "toy_factory",
-                    "sold": false
-                },
-                {
-                    "item": "Laser Cannon",
-                    "biome": "toy_factory",
-                    "sold": false
-                },
-                {
-                    "item": "Book",
-                    "biome": "sugarwood_grove",
-                    "sold": false
-                },
-                {
-                    "item": "Martini",
-                    "biome": "rainbow_fields",
-                    "sold": false
-                },
-                {
-                    "item": "Shoe",
-                    "biome": "village",
-                    "sold": true
-                }
-            ],
-            "used": 4,
-            "greeted": [
-                "boss:candy",
-                "boss:rainbow_fields",
-                "boss:village"
-            ]
-        },
-        "wheel_plays": 8,
-        "wheel_wins": 4,
-        "biome_wins": {
-            "toy_factory": 6
-        }
+        "shortcuts": []
     },
     "game": {
-        "hard_mode": false
+        "hard_mode": false,
+        "name": "Main"
     }
 }

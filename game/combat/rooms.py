@@ -10,7 +10,7 @@
 #     walls     2 or 4 long walls, mirrored
 #     room      a small room in the middle (doors on opposite sides) - you start inside
 #     corridor  two parallel walls round the middle line, gaps mirrored - you start in it
-#   + sometimes covers: pairs of crates that break from your shots (COVER_HITS).
+#   + (until 11.11) sometimes covers: pairs of crates that break from your shots (COVER_HITS) - off now (COVER_CHANCE 0).
 #   Walls and pillars can't be broken; they stop you, the enemies and all bullets (thrown bombs fly over).
 #   The look depends on the biome (THEMES): hedges in the village, candy in the grove, ice rocks in the tundra...
 # - Bosses: never (they have their own arenas). You start in the middle, or next to it if a pillar is there.
@@ -29,7 +29,7 @@ ROOM_MAX = 2.0                # the biggest room = 2x the screen's area
 START_CLEAR = 110             # px around your start without obstacles
 GAP = 170                     # px of free space kept between obstacles (you always fit through)
 COVER_HITS = 6                # shots to break a crate
-COVER_CHANCE = 0.3            # an obstacle room also gets (a mirrored pair of) crates
+COVER_CHANCE = 0.0            # an obstacle room also gets (a mirrored pair of) crates - (11.11) none any more (Filip)
 FOREVER = 10 ** 9
 
 OBSTACLE_CHANCE = {

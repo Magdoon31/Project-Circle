@@ -178,7 +178,8 @@ class Enemy:
                 pygame.draw.rect(screen, (40, 40, 48), box, 4, 6)
             else:
                 pygame.draw.circle(screen, self.color, (self.x, self.y), self.width)
-        self.hp_bar(screen)
+        if not getattr(self, "bar_on_hud", False):              # (11.11) the Void: Combat draws it on the screen
+            self.hp_bar(screen)
         die = self.handle_effects()[1]  
         self.draw_effects(screen)
         return die
@@ -1009,7 +1010,7 @@ class Enemy:
             if self.boss_name:
                 if not hasattr(Enemy, "_name_font"):
                     Enemy._name_font = pygame.font.Font(None, int(bar_height * 1.3))
-                dark = bool(getattr(self, "arena", {}).get("darkness"))      # (8.11) readable over the dark
+                dark = bool(getattr(self, "arena", {}).get("darkness")) or getattr(self, "light_label", False)   # (8.11) readable over the dark
                 label = Enemy._name_font.render(self.boss_name, True, (225, 225, 230) if dark else (30, 30, 35))
                 screen.blit(label, label.get_rect(midbottom=(screen.get_width() // 2, y0 - 2)))
 

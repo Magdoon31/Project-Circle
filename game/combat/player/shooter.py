@@ -1,6 +1,7 @@
 import pygame, math, random, copy
 from game.combat.projectile import projectile as prjt
 from game.inventory import sigils as SG
+from game import controls as KEYS
 
 IMM_AFTER_HIT = 30                 # frames you can't be hurt after a hit (0.5 s; Magic Dust: 80)
 # How fast you speed up / slow down (share of the speed per frame). The slide distance goes with (1 - k) / k.
@@ -166,8 +167,8 @@ class Shooter :
                 self.damage = self.og_damage
 
         # --- sigils ---
-        if "steady_hands" in self.sigils:
-            self.recoil = 0
+        if "steady_hands" in self.sigils:          # (11.11) a shotgun keeps a little spread (it's still a shotgun)
+            self.recoil = self.recoil * SG.STEADY_SHOTGUN if "shotgun" in self.weapon_effect else 0
         if "overflow" in self.sigils and "shotgun" in self.weapon_effect:
             self.weapon_effect["shotgun"][1] += 1
         if "vigor" in self.sigils:
@@ -302,6 +303,8 @@ class Shooter :
                                 elif effect_name in ("speed","strength","boost"):
                                     self.effects[effect_name][0] = int(self.effects[effect_name][0] * self.buff_time)
                         elif effect_name in ("binded","confusion"):
+                            if f"{effect_name}_imm" in self.armor_effect or f"{effect_name}_imm" in self.trinket_effect:
+                                continue                          # (11.11) Magic Ring: never bound / confused
                             rnd = random.random()
                             if rnd < effect[1]*(self.bind_chance if effect_name == "binded" else self.confusion_chance):
                                 self.effects[effect_name] = effect
@@ -447,24 +450,11 @@ class Shooter :
 
         confusion = "confusion" in self.handle_effects(True)[0]
             
+        # (11.11) the movement keys come from Settings (controls.py); confused = the other way round
+        vy = KEYS.held(keys, "down") - KEYS.held(keys, "up")
+        vx = KEYS.held(keys, "right") - KEYS.held(keys, "left")
         if confusion:
-            if keys[pygame.K_s]:
-                vy -= 1
-            if keys[pygame.K_w]:
-                vy += 1
-            if keys[pygame.K_d]:
-                vx -= 1
-            if keys[pygame.K_a]:
-                vx += 1
-        else:
-            if keys[pygame.K_w]:
-                vy -= 1
-            if keys[pygame.K_s]:
-                vy += 1
-            if keys[pygame.K_a]:
-                vx -= 1
-            if keys[pygame.K_d]:
-                vx += 1
+            vx, vy = -vx, -vy
 
         length = math.sqrt(vx*vx + vy*vy)
 
@@ -526,6 +516,13 @@ class Shooter :
                 return max(0, gap * 1000 - (now - self.last_shot_time))
             return max(0, self.rate_of_fire * shots * 1000 - (now - self.burst_start))
         return max(0, self.rate_of_fire * 1000 - (now - self.last_shot_time))
+
+    def wait(self, ms):
+        """(11.11) The fight was paused this long: the reload (and D20's double shot) goes on from where it was."""
+        self.last_shot_time += ms
+        self.burst_start += ms
+        if getattr(self, "last_double", None) is not None:
+            self.last_double += ms
 
     def reload_now(self):
         """Close Call sigil: the weapon is ready to shoot again right now."""

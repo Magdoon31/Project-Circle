@@ -20,6 +20,8 @@
 import json, math, os, random
 import pygame
 from game.shop import stock as S
+from game import controls as KEYS
+from game.menu import options as OPT
 
 LINES_FILE = "game/shop/lines.json"
 IMG_DIR = "assets/img/shop"
@@ -125,7 +127,8 @@ class Shop:
 
     @property
     def keeper_here(self):
-        return self.ctx["level"] != "void"
+        """(11.11) He is gone (BRB) - and the buyer bored - from the moment the Core's boss is beaten."""
+        return self.ctx["level"] != "void" and "boss:core" not in self.ctx["flags"]
 
     @property
     def mood(self):
@@ -199,8 +202,7 @@ class Shop:
 
     def rarity(self, name):
         from game.world import loot
-        w = loot.weight(name)
-        return "common" if w >= 10 else "medium" if w >= 5 else "rare"
+        return loot.rarity(name)
 
     def sell(self, item):
         if self.buy_cooldown > 0:
@@ -250,17 +252,22 @@ class Shop:
                         and ctx.get("bought"):
                     ctx["bought"](shelf["item"], shelf["biome"])        # (Game: e.g. the Haggler sigil counts Garden items)
         elif isinstance(target, tuple) and target[0] == "counter":
-            items = self.stock.counter_items(ctx["active_quests"], ctx["owned"])
+            items = self.counter_now()
             if target[1] < len(items):
                 self.buy(items[target[1]]["item"], self.price(items[target[1]]["price"]))
         return None
+
+    def counter_now(self):
+        return self.stock.counter_items(self.ctx["active_quests"], self.ctx["owned"], self.ctx["flags"])
 
     def handle_events(self, events, mouse_pos):
         """Returns "leave" when the shop should close."""
         self.hover = next((name for name, rect in self.rects.items() if rect.collidepoint(mouse_pos)), None)
         for e in events:
-            if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_b):
+            if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE or KEYS.pressed(e, "shop"):
                 return "leave"
+            if KEYS.pressed(e, "tab") and ("tab", "sell") in self.rects:        # (11.11) Settings: next page
+                self.click(("tab", "sell" if self.page == "buy" else "buy"))
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and self.hover is not None:
                 if self.click(self.hover) == "leave":
                     return "leave"
@@ -383,7 +390,7 @@ class Shop:
             x = rect.right + 12
 
     def buyer_pose(self):
-        """(8.11) The buyer: bored in the Void; happy while thanking you for a sale - only until you have seen the
+        """(8.11) The buyer: bored in the Void (11.11: after the Core's boss); happy while thanking you for a sale - only until you have seen the
         Separated Village (then it's nothing special any more: normal); otherwise normal."""
         if not self.keeper_here:
             return "bored"
@@ -497,7 +504,7 @@ class Shop:
             pygame.draw.rect(self.screen, (75, 48, 32), counter, 6)
         if not items:
             return
-        items = self.stock.counter_items(self.ctx["active_quests"], self.ctx["owned"])
+        items = self.counter_now()
         size = int(sh * 0.1)
         for i, entry in enumerate(items):
             rect = pygame.Rect(0, 0, size, size)
@@ -564,6 +571,22 @@ class Shop:
             self.screen.blit(img, img.get_rect(center=rect.center))
             x = rect.right + sw // 50
 
+    def full_rows(self, item, width):
+        """The whole tooltip: name, type, the stats, the description, the effect."""
+        rows = [(item.name, self.font_small_bold, (255, 255, 255)), (f"Type: {item.type}", self.font_small, (190, 190, 190))]
+        if item.type == "weapon":
+            shots = f" x {item.effect['shotgun'][1]}" if "shotgun" in item.effect else ""
+            rows += [(f"DMG: {item.damage}{shots}", self.font_small, (255, 120, 120)),
+                     (f"Fire Rate: {item.rate_of_fire}   Range: {item.range // 10}", self.font_small, (130, 230, 130))]
+        elif item.type == "armor":
+            rows += [(f"Bonus HP: {item.bonus_hp}   DEF: {item.defense}", self.font_small, (140, 170, 255))]
+        for part in item.description.split("\n"):
+            rows += [(r, self.font_small, (225, 225, 225)) for r in self.wrap(part, self.font_small, width - 30)]
+        for k, part in enumerate(str(item.effect_description).split("\n")):     # "Effect:" only once, on the 1st line
+            text = ("Effect: " + part) if k == 0 else part
+            rows += [(r, self.font_small, (235, 150, 225)) for r in self.wrap(text, self.font_small, width - 30) if r]
+        return rows
+
     def draw_tooltip(self, sw, sh):
         """What the item you point at is (like the inventory tooltip)."""
         name = None
@@ -573,24 +596,16 @@ class Shop:
             items = self.ctx["inventory"]()
             name = items[self.hover[1]].name if self.hover[1] < len(items) else None
         elif isinstance(self.hover, tuple) and self.hover[0] == "counter":
-            items = self.stock.counter_items(self.ctx["active_quests"], self.ctx["owned"])
+            items = self.counter_now()
             name = items[self.hover[1]]["item"] if self.hover[1] < len(items) else None
         item = self.item_db.find_item(name) if name else None
         if not item:
             return
-        rows = [(item.name, self.font_small_bold, (255, 255, 255)), (f"Type: {item.type}", self.font_small, (190, 190, 190))]
-        if item.type == "weapon":
-            shots = f" x {item.effect['shotgun'][1]}" if "shotgun" in item.effect else ""
-            rows += [(f"DMG: {item.damage}{shots}", self.font_small, (255, 120, 120)),
-                     (f"Fire Rate: {item.rate_of_fire}   Range: {item.range // 10}", self.font_small, (130, 230, 130))]
-        elif item.type == "armor":
-            rows += [(f"Bonus HP: {item.bonus_hp}   DEF: {item.defense}", self.font_small, (140, 170, 255))]
         width = int(sw * 0.3)
-        for part in item.description.split("\n"):
-            rows += [(r, self.font_small, (225, 225, 225)) for r in self.wrap(part, self.font_small, width - 30)]
-        for k, part in enumerate(str(item.effect_description).split("\n")):     # "Effect:" only once, on the 1st line
-            text = ("Effect: " + part) if k == 0 else part
-            rows += [(r, self.font_small, (235, 150, 225)) for r in self.wrap(text, self.font_small, width - 30) if r]
+        if OPT.get("short_tooltips"):                   # (11.11) Settings: only the name, DPS and range
+            rows = short_rows(item, self.font_small_bold, self.font_small)
+        else:
+            rows = self.full_rows(item, width)
         imgs = [(font.render(text, True, colour)) for text, font, colour in rows]
         line = lambda img, font: max(img.get_height(), font.get_linesize()) + 4
         height = sum(line(img, font) for img, (_, font, _) in zip(imgs, rows)) + 36     # 12 top + 24 bottom
@@ -603,3 +618,15 @@ class Shop:
         for img, (_, font, _) in zip(imgs, rows):
             self.screen.blit(img, (box.left + 15, y))
             y += line(img, font)
+
+
+def short_rows(item, bold, font):
+    """(11.11) A short tooltip: the name and, for a weapon, its DPS and range (armour: HP and defence)."""
+    rows = [(item.name, bold, (255, 255, 255))]
+    if item.type == "weapon":
+        pellets = item.effect["shotgun"][1] if "shotgun" in item.effect else 1
+        dps = item.damage * pellets / max(0.01, item.rate_of_fire)
+        rows.append((f"DPS: {dps:.0f}   Range: {item.range // 10}", font, (130, 230, 130)))
+    elif item.type == "armor":
+        rows.append((f"Bonus HP: {item.bonus_hp}   DEF: {item.defense}", font, (140, 170, 255)))
+    return rows

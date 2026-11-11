@@ -32,8 +32,10 @@ RARE_WEIGHT = 2             # weight <= this = rare
 RARE_WINS = 5               # won fights in a biome before its rare items can come up in a reroll (boss not beaten yet)
 BOSS_OF = {"village": "village", "rainbow_fields": "rainbow_fields", "sugarwood_grove": "candy", "toy_factory": "factory",
            "silverpine_tundra": "tundra", "underground_garden": "garden", "the_core": "core"}
-# the Foreman's Meter: an extra (7th) item on the counter while his quest is running
-COUNTER_ITEMS = [{"item": "Meter", "quest": "foreman", "price": 400}]
+# extra items on the counter: the Foreman's Meter while his quest is running; (11.11) the Pocket AK from the Core's
+# boss on (the Void's own items are not on the shelves: its weapons / armours only drop, one of each in the Void Shrine)
+COUNTER_ITEMS = [{"item": "Meter", "quest": "foreman", "price": 400},
+                 {"item": "Pocket AK", "flag": "boss:core", "price": 6810}]     # (= 4 fights in the Void, a common item)
 STAGE_BOSSES = ("village", "rainbow_fields", "candy", "factory", "tundra", "garden", "core", "void")
 
 
@@ -154,6 +156,9 @@ class ShopStock:
                             wins=wins, reroll=True)
         return True
 
-    def counter_items(self, active_quests, owned):
-        """The extra items on the counter right now (e.g. the Meter during the Foreman's quest)."""
-        return [c for c in COUNTER_ITEMS if c["quest"] in active_quests and c["item"] not in owned]
+    def counter_items(self, active_quests, owned, flags=()):
+        """The extra items on the counter right now (the Meter during the Foreman's quest, the Pocket AK after the
+        Core's boss) - not what you already have."""
+        def wanted(c):
+            return c["quest"] in active_quests if "quest" in c else c["flag"] in flags
+        return [c for c in COUNTER_ITEMS if wanted(c) and c["item"] not in owned]

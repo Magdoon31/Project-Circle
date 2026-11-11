@@ -49,6 +49,9 @@ class CombatAssets:
         self.font_heavy = {"small" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",18),
                            "mid" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",36),
                            "giant" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",128),}
+        heavy = "assets/font/Nexa-Heavy.ttf"
+        self.font_win = {"title": pygame.font.Font(heavy, 64), "big": pygame.font.Font(heavy, 48),   # (11.11) win screen
+                         "text": pygame.font.Font(heavy, 28), "small": pygame.font.Font(heavy, 22)}
 
         self.zap_segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/zap{nr}.png"),(64,64)) for nr in range(1,5)]
         # (8.11) the Frost Golem's ground crack: 30x10 pieces, drawn x2 along the crack (one fixed piece per spot)

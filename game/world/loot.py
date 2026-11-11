@@ -71,8 +71,10 @@ LOOT_WEIGHTS = {
     "Combat Sniper": 10, "Acid Gun": 5, "AK-47": 5, "Laser Arrow": 0, "Ghost USP": 0, "Peace Gun": 0,
     "Power Bank": 5, "Hourglass": 5,
     # the void
-    "Pocket AK": 10, "Ghost Shotgun": 2, "Ghost Rifle": 2, "Missile-3000": 2, "Laser SMG v2": 2,
-    "Crown": 5,
+    # (11.11) its weapons and armours only drop (one of each lies in the Void Shrine); the Crown is in the Shrine;
+    # the Pocket AK is on the shop's counter from the Core's boss on (shop/stock.py)
+    "Pocket AK": 10, "Ghost Shotgun": 0, "Ghost Rifle": 0, "Missile-3000": 0, "Laser SMG v2": 0,
+    "Crown": 0,
     # ARMOURS (6.11)
     "Leather Chestplate": 10, "Vest": 10,
     "Medieval Armor I": 10, "Gladiator's Chestplate": 5, "Apprentice Armor": 2,
@@ -84,8 +86,11 @@ LOOT_WEIGHTS = {
     "Plate Armor": 0, "Tribe Armor": 0,                              # drops (poison_skeleton / toxic_flower)
     "Viking Armor": 10, "Heroic Armor": 5, "Electro Armor": 5,
     "Mecha Armor": 0, "Samurai God": 0,                              # drops (generator / skeleton)
-    "Mecha-King Armor": 2, "Fallen knight armor": 2, "Ghost Armor": 2,   # + drops (crystals / voidling)
+    "Mecha-King Armor": 0, "Fallen knight armor": 0, "Ghost Armor": 0,   # drops (crystals / voidling) + the Void Shrine
 }
+# (11.11) the Void Shrine's items (prefab "@items"): one of these lists = one random item from it
+SHRINE_PICKS = {"void_weapon": ["Ghost Shotgun", "Ghost Rifle", "Missile-3000", "Laser SMG v2"],
+                "void_armor": ["Mecha-King Armor", "Fallen knight armor", "Ghost Armor"]}
 # LUCK (Dices trinket, Lucky Charm sigil - Game.luck()): per point, rare things come up more often
 # (shop shelves and enemy drops; ground loot is made with the world, so luck can't change it)
 LUCK_RARE = 1.5                 # weight <= 2: x1.5 per luck point
@@ -98,6 +103,12 @@ def weight(name, luck=0):
     if w and luck:
         w *= (LUCK_RARE if w <= 2 else LUCK_MEDIUM if w <= 5 else 1.0) ** luck
     return w
+
+
+def rarity(name):
+    """(11.11) "common" / "medium" / "rare" by the loot weight (the shop's buyer and the win screen use it)."""
+    w = weight(name)
+    return "common" if w >= 10 else "medium" if w >= 5 else "rare"
 
 
 def random_pool(biome):

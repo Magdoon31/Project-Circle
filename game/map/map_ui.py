@@ -1,5 +1,10 @@
 import pygame
 
+from game.menu.sprite_button import SpriteButton, load, scaled
+
+MENU_OPTIONS = ["return", "save", "settings", "stats", "main menu", "quit game"]
+MENU_BUTTON_H = 0.055             # (11.11) the menu's buttons are word pictures (game/menu/sprite_button.py), all as tall
+
 # bright biomes: the text on the map (money, biome, quests) is drawn black there so it stays readable
 BRIGHT_BIOMES = {"silverpine_tundra", "lunapark"}
 
@@ -26,6 +31,13 @@ class MapUI:
         self.quest_timer = 0
         self.saved_text = ""     # small autosave note in the bottom-left corner
         self.saved_timer = 0
+        h = screen.get_height()
+        self.menu_buttons = [SpriteButton(name, h * MENU_BUTTON_H, "esc", "btn_settings_esc" if name == "settings" else None)
+                             for name in MENU_OPTIONS]
+        self.settings_screen = None   # (11.11) Game's Settings screen (the same as in the main menu)
+        self.back_button = SpriteButton("back", h * 0.05)
+        self.menu_titles = {"menu": scaled(load("esc/title_paused"), h * 0.1),
+                            "stats": scaled(load("esc/title_stats"), h * 0.1)}
         
 
         
@@ -99,38 +111,23 @@ class MapUI:
                 saved.set_alpha(min(255, self.saved_timer * 6))
                 self.screen.blit(saved, (self.screen.get_width()//50, self.screen.get_height() - saved.get_height() - self.screen.get_height()//40))
 
+        if self.page in ("menu", "stats"):
+            self.draw_menu_page()
+        elif self.page == "settings":
+            self.settings_screen.draw()
+
+    def draw_menu_page(self):
+        """(11.11) ESC / the Menu button: the options as word pictures (Stats: only Back)."""
+        w, h = self.screen.get_size()
+        title = self.menu_titles[self.page]
+        self.screen.blit(title, title.get_rect(center=(w // 2, int(h * 0.2))))
         if self.page == "menu":
-            button_width = self.screen.get_width() // 3.9
-            button_height = self.screen.get_height() // 15
-            button_x = (self.screen.get_width() - button_width) // 2
-            button_y_start = self.screen.get_height() // 2.6
-
-            for i in range(5):
-                option = ["return", "save", "stats", "main menu", "quit game"][i]
-                button_y = button_y_start + i * (button_height*1.5)
-                button_rect = pygame.Rect(button_x, button_y, button_width, button_height,)
-                self.buttons.append(button_rect)
-
-                if i == self.selected_btn:
-                    pygame.draw.rect(self.screen, (255, 255, 255), button_rect, 0, 10)
-                else:
-                    pygame.draw.rect(self.screen, (170, 170, 170), button_rect, 0, 10)
-
-                text_surface = self.font_heavy["mid"].render(option.capitalize(), True, (0, 0, 0))
-                text_rect = text_surface.get_rect(center=button_rect.center)
-                self.screen.blit(text_surface, text_rect)
-        elif self.page == "stats":
-
-            back_btn_rect = pygame.Rect(self.screen.get_width() - self.screen.get_width()//6,
-                                    self.screen.get_height() - self.screen.get_height()//16,
-                                    self.screen.get_width() // 6,
-                                    self.screen.get_height() // 20
-                                    )
-            self.buttons.append(back_btn_rect)
-            pygame.draw.rect(self.screen,(255,255,255) if self.selected_btn == len(self.buttons) - 1 else (170, 170, 170),back_btn_rect,0,5)
-            back_btn_text = self.font_heavy["mid"].render("Back",True,(0,0,0))
-            self.screen.blit(back_btn_text,(back_btn_rect.x+back_btn_rect.width/2-back_btn_text.get_width()/2,back_btn_rect.y+back_btn_rect.height/2-back_btn_text.get_height()/2))
-
+            for i, button in enumerate(self.menu_buttons):
+                button.draw(self.screen, (w // 2, int(h * 0.33 + i * h * MENU_BUTTON_H * 1.1 + h * MENU_BUTTON_H / 2)))
+                self.buttons.append(button.rect)
+        else:
+            self.back_button.draw(self.screen, (w - w // 10, h - h // 14))
+            self.buttons.append(self.back_button.rect)
 
     def draw_quest_list(self, below, color):
         # active quests, small, without a background, right under the Menu button (right-aligned)
@@ -174,11 +171,20 @@ class MapUI:
         self.saved_text = text
         self.saved_timer = frames
 
+    def toggle_menu(self):
+        """(11.11) ESC on the map: the map -> the menu -> the map; from Stats back to the menu (Settings: its own)."""
+        self.page = {"map": "menu", "menu": "map", "stats": "menu"}.get(self.page, self.page)
+        self.selected_btn = -1
+
     def show_message(self, text, frames=180):
         self.message = text
         self.message_timer = frames
 
     def handle_click(self,pos,events):
+        if self.page == "settings":
+            if self.settings_screen.handle(events, pos) == "back":
+                self.page = "menu"
+            return None
         for event in events:
             for i, btn in enumerate(self.buttons):
                 if btn.collidepoint(pos):
@@ -197,10 +203,13 @@ class MapUI:
                             elif i == 1:
                                 return "save"
                             elif i == 2:
-                                self.page = "stats"
+                                self.page = "settings"
+                                self.settings_screen.open(in_game=True)
                             elif i == 3:
-                                return "menu"
+                                self.page = "stats"
                             elif i == 4:
+                                return "menu"
+                            elif i == 5:
                                 return "quit"
                         elif self.page == "stats":
                             if i == 0:

@@ -6,6 +6,11 @@ import pygame
 from game.combat.decoy import Decoy
 from game.combat.projectile import projectile as prjt
 from game.inventory import sigils as SG
+from game.combat import win_screen as WIN
+from game.combat.damage_numbers import DamageNumbers
+from game.lib.motion_blur import MotionBlur
+from game.menu import options as OPT
+from game import controls as KEYS
 from game.lib import snow_overlay as SNOW
 from game.combat import rooms as ROOMS
 from game.combat import wall_tactics as TACTICS
@@ -20,6 +25,7 @@ RUN_CHANCE = 0.006            # per frame of holding R (~1.4 s on average)
 RUN_CHANCE_HARD_MODE = 0.004  # ~2 s on average
 CAN_RUN_FROM_BOSS = False
 DEATH_ATTACK_DELAY = 18      # frames (0.3 s) between a death and its death attack (warning ring)
+OUT_OF_ROOM = 300           # (11.11) px outside the room after which an enemy bullet flying away is gone
 CLUSTER_DELAY = 8           # Atom: frames between its small explosions (0.13 s)
 SPREAD_MIN_FRAMES = 180     # Fire / Toxic Ring: a passed-on burn / poison lasts at least 3 s
 # Flavoured Candy: what it can do at the start of a fight (good / bad, 50:50)
@@ -66,7 +72,6 @@ class Combat:
         self.finished = False
         self.escaped = False          # True = the player ran away (R)
         self.trying_to_run = False
-        self.money_boost_applied = False
 
         self.sfx = sfx
         # sounds / images / fonts are loaded once in CombatAssets (game start), not on every fight
@@ -79,6 +84,15 @@ class Combat:
 
         self.money = 0
         self.loot = []   # names of items dropped by killed enemies - given to the player only on a win
+        self.defeated = {}              # (11.11) enemy name -> Defeated (the win screen's table)
+        self.phase_changed = False      # (11.11) a boss changed phase this frame (Settings: pause on it)
+        self.win_screen = None          # (11.11) win_screen.py, made when the fight is won
+        self.gold_mult = 1.0            # (11.11) Game: Lucky Coin etc. (the win screen shows the gold you really get)
+        self.item_icon = lambda name: pygame.Surface((1, 1), pygame.SRCALPHA)   # Game: name -> its picture
+        self.rarity = lambda name: "common"                                       # Game: name -> its rarity
+        self.font_win = assets.font_win
+        self.motion_blur = MotionBlur()
+        self.damage_numbers = DamageNumbers(assets.font_heavy["mid"])   # (11.11) Settings -> damage numbers
         self.money_mult = random.randint(10,40)*0.05
         self.money_mult_og = self.money_mult
 
@@ -100,6 +114,7 @@ class Combat:
         self.darkness = Darkness()      # (8.11) Night Bloom's dark arena (darkness.py)
         self.song = None                # (10.11) a song fight (the Mascot): song/fight.py - set by Game
         self.core = None                # (10.11) Milo's fight (core_fight.py) - set by Game
+        self.void = None                # (11.11) the Void's fight (void_fight.py) - set by Game
         self.skip_end_screen = False    # (10.11) Milo: no "Win! CLICK" at the real end
 
     def setup_room(self, biome):
@@ -121,7 +136,8 @@ class Combat:
     def follow_camera(self, instant=False):
         """Big room: the camera moves smoothly after the player and stops at the room's edges."""
         (w, h), (sw, sh) = self.screen.get_size(), self.view.get_size()
-        goal = (min(max(0, self.player.x - sw / 2), w - sw), min(max(0, self.player.y - sh / 2), h - sh))
+        fx, fy = self.void.camera.focus((self.player.x, self.player.y)) if self.void else (self.player.x, self.player.y)
+        goal = (min(max(0, fx - sw / 2), w - sw), min(max(0, fy - sh / 2), h - sh))
         k = 1 if instant else CAMERA_EASE
         self.cam = [self.cam[0] + (goal[0] - self.cam[0]) * k, self.cam[1] + (goal[1] - self.cam[1]) * k]
         self.player.cam = (int(self.cam[0]), int(self.cam[1]))     # aiming: the mouse is on the screen
@@ -130,8 +146,14 @@ class Combat:
         """Big room: shows the part of the room around the player + arrows to the enemies off the screen."""
         sw, sh = self.view.get_size()
         cx, cy = int(self.cam[0]), int(self.cam[1])
-        self.view.blit(self.screen, (0, 0), pygame.Rect(cx, cy, sw, sh))
+        zoom, turn = self.void.camera.lens() if self.void else (1.0, 0.0)
+        if zoom == 1.0 and turn == 0.0:
+            self.view.blit(self.screen, (0, 0), pygame.Rect(cx, cy, sw, sh))
+        else:
+            self.draw_view_through_lens(cx, cy, zoom, turn)
         for e in self.enemies:
+            if getattr(e, "hidden", False):
+                continue
             ex, ey = e.x - cx, e.y - cy
             if -e.width < ex < sw + e.width and -e.width < ey < sh + e.width:
                 continue
@@ -143,6 +165,27 @@ class Combat:
             right = (px + math.cos(a - 2.5) * 12, py + math.sin(a - 2.5) * 12)
             pygame.draw.polygon(self.view, ARROW_COLOR, (tip, left, right))
 
+    def clip_to_camera(self):
+        """(11.11) Big room: only the part the camera shows is drawn (a 2 x 2 room drew 4 screens a frame)."""
+        if self.screen is not self.view:
+            self.screen.set_clip(pygame.Rect(int(self.cam[0]) - 2, int(self.cam[1]) - 2,
+                                             self.view.get_width() + 4, self.view.get_height() + 4))
+
+    def draw_view_through_lens(self, cx, cy, zoom, turn):
+        """(11.11) The Void's camera: closer (zoom) and a little turned (degrees) round the middle of the view.
+        Turned, it looks a bit closer still, so the corners never show what is outside the room."""
+        sw, sh = self.view.get_size()
+        a = math.radians(abs(turn))
+        zoom = max(zoom, math.cos(a) + sw / sh * math.sin(a))
+        w, h = int(sw / zoom), int(sh / zoom)
+        rw, rh = self.screen.get_size()
+        x = min(max(0, cx + (sw - w) // 2), rw - w)
+        y = min(max(0, cy + (sh - h) // 2), rh - h)
+        picture = pygame.transform.scale(self.screen.subsurface(pygame.Rect(x, y, w, h)), (sw, sh))
+        if turn:
+            picture = pygame.transform.rotate(picture, turn)
+        self.view.blit(picture, picture.get_rect(center=(sw // 2, sh // 2)))
+
     def target(self):
         """What the enemies go for: the Mascot Plush while it lives, else the player."""
         return self.decoy if self.decoy and self.decoy.alive else self.player
@@ -152,39 +195,45 @@ class Combat:
 
     def handle_events(self, events, mouse_btn_pressed):
         self.trying_to_run = self.can_run() and pygame.key.get_pressed()[RUN_KEY]
+        if self.void and self.void.dead:                  # (11.11) "Game Over" in the Void: a click = the checkpoint
+            if any(e.type == pygame.MOUSEBUTTONDOWN for e in events):
+                self.void.click(self, pygame.time.get_ticks())
+            return
         if self.core and self.core.shows_fake_win:
             if any(e.type == pygame.MOUSEBUTTONDOWN for e in events):
                 self.core.click()
+                self.win_screen = None                       # (it was only a fake win)
             return
-        if self.trying_to_run or self.song or (self.core and not self.core.allows_shooting):
+        if self.trying_to_run or self.song or (self.core and not self.core.allows_shooting) \
+                or (self.void and not self.void.allows_shooting):
             return   # no shooting while trying to run (or in a song fight: you only dodge)
 
+        # (11.11) the left mouse button, or the Shoot key from Settings (controls.py; not set by default)
         for event in events:
-                
-            if event.type == pygame.MOUSEBUTTONDOWN and not self.player.automatic_weapon:
-                if event.button == 1:
-                    multiple, new_projectile = self.player.shoot()      
-                    if new_projectile is not None:
-                        self.sfx.play("shoot")
-                        if multiple:
-                            self.player_projectiles.extend(new_projectile)
-                        else:
-                            self.player_projectiles.append(new_projectile)
+            clicked = event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+            if (clicked or KEYS.pressed(event, "shoot")) and not self.player.automatic_weapon:
+                self.fire()
 
         # automatic weapons while the button is held; a started burst always finishes
-        if (mouse_btn_pressed[0] and self.player.automatic_weapon) or self.player.bursting():
-            multiple, new_projectile = self.player.shoot()      
-            if new_projectile is not None:
-                self.sfx.play("shoot")
-                if multiple:
-                    self.player_projectiles.extend(new_projectile)
-                else:
-                    self.player_projectiles.append(new_projectile)
+        held = mouse_btn_pressed[0] or KEYS.holding(pygame.key.get_pressed(), "shoot")
+        if (held and self.player.automatic_weapon) or self.player.bursting():
+            self.fire()
+
+    def fire(self):
+        multiple, new_projectile = self.player.shoot()
+        if new_projectile is not None:
+            self.sfx.play("shoot")
+            if multiple:
+                self.player_projectiles.extend(new_projectile)
+            else:
+                self.player_projectiles.append(new_projectile)
 
     def update(self):
         self.timer += 1
         if self.core and self.core.holds_time:          # (10.11) Milo rewinds time: only that happens now
             self.update_core()
+            return
+        if self.void and self.void.holds_world:          # (11.11) "Game Over" in the Void waits for a click
             return
         for waiting in self.pending_bullets[:]:
             waiting[0] -= 1
@@ -242,12 +291,16 @@ class Combat:
         self.release_fireflies()
         self.update_song()
         self.update_core()
+        self.update_void()
+        if OPT.get("damage_numbers"):
+            self.damage_numbers.update(self.enemies)
         if len(self.enemies) > 32:
             # hard cap: newest extra enemies just vanish (no death attacks, so no chain spawning)
             del self.enemies[32:]
 
+        targets = [e for e in self.enemies if not getattr(e, "untouchable", False)]   # (11.11) the Void's end
         for projectile in self.player_projectiles[:]:
-            projectile.update(self.enemies)
+            projectile.update(targets)
             wall = self.wall_at(projectile.x, projectile.y)
             if wall:                                    # your shot cracks the ice wall / a crate (room walls: just stops)
                 if not wall.get("solid"):
@@ -274,7 +327,7 @@ class Combat:
                 self.player_projectiles.remove(projectile)
                 continue
            
-            for enemy in self.enemies:
+            for enemy in targets:
 
                 special_effect = projectile.deal_damage(enemy)
                 #special_effect -> [name,effect] (and also (T/F) if it hit an enemy) name in (zap, pierce, explosion) effect = []
@@ -326,6 +379,9 @@ class Combat:
     
             target = self.target()
             projectile.update([target])
+            if self.left_room(projectile):                  # (11.11) gone out of the room for good: forget it
+                self.enemy_projectiles.remove(projectile)
+                continue
             wall = None if "throw" in projectile.effects or getattr(projectile, "wall_pass", False) \
                 else self.wall_at(projectile.x, projectile.y)
             if wall and getattr(projectile, "wall_bounce", False):
@@ -344,7 +400,7 @@ class Combat:
                 kids = projectile.land_children()       # (7.11) a thrown bomb throws out a ring where it lands
                 self.slow_bullets(kids)
                 self.enemy_projectiles.extend(kids)
-                if "explosion" in effect:
+                if "explosion" in effect and "contact_only" not in effect:   # (11.11) small grenades: only on you
                     effect["explosion"].append(projectile.damage)
                     self.explosion((projectile.x,projectile.y), effect["explosion"],"player", effects=effect)
                     self.sfx.play("explosion") 
@@ -396,7 +452,7 @@ class Combat:
 
         frozen = "headstart" in self.player.sigils and self.timer <= SG.HEADSTART_FRAMES   # Headstart sigil
         for enemy in self.enemies[:]:   # copy: enemies get added/removed inside the loop
-            if frozen:
+            if frozen or (self.void and self.void.freezes_boss and enemy is self.void.boss):
                 continue
             target = self.target()
             self.move_enemy(enemy, target)                  # (8.11) with the walls in mind (wall_tactics.py)
@@ -437,7 +493,8 @@ class Combat:
             if enemy.phase_event:                           # a boss changed phase (7.11): a breath, a flash
                 enemy.phase_event = False
                 self.enemy_projectiles = []
-                self.phase_flash = PHASE_FLASH
+                self.phase_flash = PHASE_FLASH if OPT.get("flashes") else 0     # (11.11) Settings: flashes
+                self.phase_changed = True                   # (11.11) Game may pause here (Settings)
                 self.sfx.play("boss_phase" if "boss_phase" in self.sfx.sfx else "overclock")
             if enemy.hp <= 0:    
                 self.kill_enemy(enemy)
@@ -514,15 +571,17 @@ class Combat:
         waited = pygame.time.get_ticks() - self.paused_at
         for p in self.player_projectiles + self.enemy_projectiles:
             p.shot_time += waited
+        self.player.wait(waited)                     # (11.11) the weapon's reload waits too (no pause-shot-pause)
         if self.song:
             self.song.clock.start_ms += waited
 
     def scripted_end_reached(self):
         """All enemies gone - or, in a scripted fight (song / Milo), the script says it's over."""
-        if self.core:
-            if self.core.finished:
+        script = self.core or self.void
+        if script:
+            if script.finished:
                 self.skip_end_screen = True
-            return self.core.finished
+            return script.finished
         return len(self.enemies) == 0 and (self.song is None or self.song.finished)
 
     def update_core(self):
@@ -536,6 +595,15 @@ class Combat:
         for name, volume in self.core.sounds:
             if name in self.sfx.sfx:
                 self.sfx.play(name, volume)
+
+    def update_void(self):
+        """(11.11) The Void's fight: its script (void_fight.py)."""
+        if self.void is None:
+            return
+        hp_before = self.player.hp
+        self.void.update(self, pygame.time.get_ticks())
+        if self.player.hp < hp_before:
+            self.sfx.play("player_hit")
 
     def update_song(self):
         """(10.11) A song fight: the song's attacks for this frame (song/fight.py)."""
@@ -830,7 +898,10 @@ class Combat:
                     self.cracks.remove(crack)
                     continue
             if crack.get("damage") and self.crack_touches(crack, self.player):
+                hp_before = self.player.hp
                 self.player.take_damage(crack["damage"], {})
+                if self.player.hp < hp_before:
+                    self.sfx.play("player_hit")
 
     def crack_touches(self, crack, body):
         """(10.11) Milo's cracks hurt to touch while they run and a moment after (then they only fade)."""
@@ -861,6 +932,12 @@ class Combat:
                     self.screen.blit(img, img.get_rect(center=(x, y)))
                 else:
                     pygame.draw.line(self.screen, (40, 40, 50), (x - ca * 30, y - sa * 30), (x + ca * 30, y + sa * 30), 3)
+
+    def left_room(self, p):
+        """A bullet far outside the room and still flying away (bullets coming in from outside are kept)."""
+        w, h = self.screen.get_size()
+        return (p.x < -OUT_OF_ROOM and p.vx <= 0) or (p.x > w + OUT_OF_ROOM and p.vx >= 0) \
+            or (p.y < -OUT_OF_ROOM and p.vy <= 0) or (p.y > h + OUT_OF_ROOM and p.vy >= 0)
 
     def wall_at(self, x, y):
         for wall in getattr(self, "walls", []):
@@ -969,8 +1046,51 @@ class Combat:
             self.pending_bullets.append([DEATH_ATTACK_DELAY, projectiles, (enemy.x, enemy.y), enemy.width])
         self.enemies.extend(enemies_spawn)
         self.enemies.remove(enemy)
-        if not getattr(enemy, "no_drops", False):
-            self.loot.extend(self.enemy_db.roll_drops(enemy))
+        drops = [] if getattr(enemy, "no_drops", False) else self.enemy_db.roll_drops(enemy)
+        self.loot.extend(drops)
+        self.remember_defeated(enemy, drops)
+
+    def remember_defeated(self, enemy, drops):
+        """(11.11) For the win screen's table: one row per kind of enemy (how many, its gold, its drops)."""
+        name = getattr(enemy, "name", "?")
+        row = self.defeated.get(name)
+        if row is None:
+            title = getattr(enemy, "boss_name", None) or name.replace("_", " ").title()
+            row = self.defeated[name] = WIN.Defeated(name, title, tuple(enemy.color[:3]))
+        row.count += 1
+        row.gold += enemy.money if getattr(enemy, "pays", False) else 0
+        row.drops += drops
+
+    # --- the reward (11.11) --------------------------------------------------------------------------------------
+    def flawless(self):
+        return self.player.hp == self.player.max_hp
+
+    def gold_multiplier(self):
+        """Everything the gold is multiplied by: a normal fight's luck, Flawless (not in hard mode), the trinkets,
+        Game's (Lucky Coin). A boss: only Game's."""
+        if self.boss:
+            return self.gold_mult
+        mult = self.money_mult * self.gold_mult
+        if not self.hard_mode and self.flawless():
+            mult *= FLAWLESS_GOLD
+        if "enemy_gold" in self.player.trinket_effect:
+            mult *= 1 + self.player.trinket_effect["enemy_gold"][0]
+        return mult
+
+    def reward_money(self):
+        """The gold you get for this fight (fixed when the win screen came up)."""
+        if self.win_screen:
+            return self.win_screen.total_gold
+        return int(self.money * self.gold_multiplier())
+
+    def start_win_screen(self):
+        mult = self.gold_multiplier()
+        rows = list(self.defeated.values())
+        for row in rows:
+            row.gold = int(row.gold * mult)
+        self.win_screen = WIN.WinScreen(self.font_win, getattr(self, "floor", None) or (230, 250, 200),
+                                        int(self.money * mult), self.flawless(), rows,
+                                        list(self.loot), self.item_icon, self.rarity, self.sfx)
 
     def check_player_death(self):
         # Emergency Protocol (Mecha-King Armor) saves the player once per fight
@@ -982,6 +1102,8 @@ class Combat:
             self.player.emergency_used = 0
             self.player.effects["speed"] = [180,0.33]
             self.player.hp = self.player.max_hp*0.15
+        elif self.void and self.void.catch_death(self, pygame.time.get_ticks()):
+            return                                      # (11.11) the Void: a life gone - "Game Over", then the checkpoint
         else:
             self.win = False
             self.finished = True
@@ -989,11 +1111,15 @@ class Combat:
 
     def draw(self):
 
+        self.clip_to_camera()
         # (8.11) the floor has the colour of the biome's ground (Game sets `floor`); ice arena: light blue
         floor = getattr(self, "floor", None) or (230, 250, 200)
         if self.song:
             floor = SONG.FLOOR
-        self.screen.fill(floor if not getattr(self, "arena", {}).get("ice") else (214, 236, 248))
+        if self.void:
+            self.void.draw_world(self.screen)               # (11.11) the islands over the abyss (no floor under them)
+        else:
+            self.screen.fill(floor if not getattr(self, "arena", {}).get("ice") else (214, 236, 248))
         self.draw_belts()
         self.draw_cracks()
         self.draw_walls()
@@ -1004,7 +1130,10 @@ class Combat:
         for projectile in self.player_projectiles:
             projectile.draw(self.screen)
         for projectile in self.enemy_projectiles:
-            projectile.draw(self.screen)
+            if self.void and self.void.pale:
+                self.void.draw_bullet_outline(self.screen, projectile)   # (11.11) the Pale World: outlines only
+            else:
+                projectile.draw(self.screen)
         if self.decoy:
             self.decoy.draw(self.screen, self.timer)
         for frames, _, pos, size, *blast in self.pending_bullets:  # warning before a death attack
@@ -1015,13 +1144,19 @@ class Combat:
         if self.player.draw(self.screen):
             self.check_player_death()
         for enemy in self.enemies[:]:
+            if getattr(enemy, "hidden", False):             # (11.11) the Void, gone at the very end
+                continue
             if enemy.draw(self.screen):
                 self.kill_enemy(enemy)
-        if self.song:
+        if OPT.get("damage_numbers"):
+            self.damage_numbers.draw(self.screen)
+        if self.song and OPT.get("flashes"):
             self.song.draw_flash(self.screen)
+        if self.void:
+            self.void.draw_over(self.screen, self.player, pygame.time.get_ticks())
         self.draw_darkness()
         self.draw_rain_warnings()                           # (over the dark: you always see where rows come from)
-        if getattr(self, "arena", {}).get("blizzard") and not (self.finished and not self.win):
+        if getattr(self, "arena", {}).get("blizzard") and not (self.finished and not self.win) and OPT.get("weather"):
             self.draw_blizzard()                            # (boss arena) a snowstorm over everything (not on the death screen)
         
 
@@ -1064,6 +1199,7 @@ class Combat:
         self.screen = self.view
         self.draw_hud()
         self.screen = world
+        self.motion_blur.apply(self.view, OPT.blur_strength("fight"))       # (11.11) Settings: motion blur (the display)
         pygame.display.flip()
 
     def core_layer(self):
@@ -1091,40 +1227,19 @@ class Combat:
             self.song.draw_hud(self.screen, self.font_heavy["small"])
         if self.core:
             self.core.draw_hud(self.screen)
+        if self.void:
+            if self.void.shows_boss_bar:
+                self.void.boss.hp_bar(self.screen)          # (a big arena: the bar on the screen, not in the world)
+            self.void.draw_hud(self.screen)
+            if self.void.dead:
+                self.void.draw_dead(self.screen, self.font_heavy["giant"])
         if self.win and self.song:
             self.song.draw_result(self.screen, self.font_heavy)
         elif self.win or (self.core and self.core.shows_fake_win):
-
-            pygame.draw.rect(self.screen,(200,200,200),(self.screen.get_width()/2 - self.screen.get_width()/12, self.screen.get_height()/3, self.screen.get_width()/6,self.screen.get_height()/2.9),0,10)
-            end_title = self.font_heavy["mid"].render("Win!", True, (0,0,0))
-
-            flawless_text = self.font_heavy["mid"].render("Flawless!!", True, (255,255,255))
-            is_flawless = self.player.hp == self.player.max_hp
-            if not self.money_boost_applied and not self.boss:
-                if not self.hard_mode and is_flawless:
-                    self.money_mult *= FLAWLESS_GOLD
-                if "enemy_gold" in self.player.trinket_effect:
-                    self.money_mult *= 1+self.player.trinket_effect["enemy_gold"][0]
-                self.money_boost_applied = True
-            # just the money you get (bonuses already in it; "Flawless!!" is written under it)
-            end_text = self.font_light["mid"].render(f"{int(self.money*self.money_mult if not self.boss else self.money)}$", True, (0,0,0))
-  
-                
-            self.screen.blit(end_title, (self.screen.get_width()/2 - end_title.get_width()/2, self.screen.get_height()/2 - end_title.get_height()*3))
-            self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
-
-            if is_flawless:      
-                self.screen.blit(flawless_text, (self.screen.get_width()/2 - flawless_text.get_width()/2, self.screen.get_height()/2 + end_text.get_height()*2))
-
-            # dropped items, in the lower part of the win box (under "Flawless!!")
-            loot_y = self.screen.get_height()/2 + end_text.get_height()*3.6
-            for name in self.loot:
-                loot_text = self.font_heavy["small"].render(f"New item: {name}", True, (110,40,130))
-                self.screen.blit(loot_text, (self.screen.get_width()/2 - loot_text.get_width()/2, loot_y))
-                loot_y += loot_text.get_height()*1.2
-
-            end_text = self.font_heavy["giant"].render("CLICK", True, (255,255,255))
-            self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/1.3))
+            if self.win_screen is None:
+                self.start_win_screen()
+            self.win_screen.update()
+            self.win_screen.draw(self.screen)
 
         elif self.finished:
 
@@ -1316,7 +1431,9 @@ class Combat:
             w = exp[0]
             pos = exp[1]
 
-            if exp[2] > 0:
+            if exp[2] > 0 and not self.screen.get_clip().inflate(w * 2, w * 2).collidepoint(pos):
+                exp[2] -= 1                                 # (11.11) off the camera: it goes on, not drawn
+            elif exp[2] > 0:
 
                 stage = math.ceil(exp[2]/4)
                 if exp[3]:

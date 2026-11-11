@@ -20,6 +20,8 @@ import random
 
 import pygame
 
+from game.menu import options as OPT
+
 FOG = (6, 8, 14)              # the colour of the dark
 FOG_ALPHA = 252               # how dark (255 = nothing at all)
 CLEAR_CORE = 0.45             # (8.11) the inner share of a light's radius is fully clear; out from there the dark
@@ -27,6 +29,7 @@ CLEAR_CORE = 0.45             # (8.11) the inner share of a light's radius is fu
 SEED_PICK = 46                # px: walking this close picks a seed up
 SEED_RADIUS = 14
 SEED_GLOW = (255, 236, 150)
+SHADOW_STEPS = {"low": 3, "medium": 10, "high": 24}     # (11.11) rings in a light's soft edge (Settings)
 JAR_LIGHT = 60                 # px more light round you with the Firefly Jar
 
 
@@ -141,11 +144,11 @@ class Darkness:
     @classmethod
     def light_picture(cls, r, dark):
         """A (2r x 2r) picture: alpha 0 inside CLEAR_CORE x r, then smoothly up to `dark` at r (and outside)."""
-        key = (r, dark // 8)                                # a few shades of dark are enough (cache stays small)
+        steps = SHADOW_STEPS[OPT.get("shadow_quality")]    # (11.11) Settings: shadow quality
+        key = (r, dark // 8, steps)                         # a few shades of dark are enough (cache stays small)
         if key not in cls._pictures:
             pic = pygame.Surface((2 * r, 2 * r), pygame.SRCALPHA)
             pic.fill(FOG + (dark,))
-            steps = 24
             for i in range(steps):                          # outside in: each ring a bit clearer
                 k = 1 - i / steps                           # 1 .. ~0 of the gradient's width
                 radius = r * (CLEAR_CORE + (1 - CLEAR_CORE) * k)

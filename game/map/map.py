@@ -20,6 +20,7 @@ from game.world.lunapark_map import LunaparkMap
 from game.world.tiles import TILES, tile_color, pale_color
 from game.world import pale_world as PALE
 from game.lib import snow_overlay as SNOW
+from game.menu import options as OPT
 from game.world import surface_layout as L
 
 TILES_ON_SCREEN_Y = 13          # start screen shows the fenced square + ~2 tiles (author's decision)
@@ -596,7 +597,7 @@ class Map:
         """Darkening overlay of the current level (e.g. the cellar). Call after the player, before the UI."""
         target = 1.0 if self.player.biome in SNOW_BIOMES and not getattr(self.world, "pale", False) else 0.0
         self.snow_strength += max(-OVERLAY_FADE, min(OVERLAY_FADE, target - self.snow_strength))
-        if self.snow_strength > 0.01:
+        if self.snow_strength > 0.01 and OPT.get("weather"):       # (11.11) Settings: weather
             SNOW.draw(self.screen, 255 * self.snow_strength)          # snowfall over the Tundra
         path = LEVEL_OVERLAYS.get(self.level)
         if not path:

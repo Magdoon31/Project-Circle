@@ -1,4 +1,5 @@
 import pygame, math, random
+from game import controls as KEYS
 
 ENCOUNTER_CHANCE = 0.0015   # per frame of walking on grass (~1 fight every 15 s of walking)
 
@@ -32,14 +33,8 @@ class Player:
         """Moves the player. Returns "fight" when a random fight starts, otherwise None."""
         vx = 0
         vy = 0
-        if keys[pygame.K_w]:
-            vy -= 1
-        if keys[pygame.K_s]:
-            vy += 1
-        if keys[pygame.K_a]:
-            vx -= 1
-        if keys[pygame.K_d]:
-            vx += 1
+        vy = KEYS.held(keys, "down") - KEYS.held(keys, "up")      # (11.11) the keys come from Settings (controls.py)
+        vx = KEYS.held(keys, "right") - KEYS.held(keys, "left")
 
         # biome = biome of the tile under the player (also right after a teleport / load)
         biome = self.map.biome_at(self.x, self.y)

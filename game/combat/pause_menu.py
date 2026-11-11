@@ -1,62 +1,32 @@
 # PAUSE MENU (10.11): ESC in a fight. The fight stands still (Game doesn't update it) and a menu shows over it:
-#   Return / Settings (music and sound volume) / Stats / Main menu / Quit game   - like the map's menu, no Save.
+#   Return / Settings / Stats / Main menu / Quit game   - like the map's menu, no Save.
+#   (11.11) Settings = the same Settings screen as in the main menu (game/menu/settings_screen.py).
 # handle() says what the player chose: "resume", "main_menu", "quit" or None (still in the menu).
 # Only the menu lives here - pausing the fight's clocks is Combat.pause / resume.
 
 import pygame
 
+from game.menu.sprite_button import ButtonColumn, SpriteButton, load, scaled
+
 OPTIONS = ["return", "settings", "stats", "main menu", "quit game"]
 VEIL = (0, 0, 0, 160)
-IDLE = (170, 170, 170)
-HOVER = (255, 255, 255)
-TRACK = (100, 100, 100)
-KNOB_RADIUS = 15
-
-
-class VolumeSlider:
-    """A slider for a volume (0-1) that something keeps in `owner.<attr>` and applies with owner.update_volume()."""
-
-    def __init__(self, owner, attr, label):
-        self.owner, self.attr, self.label = owner, attr, label
-        self.rect = pygame.Rect(0, 0, 0, 0)
-        self.dragging = False
-
-    @property
-    def value(self):
-        return getattr(self.owner, self.attr)
-
-    def set_from(self, mouse_x):
-        share = (mouse_x - self.rect.x) / max(1, self.rect.width)
-        setattr(self.owner, self.attr, max(0.0, min(1.0, share)))
-        self.owner.update_volume()
-
-    def handle(self, event, pos):
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.rect.inflate(0, 30).collidepoint(pos):
-            self.dragging = True
-            self.set_from(pos[0])
-        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-            self.dragging = False
-        elif event.type == pygame.MOUSEMOTION and self.dragging:
-            self.set_from(pos[0])
-
-    def draw(self, screen, font):
-        pygame.draw.rect(screen, TRACK, self.rect)
-        knob = (int(self.rect.x + self.rect.width * self.value), self.rect.centery)
-        pygame.draw.circle(screen, HOVER, knob, KNOB_RADIUS)
-        label = font.render(self.label, True, HOVER)
-        screen.blit(label, label.get_rect(midright=(self.rect.x - 30, self.rect.centery)))
+BUTTON_H = 0.055                  # (11.11) the buttons are word pictures (game/menu/sprite_button.py), all as tall
+TITLES = {"menu": "esc/title_paused", "stats": "esc/title_stats"}
 
 
 class PauseMenu:
-    def __init__(self, screen, sfx, music, settings, font):
+    def __init__(self, screen, sfx, music, settings, font, settings_screen):
         self.screen = screen
         self.sfx = sfx
-        self.settings = settings                    # SettingsManager: saves the volumes
+        self.settings = settings                    # SettingsManager: saves the settings
+        self.settings_screen = settings_screen
         self.font = font
-        self.sliders = [VolumeSlider(music, "music_volume", "Music"), VolumeSlider(sfx, "sfx_volume", "Sounds")]
         self.page = "menu"
         self.backdrop = None
-        self.buttons = []
+        h = screen.get_height()
+        self.column = ButtonColumn(OPTIONS, h * BUTTON_H, sfx, folder="esc", files={"settings": "btn_settings_esc"})
+        self.back = SpriteButton("back", h * 0.05)
+        self.titles = {page: scaled(load(name), h * 0.1) for page, name in TITLES.items()}
 
     def open(self, fight_picture):
         """The fight as it was when ESC was pressed (drawn behind the menu, darkened)."""
@@ -68,14 +38,15 @@ class PauseMenu:
 
     # --- input -----------------------------------------------------------------------------------------------
     def handle(self, events, pos):
+        if self.page == "settings":
+            if self.settings_screen.handle(events, pos) == "back":
+                self.back_to_menu()
+            return None
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 if self.page == "menu":
                     return "resume"
                 self.back_to_menu()
-            elif self.page == "settings":
-                for slider in self.sliders:
-                    slider.handle(event, pos)
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 choice = self.clicked(pos)
                 if choice:
@@ -83,7 +54,10 @@ class PauseMenu:
         return None
 
     def clicked(self, pos):
-        hit = next((name for name, rect in self.buttons if rect.collidepoint(pos)), None)
+        if self.page != "menu":
+            hit = "back" if self.back.rect.collidepoint(pos) else None
+        else:
+            hit = self.column.clicked(pos)
         if hit is None:
             return None
         self.sfx.play("use")
@@ -91,6 +65,8 @@ class PauseMenu:
             self.back_to_menu()
         elif hit in ("settings", "stats"):
             self.page = hit
+            if hit == "settings":
+                self.settings_screen.open(in_game=True)
         else:
             return {"return": "resume", "main menu": "main_menu", "quit game": "quit"}[hit]
         return None
@@ -103,33 +79,13 @@ class PauseMenu:
     # --- drawing ---------------------------------------------------------------------------------------------
     def draw(self):
         self.screen.blit(self.backdrop, (0, 0))
-        self.buttons = []
+        w, h = self.screen.get_size()
+        if self.page == "settings":
+            self.settings_screen.draw()
+            return
+        title = self.titles[self.page]
+        self.screen.blit(title, title.get_rect(center=(w // 2, int(h * 0.2))))
         if self.page == "menu":
-            self.draw_options()
+            self.column.draw(self.screen, h * 0.33)
         else:
-            if self.page == "settings":
-                self.draw_sliders()
-            self.draw_button("back", self.back_rect())
-
-    def draw_options(self):
-        w, h = self.screen.get_size()
-        bw, bh = w // 3.9, h // 15
-        for i, name in enumerate(OPTIONS):
-            self.draw_button(name, pygame.Rect((w - bw) // 2, h // 2.6 + i * bh * 1.5, bw, bh), radius=10)
-
-    def draw_sliders(self):
-        w, h = self.screen.get_size()
-        for i, slider in enumerate(self.sliders):
-            slider.rect = pygame.Rect((w - w // 4) // 2, h // 3 + i * h // 8, w // 4, h // 60)
-            slider.draw(self.screen, self.font)
-
-    def back_rect(self):
-        w, h = self.screen.get_size()
-        return pygame.Rect(w - w // 6, h - h // 16, w // 6, h // 20)
-
-    def draw_button(self, name, rect, radius=5):
-        hover = rect.collidepoint(pygame.mouse.get_pos())
-        pygame.draw.rect(self.screen, HOVER if hover else IDLE, rect, 0, radius)
-        text = self.font.render(name.capitalize(), True, (0, 0, 0))
-        self.screen.blit(text, text.get_rect(center=rect.center))
-        self.buttons.append((name, rect))
+            self.back.draw(self.screen, (w - w // 10, h - h // 14))

@@ -1,13 +1,13 @@
 @name void_shrine
 @biomes the_void
-@items random, random
+@items Crown, void_weapon, void_armor
 @npcs milo_void
 ; Halfway to the end of the Void: a quiet ring of crystals with a small camp inside.
-; Milo waits here (dialogue comes later). Placed ONCE per world by void_map.py, not randomly.
+; Milo waits here (dialogue comes later). (11.11) Items: the Crown, one of the Void's weapons, one of its armours. Placed ONCE per world by void_map.py, not randomly.
 
    rrTTTrr
   rT_____Tr
- rT__I_I__Tr
+ rT_I_I_I_Tr
  T_________T
  T____N____T
  T_________T

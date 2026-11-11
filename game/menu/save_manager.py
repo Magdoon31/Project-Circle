@@ -4,6 +4,8 @@ import random
 import hashlib
 
 MAX_SEED = 10**9
+LEVEL_TITLES = {"surface": "The Surface", "cellar": "Underground Garden", "core": "The Core", "void": "The Void",
+                "lunapark": "Lunapark"}           # (11.11) where you are, for saves without a biome in them
 
 
 def seed_from_text(text):
@@ -31,6 +33,8 @@ class SaveManager:
         self.game_quests = None       # Game's QuestLog (set by load_game)
         self.game_counters = None     # Game's counters dict (minigame plays / wins ...)
         self.seed_text = ""           # what the player typed for the current world ("" = random) - for the stats page later
+        self.pending_name = None      # (11.11) the name typed for the next NEW game
+        self.save_name = ""           # (11.11) the current save's name
         
     def save_game(self, nr, hard_mode):
         if nr in (1,2,3):
@@ -40,7 +44,8 @@ class SaveManager:
                             "x": self.map.pale_return[1][0] if getattr(self.map, "pale_return", None) else self.player.x,
                             "y": self.map.pale_return[1][1] if getattr(self.map, "pale_return", None) else self.player.y,
                             "money": self.player.money,
-                            "playtime" : self.player.play_time
+                            "playtime" : self.player.play_time,
+                            "biome": getattr(self.player, "biome", None)       # (11.11) shown on the save screen
                         },
                         "inventory": {
                             "active_items": [item.id for slot, item in self.inventory.active_items.items()
@@ -60,7 +65,8 @@ class SaveManager:
                         "quests": self.game_quests.state() if self.game_quests else {},
                         "counters": dict(self.game_counters) if self.game_counters is not None else {},
                         "game": {
-                            "hard_mode" : to_bool(hard_mode)
+                            "hard_mode" : to_bool(hard_mode),
+                            "name": self.save_name or f"Save {nr}"
                         }
                     }
             with open(f"game/text/save{nr}.json", "w") as f:
@@ -108,6 +114,7 @@ class SaveManager:
                         game.map.generate(random.randrange(1, 10**9))
                         game.player.x, game.player.y = game.map.start_position()
                     game.hard_mode = to_bool(save_data["game"]["hard_mode"])
+                    self.save_name = save_data["game"].get("name") or f"Save {nr}"
                     for item_name in save_data["inventory"]["active_items"]:
                         item = game.inventory.ItemDB.get_item(item_name)
                         if item is not None:
@@ -124,6 +131,7 @@ class SaveManager:
                 game.player.play_time = 0
                 # NEW GAME: the seed chosen in the menu (difficulty page), or a random one
                 self.started_new = True
+                self.save_name, self.pending_name = self.pending_name or f"Save {nr}", None
                 game.quests.load({})
                 seed, self.seed_text = self.pending_seed or (random.randrange(1, MAX_SEED), "")
                 self.pending_seed = None
@@ -132,18 +140,22 @@ class SaveManager:
                 game.inventory.active_items["weapon"] = game.inventory.ItemDB.get_item("Simple Blaster")
                 game.inventory.items = [game.inventory.ItemDB.get_item("Simple Pistol")]
 
-    def get_save_info(self,nr):
-        if nr in (1,2,3):
-            try:
-                with open(f"game/text/save{nr}.json", "r") as f:
-                    save_data = json.load(f)
-                    hard_mode = to_bool(save_data["game"]["hard_mode"])
-                    time = int(save_data['player']['playtime'])
-                    return [f"Save {nr}","Time Played:", f"{time//3600}:{(time//60)%60:02d}",f"Money: {save_data['player']['money']}"], hard_mode
-            except (FileNotFoundError, json.JSONDecodeError):
-                    return [f"Save {nr}"," ",f"EMPTY"], False
-        return None, False
-    
+    def slot_info(self, nr):
+        """(11.11) What the save screen shows about a slot (None = empty): name, hard, time (s), money, place, seed."""
+        try:
+            with open(f"game/text/save{nr}.json", "r") as f:
+                data = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError):
+            return None
+        player, world, game = data.get("player", {}), data.get("map", {}), data.get("game", {})
+        biome = player.get("biome")
+        return {"name": game.get("name") or f"Save {nr}",
+                "hard": to_bool(game.get("hard_mode")),
+                "time": int(player.get("playtime", 0)),
+                "money": player.get("money", 0),
+                "place": biome.replace("_", " ").title() if biome else LEVEL_TITLES.get(world.get("level") or "surface", "?"),
+                "seed": world.get("seed_text") or str(world.get("seed", ""))}
+
     def reset_data(self, nr):
         if os.path.exists(f"game/text/save{nr}.json"):
             os.remove(f"game/text/save{nr}.json")

@@ -2,13 +2,13 @@
 # (Milo and the heart of the Core, both from EnemyDB). Everything happens on the heart's beats; the heart beats
 # faster the less HP Milo has (60 -> 140 BPM). The heart stands in the middle: it blocks your shots and is shielded
 # while Milo stands (it is "guarded" by him); touching it burns.
-#   F1 "Guard"     (100-80%)  rings from the heart, Milo shoots 3 at a time
-#   F2 "Cracks"    (80-55%)   3 cracks at once run from the heart in random directions (they hurt to touch);
+#   F1 "Guard"     (100-75%)  rings from the heart, Milo shoots 3 at a time
+#   F2 "Cracks"    (75-50%)   3 cracks at once run from the heart in random directions (they hurt to touch);
 #                             the arena BREATHES (the heart pulls you in, hardest on the beat);
 #                             every ~12 s Milo REWINDS TIME 3 s (everything goes back, only HP stays) - see time_rewind.py
-#   F3 "Overheat"  (55-30%)   the heart spins out streams of bullets; Milo slowly hides behind it, but every 4 beats
+#   F3 "Overheat"  (50-25%)   the heart spins out streams of bullets; Milo slowly hides behind it, but every 4 beats
 #                             steps out (and glows) to drop a mine - that's when you hit him; rings with gaps
-#   F4 "Despair"   (30-0%)    everything (the breathing weaker, the rewinds rarer)
+#   F4 "Despair"   (25-0%)    everything but the cracks (the breathing weaker, the rewinds rarer); he circles steadily
 #   Milo falls -> the heart stops, silence, a strange ~2 s ... then a (fake) "Win! CLICK".
 #   F5 (after the click) - a fight you can't lose: Milo lies there, the heart has lost its shield and races.
 #     without the Peace Gun: break the heart -> "See you soon." -> white -> Main ending (Game)
@@ -23,6 +23,7 @@ import pygame
 from game.combat import core_parts as PARTS
 from game.combat.song.emitters import Spinner, bullet
 from game.combat.time_rewind import TimeRewind
+from game.menu import options as OPT
 
 LINES = {"enter": "Every beat of this heart is a day nobody gets hurt.",
          "phase2": "Hear it speeding up? That's you. You're doing that.",
@@ -35,15 +36,19 @@ LINES = {"enter": "Every beat of this heart is a day nobody gets hurt.",
 DAMAGE = {"ring": 2200, "burst": 2400, "crack": 2400, "wave": 2400, "mine": 2200, "stream": 2000}
 BULLET_KIND = {"ring": "normal_red", "burst": "bullet_red", "mine": "normal_yellow", "stream": "normal_red",
                "wave": "normal_red"}
-ORBIT = 320                       # px: Milo walks round the heart this far from it
+ORBIT = 320                       # px: Milo walks round the heart about this far from it
+WANDER_RADIUS = (270, 370)        # (11.11) F1, F2: he wanders round the heart - not like a planet: now one way,
+WANDER_TURN = (0.5, 2.0)          #   now the other (a new goal this many radians round), a bit nearer / further,
+WANDER_FRAMES = (60, 150)         #   a new goal every this many frames
+WANDER_SPEED = 0.012              # radians per frame at most
 ORBIT_TURN = (0.006, 0.0067)      # radians per frame: walking round / going (slowly) to hide (F3)
 PEEK_EVERY, PEEK_BEATS = 4, 1.5   # F3: every 4 beats he steps out from behind the heart for 1.5 beats
 PEEK_SIDE = math.radians(75)      # ... this far round from "right behind it" (the heart isn't between you then)
 PEEK_TURN = 0.045                 # radians per frame while stepping out (quick)
 PEEK_GLOW = (255, 240, 170)
 PEEK_ORBIT = 190                  # px from the heart while stepping out (closer than his usual walk)
-CRACK = {"speed": 14, "every": 10 ** 6, "bullets": None}   # (no bullets: the crack itself hurts - Combat)
-CRACKS_AT_ONCE = 3
+CRACK = {"speed": 12, "every": 10 ** 6, "bullets": None}   # (no bullets: the crack itself hurts - Combat)
+CRACKS_AT_ONCE = {1: 3}           # F2 (none in F4)
 BREATH = {1: 2.0, 3: 1.2}         # px per frame the heart pulls you in (F2, F4), at most (on the beat)
 BREATH_NEAR = (0.5, 1.4)          # ... weaker far from the heart, stronger close to it
 REWIND_EVERY = {1: 12 * 60, 3: 20 * 60}   # frames between rewinds (F2, F4)
@@ -65,11 +70,13 @@ class CoreFight:
         self.bullet_info = bullet_info
         self.peace_gun = peace_gun                # the Peace Gun in hand: F5 ends with a talk about the Void
         self.heart = PARTS.Heart()
-        self.subtitles = PARTS.Subtitles(font)
+        self.subtitles = PARTS.Subtitles(font, OPT.volume("dialogue"))     # (11.11) Settings: dialogue volume
         self.state = "fight"                      # fight -> fall -> fake_win -> broken -> white -> (finished)
         self.phase = -1
         self.count = 0                            # beats since the phase started
         self.angle = math.pi / 2                  # where Milo is round the heart
+        self.radius = ORBIT                       # ... and how far from it
+        self.wander = None                        # (goal angle, goal radius, frames left)
         self.peek_until = -1.0                    # F3: he is out from behind the heart until this beat
         self.mines = []
         self.spinner = None
@@ -199,8 +206,6 @@ class CoreFight:
             self.wave(combat, k)
 
     def beat_despair(self, k, player, combat):
-        if k % 4 == 0:
-            self.cracks(combat)
         if k % 2 == 1:
             self.burst(combat, player)
         if k % 8 == 2:
@@ -224,8 +229,8 @@ class CoreFight:
         combat.enemy_projectiles += [self.shot((self.milo.x, self.milo.y), a, speed, "burst") for speed in (9, 10.5, 12)]
 
     def cracks(self, combat):
-        """3 cracks run from the heart in random directions at once (they hurt to touch, no bullets)."""
-        for n in range(CRACKS_AT_ONCE):
+        """A few cracks run from the heart in random directions at once (they hurt to touch, no bullets)."""
+        for n in range(CRACKS_AT_ONCE[self.phase]):
             combat.add_crack(dict(CRACK, damage=DAMAGE["crack"], x=self.centre[0], y=self.centre[1],
                                   angle=random.uniform(0, math.tau), max=self.arena[0] + self.arena[1],
                                   start=self.heart_enemy.base_width), sound=n == 0)
@@ -241,7 +246,7 @@ class CoreFight:
 
     # --- Milo's walk -----------------------------------------------------------------------------------------
     def place_milo(self):
-        pos = (self.centre[0] + math.cos(self.angle) * ORBIT, self.centre[1] + math.sin(self.angle) * ORBIT)
+        pos = (self.centre[0] + math.cos(self.angle) * self.radius, self.centre[1] + math.sin(self.angle) * self.radius)
         self.set_milo(pos)
 
     def set_milo(self, pos):
@@ -256,12 +261,29 @@ class CoreFight:
             turn = (goal - self.angle + math.pi) % math.tau - math.pi
             rate = PEEK_TURN if self.peeking else ORBIT_TURN[1]
             self.angle += max(-rate, min(rate, turn))
-        else:
+        elif self.phase == 3:                              # (11.11) F4: steady round and round, like a planet
             self.angle += ORBIT_TURN[0]
-        radius = PEEK_ORBIT if self.peeking else ORBIT
+        else:
+            self.wander_step()
+        radius = PEEK_ORBIT if self.peeking else (self.radius if self.phase in (0, 1) else ORBIT)
         goal = (self.centre[0] + math.cos(self.angle) * radius, self.centre[1] + math.sin(self.angle) * radius)
         here = (self.milo.x, self.milo.y)
         self.set_milo((here[0] + (goal[0] - here[0]) * 0.08, here[1] + (goal[1] - here[1]) * 0.08))
+
+    def wander_step(self):
+        """Round the heart towards a goal that changes now and then (either way, a bit nearer or further)."""
+        if self.wander is None or self.wander[2] <= 0:
+            turn = random.choice((-1, 1)) * random.uniform(*WANDER_TURN)
+            self.wander = (self.angle + turn, random.uniform(*WANDER_RADIUS), random.randint(*WANDER_FRAMES))
+        goal, radius, left = self.wander
+        self.angle += max(-WANDER_SPEED, min(WANDER_SPEED, goal - self.angle))
+        self.radius += (radius - self.radius) * 0.02
+        self.wander = (goal, radius, left - 1)
+
+    def face_player(self, player):
+        """(11.11) At the start he stands on the other side of the heart from you."""
+        self.angle = math.atan2(player.y - self.centre[1], player.x - self.centre[0]) + math.pi
+        self.place_milo()
 
     # --- the breathing heart (F2, F4) -----------------------------------------------------------------------------
     def breathe(self, player):

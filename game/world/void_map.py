@@ -288,7 +288,12 @@ class VoidMap:
                     self.prefab_cells.add((ox + x, oy + y))
         placed = set()
         for (x, y), entry in zip(prefab.markers_in_order("item"), prefab.list_setting("items")):
-            item = loot.roll_item("the_void", self.rnd, placed) if entry == "random" else entry
+            if entry == "random":
+                item = loot.roll_item("the_void", self.rnd, placed)
+            elif entry in loot.SHRINE_PICKS:                   # (11.11) one of the Void's weapons / armours
+                item = self.rnd.choice(loot.SHRINE_PICKS[entry])
+            else:
+                item = entry
             placed.add(item)
             self.pickups.append({"pos": (ox + x, oy + y), "type": "item", "item": item})
         for (x, y), npc_id in zip(prefab.markers_in_order("npc"), prefab.list_setting("npcs")):

@@ -28,7 +28,7 @@ COLUMNS = [
     ]},
     {"id": "craft", "name": "Craft", "image": "craft.png", "sigils": [
         {"id": "spare_pocket", "name": "Spare Pocket", "text": "A second trinket slot.", "secret": True},
-        {"id": "steady_hands", "name": "Steady Hands", "text": "Your weapon has no recoil.", "secret": True},
+        {"id": "steady_hands", "name": "Steady Hands", "text": "Your weapon has no recoil\n(shotguns: 90% less).", "secret": True},
         {"id": "overflow", "name": "Overflow", "text": "Shotguns fire +1 pellet.", "how": "Talk to Wren."},
     ]},
     {"id": "warden", "name": "Warden", "image": "warden.png", "sigils": [
@@ -51,6 +51,7 @@ IMAGE_OF = {s["id"]: c["image"] for c in COLUMNS for s in c["sigils"]}
 COLUMN_OF = {s["id"]: c["id"] for c in COLUMNS for s in c["sigils"]}
 
 # the numbers
+STEADY_SHOTGUN = 0.1             # Steady Hands: a shotgun keeps 10% of its spread
 HAGGLER_PRICE = 0.85
 LUCKY_COIN_REROLL = 0.85         # Lucky Coin: reroll price x this
 LUCKY_COIN_GOLD = 1.2

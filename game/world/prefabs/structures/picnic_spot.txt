@@ -1,11 +1,10 @@
 @name picnic_spot
 @biomes rainbow_fields
-@npcs picnic_kid
 ; A picnic blanket under trees. Everything is set for a picnic nobody came to.
 
   T.....T
  ...___...
  ..__$__..
- ..N_____.
+ ..______.
  ...___$..
   T.....T

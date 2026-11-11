@@ -1,9 +1,10 @@
 {
     "player": {
-        "x": 7760.5,
-        "y": 4191.5,
-        "money": 1405,
-        "playtime": 4405.616666686704
+        "x": 6932.253692028354,
+        "y": 5121.916029436882,
+        "money": 105,
+        "playtime": 4477.916666685652,
+        "biome": "village"
     },
     "inventory": {
         "active_items": [
@@ -174,6 +175,7 @@
             "path:factory",
             "quest_done:foreman",
             "quest_done:gus",
+            "talked:ferris",
             "talked:foreman",
             "talked:milo_village",
             "talked:wren",
@@ -197,8 +199,8 @@
             }
         },
         "biome_wins": {
-            "village": 5,
-            "sugarwood_grove": 15,
+            "village": 8,
+            "sugarwood_grove": 19,
             "toy_factory": 7
         },
         "shop": {
@@ -241,9 +243,13 @@
                 "boss:village"
             ]
         },
-        "gus_talks": 10
+        "gus_talks": 10,
+        "shortcuts": [
+            "candy"
+        ]
     },
     "game": {
-        "hard_mode": false
+        "hard_mode": false,
+        "name": "Save 3"
     }
 }

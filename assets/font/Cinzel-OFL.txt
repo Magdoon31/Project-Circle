@@ -1,0 +1,3 @@
+Cinzel (assets/font/Cinzel-Bold.ttf) - Copyright 2020 The Cinzel Project Authors (https://github.com/NDISCOVER/Cinzel)
+Licensed under the SIL Open Font License, Version 1.1 (https://scripts.sil.org/OFL) - free to use, embed and ship
+with the game; this note must go with the font. (Bold instance made from the variable font Cinzel[wght].)

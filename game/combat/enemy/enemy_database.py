@@ -17,7 +17,7 @@ SPAWNS = {
     "underground_garden": [[3,6], {"rainbow_pixie": 3, "pixie": 3, "inferno_flower": 3, "frost_flower": 3, "toxic_flower": 3,
                                    "poison_skeleton": 4, "firefly_queen": 4}],
     "the_core": [[3,6], {"skeleton": 1, "fly": 1, "guard": 3, "generator": 4, "liche": 5}],
-    "the_void": [[4,6], {"voidling": 3, "blue_crystal": 4, "red_crystal": 5, "purple_crystal": 5}],
+    "the_void": [[2,6], {"voidling": 3, "blue_crystal": 4, "red_crystal": 5, "purple_crystal": 5}],
 }
 MAX_ENEMIES = 15                # = spawn points around the player
 SPAWN_RING = (0.42, 0.40)       # the ring of spawn points: share of the screen width / height from the centre
@@ -236,18 +236,28 @@ class EnemyDB:
 
             # --- THE VOID ---
 
-            "voidling": [0,0,10940,14,"enemy",2.4,7850,80,100,"void","to_player_normal",
-                {"spawn": {"enemy_name":"voidling","amount" : 1,"cooldown": 3.0, "last_used": 0},
+            # (11.11) the Void's F3 helpers (void_helpers.py): the Factory's Toy Soldier and Scrap Beetle, the Void's
+            # strength (its bullets ~5-7k like the boss's); no money, no drops
+            "void_soldier": [0,0,16000,20,"enemy",1.8,6000,0,25,"mechanical","to_player_normal",
+                {"basic": {"damage": 5500, "cooldown": 2.6, "last_used": 0, "width": 16, "speed": 13, "range": 3500, "repeat": [3, 0.15], "effects": {}, "type":["bullet_red"]}}],
+            "void_beetle": [0,0,9000,14,"enemy",5.2,6000,0,25,"mechanical","to_player_normal",
+                {"mine": {"damage": 7000, "radius": 80, "cooldown": 2.0, "last_used": 0, "width": 18, "exp_time": 3.5, "effects": {}, "type": ["mine_red"]}}],
+            "voidling": [0,0,10500,14,"enemy",2.4,7850,80,50,"void","to_player_normal",
+                {"spawn": {"enemy_name":"voidling","amount" : 1,"cooldown": 4.5, "last_used": 0},
                  "death_spiral": {"damage": 5610, "cooldown": 0, "last_used": 0, "width": 12, "speed": 12, "range": 3000, "bullets": 3, "effects": {"confusion":[30,0.5]}, "type":["flower_pink"]}}],
 
             "red_crystal": [0,0,32800,25,"enemy",1.5,5610,200,50,"void","away_player_normal",
-                {"shotgun":{"damage": 8970, "cooldown": 2.6, "last_used": 0, "width": 16, "speed": 12, "range": 3500, "recoil": 40, "bullets": 8, "repeat": [2, 0.35], "effects": {"burn":[180,336]}, "type":["flower_orange"]},
-                 "basic": {"telegraph": 30, "damage": 12340, "cooldown": 1.7, "last_used": 0, "width": 24, "speed": 18, "range": 3600, "effects": {"burn":[180,336]}, "type":["flower_orange"]}}],
+                {"shotgun":{"damage": 8970, "cooldown": 3.2, "last_used": 0, "width": 14, "speed": 12, "range": 3500, "recoil": 35, "bullets": 6, "repeat": [2, 0.35], "effects": {"burn":[180,336]}, "type":["flower_orange"]},
+                 "basic": {"telegraph": 30, "damage": 12340, "cooldown": 1.8, "last_used": 0, "width": 24, "speed": 18, "range": 3600, "effects": {"burn":[180,336]}, "type":["flower_orange"]}}],
 
             "purple_crystal": [0,0,32800,25,"enemy",1.8,5610,250,50,"void","random_normal",
                 {"death_spawn": {"amount": 1, "enemy_name": "voidling"},
                 "pulse": {"damage": 5610, "cooldown": 4.4, "last_used": -178, "width": 10, "speed": 6, "range": 9000, "bullets": 24, "pulse": [45, 15], "effects": {"confusion":[30,1.0]}, "type":["flower_pink"]},
                 "sprinkler": {"damage": 5610, "cooldown": 2.8, "last_used": 0, "width": 10, "speed": 8, "range": 4000, "streams": 4, "duration": 1.6, "every": 8, "turn": 8, "effects": {"confusion":[30,1.0]}, "type":["flower_pink"]}}],
+
+            # THE VOID BOSS's copies (11.11, its Pale phase F4): look like it, don't shoot; pop into a ring when hit
+            "void_copy": [0,0,1,70,"enemy",1.2,0,0,0,"void","random_normal",
+                {"death_spiral": {"damage": 5000, "cooldown": 0, "last_used": 0, "width": 12, "speed": 6, "range": 4000, "bullets": 8, "effects": {}, "type": ["ghost_bullet"]}}],
 
             "blue_crystal": [0,0,24600,30,"enemy",1.1,10090,300,100,"void","to_player_normal",
                 {"death_spiral": {"damage": 5610, "cooldown": 0, "last_used": 0, "width": 16, "speed": 14, "range": 3200, "bullets": 12, "effects": {"slow":[120,0.8]}, "type":["flower_blue"]},
@@ -295,7 +305,7 @@ class EnemyDB:
             # icicles. 3) a short snowstorm (3 s every 12 s: you only see around you) - everything at once, faster. ~19000 HP = ~75 s at the Tundra 1.0x weapon (324 DPS).
             "frost_golem": [960, 300, 19000, 85, "boss", 1.2, 270, 360, 25, "mystical", "to_player",
                 {"ice_walls": {"count": 3, "hits": 5, "life": 8, "long": 200, "thick": 44, "cooldown": 5.0, "last_used": -180},
-                 "ground_crack": {"cooldown": 3.0, "last_used": -60, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [40, 0.2]}, "type": ["arrow_blue"]}}}],
+                 "ground_crack": {"cooldown": 3.0, "last_used": -60, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue"]}}}],
             # ASSEMBLY LINE (factory, 8.11): a core at the top of a factory hall with conveyor belts across it. It can't
             # be hurt while its machines stand (def 150; they put toys / turrets / bomb crates on the belts - fewer toys once a phase lasts 30 s);
             # phases 33/33/33 %; break them -> the core is open for 16.5% of its HP, then sealed 2 s, then new machines
@@ -317,17 +327,51 @@ class EnemyDB:
                  "basic": {"damage": 650, "cooldown": 1.8, "last_used": -30, "width": 14, "speed": 9, "range": 5000, "repeat": [3, 0.2], "effects": {}, "type": ["flower_white"]}}],
             # MILO (the Core, 10.11, the last boss of the normal game): the fight itself is game/combat/core_fight.py -
             # a heart in the middle (milo_core) beats faster and faster, everything happens on its beats. Small (a bit
-            # bigger than you). F1 Guard 100-80%, F2 Cables 80-55%, F3 Overheat 55-30%, F4 Despair 30-0%, then he falls,
+            # bigger than you). F1 Guard 100-75%, F2 Cracks 75-50%, F3 Overheat 50-25%, F4 Despair 25-0%, then he falls,
             # a fake "Win!", and the heart (F5, can't be lost). ~3 min at the Core's 1.0x weapon (2916 DPS, def 25).
             "milo": [960, 220, 340000, 32, "boss", 0, 2500, 2500, 25, "human", "random_normal", {}],
+            # THE VOID (11.11, the last boss): the fight itself is game/combat/void_fight.py - islands over the abyss
+            # (2 x 2 screens), music "Fire and Thunder" (Cjbeards, CC BY 3.0). Its name is never the same (broken signs).
+            # Its phases (F1-F3 ~17% each, then the checkpoint at 50%, F4 and F5 25% each) are what the system cut away: F1 Slime King / Prism, F2 Shroom Mother / Frost Golem,
+            # F3 the Factory (belts), F4 Night Bloom in the Pale World (copies), F5 everything; then the interlude and
+            # the end (not on the HP bar). ~4 min of F1-F5 at the Void's 1.0x weapon (8748 DPS, def 50).
+            "void_boss": [1920, 900, 950000, 70, "boss", 1.4, 7290, 6000, 50, "void", "random_normal",
+                {"throw": {"radius": 80, "recoil": 120, "damage": 6500, "width": 18, "exp_type": "", "cooldown": 3.0,
+                           "last_used": -90, "fly_time": 1.1, "effects": {}, "type": ["ghost_bullet"],
+                           "ring": {"bullets": 10, "speed": 6, "damage": 5000, "width": 12}},
+                 "split": {"damage": 6000, "cooldown": 2.6, "last_used": -60, "width": 16, "speed": 8, "range": 4000, "effects": {},
+                           "type": ["laser_purple", "laser_blue"], "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 4500, "width": 11}},
+                 "dash": {"cooldown": 4.0, "last_used": -60, "dashes": 2, "windup": 24, "spiral_on": [1],
+                          "distance": 320, "dash_frames": 16, "type": ["ghost_bullet"],
+                          "spiral": {"bullets": 10, "damage": 5000, "speed": 6, "width": 13, "range": 4000, "effects": {}}}}],
             "boss1": [900, 900,10,40,"boss",4.2,5,200,0,"undead","to_player",{"basic" : {"damage": 3, "cooldown": 2.0, "last_used": 0, "width": 30, "speed": 9, "range": 2000, "effects" : {"homing":[2],"slow":[180,0.1]}, "type":["missile_blue"]}, 
                                                 "spiral1" : {"damage": 2, "cooldown": 3.2, "last_used": 0, "width": 24, "speed": 6, "range": 2000, "bullets": 12, "effects" : {"poison" : [600,2]}, "type":["normal_green"]},
                                                 "spiral2" : {"damage": 1, "cooldown": 2.8, "last_used": 0, "width": 8, "speed": 7, "range": 2000, "bullets": 36, "effects" : {"glued" : [60,0.5]}, "type":["normal_yellow"]},
                                                 "minigun": {"damage": 1,"cooldown": 2.5,"last_used": 0,"width": 8,"speed": 10,"burst_count": 0,"burst_max": 30,"burst_delay": 0.03,"last_shot": 2500,"is_bursting": False, "range": 2000, "effects" : {"confusion" : [180,0.5]},"type":["bullet_blue"]}}]
         }
         self.boss_info = {
-            "milo": {"name": "Milo", "phases": [{"at": 0.8, "color": [255, 168, 80]}, {"at": 0.55, "color": [255, 138, 70]},
-                                                {"at": 0.3, "color": [255, 105, 60]}]},
+            "void_boss": {"name": "", "phases": [
+                {"at": 0.84, "speed": 1.2, "color": [150, 220, 170], "attacks": {         # F2: the forest and the ice
+                    "burst": {**{"bullets": 30, "speed": [5, 11], "decay": 0.98, "min_speed": 2.0, "damage": 4500, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 3.2, "last_used": -90},
+                    "leap": {"cooldown": 5.5, "last_used": 0, "up": 26, "air": 60, "land_damage": 8000, "burst": {"bullets": 30, "speed": [5, 11], "decay": 0.98, "min_speed": 2.0, "damage": 4500, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}},
+                    "line": {"damage": 5000, "cooldown": 2.6, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {"slow": [40, 0.2]}, "type": ["arrow_blue", "laser_blue"]}}},   # (11.11: Frost Golem's row of icicles, not its crack - too hard on the bridges)
+                {"at": 0.67, "speed": 1.0, "color": [255, 170, 90], "attacks": {   # F3: the Factory (the bridges are belts: void_arena.py;
+                    #   (11.11) instead of its pulsing ring: Scrap Beetles and Toy Soldiers on the outer islands - void_helpers.py)
+                    "line": {"damage": 6000, "cooldown": 2.6, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]},
+                    "throw": {"radius": 90, "recoil": 150, "damage": 6000, "width": 18, "exp_type": "", "cooldown": 3.6,   # bomb crates
+                              "last_used": -90, "fly_time": 1.0, "effects": {}, "type": ["grenade_red"],
+                              "ring": {"bullets": 12, "speed": 6, "damage": 4500, "width": 12,   # (11.11) the small grenades go off on you
+                                       "effects": {"explosion": [55, 1.0], "contact_only": [1]}}}}},
+                {"at": 0.5, "speed": 0, "color": [236, 236, 240], "attacks": {}},        # F4: Night Bloom in the Pale World - the
+                #   copies and their shots are void_fight.py's (like the Brain of Cthulhu's); the checkpoint (50%)
+                {"at": 0.25, "speed": 0, "color": [190, 120, 255], "attacks": {         # F5: everything (void_fight.py flies it round the middle island)
+                    "split": {"damage": 6000, "cooldown": 3.0, "last_used": -60, "width": 16, "speed": 8, "range": 4000, "effects": {},
+                              "type": ["laser_purple", "laser_blue"], "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 4500, "width": 11}},
+                    "pulse": {"damage": 5000, "cooldown": 3.6, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {}, "type": ["flower_blue"]},
+                    "spiral": {"damage": 5500, "cooldown": 3.2, "last_used": -60, "width": 13, "speed": 5, "range": 6000, "bullets": 14, "effects": {}, "type": ["ghost_bullet"]},
+                    "line": {"damage": 6000, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]}}}]},
+            "milo": {"name": "Milo", "phases": [{"at": 0.75, "color": [255, 168, 80]}, {"at": 0.5, "color": [255, 138, 70]},
+                                                {"at": 0.25, "color": [255, 105, 60]}]},   # (11.11) 25% each
             "night_bloom": {"name": "Night Bloom", "arena": {"darkness": {"light": 130, "fog": 0.75, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "phases": [
                 {"at": 0.9, "color": [200, 150, 230], "arena": {"darkness": {"light": 130, "fog": 0.8, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
                     "edge_rain": {"warn": 45, "cooldown": 5.5, "last_used": -120, "sides": ["left", "right"], "spacing": 64, "gaps": 2, "gap": 190, "speed": 4, "damage": 500, "width": 13, "range": 6000, "effects": {}, "type": ["flower_white"]},
@@ -343,30 +387,30 @@ class EnemyDB:
                     "throw": {"radius": 70, "recoil": 260, "damage": 500, "width": 18, "exp_type": "", "cooldown": 4.4, "last_used": -90, "fly_time": 1.0, "light": 230, "effects": {}, "type": ["flower_orange"]},
                     "spiral": {"damage": 600, "cooldown": 3.0, "last_used": -60, "width": 13, "speed": 5, "range": 5000, "bullets": 16, "effects": {}, "type": ["spore"]},
                     "decoys": {"copies": 3, "copy": "bloom_copy", "keep_away": 360, "cooldown": 9.0, "last_used": -30}}}]},
-            "assembly_line": {"name": "Assembly Line", "arena": {"belts": {"lanes": BELTS, "speed": 2}}, "phases": [
+            "assembly_line": {"name": "Assembly Line", "arena": {"belts": {"lanes": BELTS, "speed": 2}}, "phases": [   # (11.11) phases 2-3: its rows glue now and then (the Fire Ring, Factory)
                 {"at": 0.67, "color": [255, 170, 90], "arena": {"belts": {"lanes": BELTS, "speed": 2.6}}, "attacks": {
                     "spawn": {"enemy_name": "assembly_machine_2", "amount": 2, "guards": True, "replace": True,
                               "at": [[0.2, 0.17], [0.8, 0.17]], "open_damage": 0.165, "rebuild": 2.0, "color": [170, 150, 120], "cooldown": 1.0, "last_used": -60},
-                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]},
+                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {"glued": [90, 0.35]}, "type": ["bullet_red"]},
                     "nozzles": {"cooldown": 4.5, "last_used": -120, "lanes": 1, "warn": 45, "rows": 2, "bullets": 10, "every": 5,
                                 "speed": 14, "damage": 250, "width": 13, "range": 3000, "type": ["bullet_red"]}}},
                 {"at": 0.33, "color": [255, 110, 70], "arena": {"belts": {"lanes": BELTS, "speed": 3, "reverse": [480, 75]}}, "attacks": {
                     "spawn": {"enemy_name": "assembly_machine_3", "amount": 2, "guards": True, "replace": True,
                               "at": [[0.2, 0.17], [0.8, 0.17], [0.5, 0.93]], "open_damage": 0.165, "rebuild": 2.0, "color": [190, 130, 110], "cooldown": 1.0, "last_used": -60},
-                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 15, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]},
+                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 15, "range": 4000, "bullets": 4, "every": 5, "effects": {"glued": [90, 0.35]}, "type": ["bullet_red"]},
                     "nozzles": {"cooldown": 3.5, "last_used": -60, "lanes": 1, "warn": 45, "rows": 2, "bullets": 10, "every": 5,
                                 "speed": 14, "damage": 250, "width": 13, "range": 3000, "type": ["bullet_red"]},
                     "vents": {"cooldown": 3.0, "last_used": -90, "count": 1, "warn": 40, "pattern": "ring", "bullets": 9, "speed": 6, "damage": 230, "width": 13, "range": 3000, "type": ["normal_red"]},
                     "vents_line": {"kind": "vents", "cooldown": 3.6, "last_used": -200, "count": 1, "warn": 40, "pattern": "line", "bullets": 4, "every": 5, "speed": 12, "damage": 230, "width": 12, "range": 3000, "type": ["bullet_red"]}}}]},
-            "frost_golem": {"name": "Frost Golem", "phases": [
+            "frost_golem": {"name": "Frost Golem", "phases": [   # (11.11) slow + weakness often: the Frozen Ring (Tundra) is worth wearing here
                 {"at": 0.8, "speed": 1.6, "color": [200, 230, 255], "arena": {"ice": True}, "attacks": {
-                    "pulse": {"damage": 250, "cooldown": 3.2, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {}, "type": ["flower_blue"]},
-                    "line": {"damage": 250, "cooldown": 2.4, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {}, "type": ["arrow_blue", "laser_blue"]}}},
+                    "pulse": {"damage": 250, "cooldown": 3.2, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {"weakness": [180, 0.25]}, "type": ["flower_blue"]},
+                    "line": {"damage": 250, "cooldown": 2.4, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue", "laser_blue"]}}},
                 {"at": 0.4, "speed": 1.6, "color": [235, 245, 255], "arena": {"blizzard": [180, 720]}, "attacks": {
                     "ice_walls": {"count": 3, "hits": 5, "life": 8, "long": 200, "thick": 44, "cooldown": 4.0, "last_used": -60},
-                    "ground_crack": {"cooldown": 2.8, "last_used": 0, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [40, 0.2]}, "type": ["arrow_blue"]}},
-                    "pulse": {"damage": 250, "cooldown": 2.6, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {}, "type": ["flower_blue"]},
-                    "line": {"damage": 250, "cooldown": 2.0, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {}, "type": ["arrow_blue", "laser_blue"]}}}]},
+                    "ground_crack": {"cooldown": 2.8, "last_used": 0, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue"]}},
+                    "pulse": {"damage": 250, "cooldown": 2.6, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {"weakness": [180, 0.25]}, "type": ["flower_blue"]},
+                    "line": {"damage": 250, "cooldown": 2.0, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue", "laser_blue"]}}}]},
             "shroom_mother": {"name": "Shroom Mother", "phases": [
                 {"at": 0.8, "speed": 2.2, "movement": "to_player", "color": [255, 170, 210], "attacks": {
                     "spawn": {"enemy_name": "shroom_guard", "amount": [1, 2], "corners": True, "guards": True, "color": [230, 120, 170],
@@ -433,11 +477,11 @@ class EnemyDB:
             "toxic_flower": [("Tribe Armor", 0.04)],
             "skeleton": [("Samurai God", 0.04)],
             "generator": [("Laser Arrow", 0.04), ("Mecha Armor", 0.04)],
-            "liche": [("Ghost USP", 0.04)],
-            "voidling": [("Ghost Rifle", 0.02), ("Ghost Armor", 0.02)],
-            "purple_crystal": [("Ghost Shotgun", 0.02)],
-            "red_crystal": [("Missile-3000", 0.02), ("Fallen knight armor", 0.02)],
-            "blue_crystal": [("Laser SMG v2", 0.02), ("Mecha-King Armor", 0.02)],
+            "liche": [("Ghost USP", 0.03)],
+            "voidling": [("Ghost Rifle", 0.05), ("Ghost Armor", 0.04)],
+            "purple_crystal": [("Ghost Shotgun", 0.06)],
+            "red_crystal": [("Missile-3000", 0.04), ("Fallen knight armor", 0.04)],
+            "blue_crystal": [("Laser SMG v2", 0.05), ("Mecha-King Armor", 0.04)],
         }
         self.luck = 0                   # set by Game before each fight (Game.luck())
         # QUEST DROPS: enemy name -> [(item name, chance, quest id[, max owned]), ...]

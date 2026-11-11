@@ -1,6 +1,7 @@
 {
-    "_comment": "(10.11) After Milo's fight, when you came with the Peace Gun (core_fight.py -> Game.after_boss). Only Milo speaks. When he first says 'Void' the Void's music starts. The Void portal behind the heart is open now.",
+    "_comment": "(10.11) After Milo's fight, when you came with the Peace Gun (core_fight.py -> Game.after_boss). Only Milo speaks, in silence (11.11). When he first says 'Void' the Void's music starts. The Void portal behind the heart is open now.",
     "partner": "milo",
+    "music": "silence",
     "start": "talk",
     "nodes": {
         "talk": {

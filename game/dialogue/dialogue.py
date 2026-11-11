@@ -13,10 +13,13 @@
 import json, math, os, random
 import pygame
 from game.dialogue.speakers import SPEAKERS, SOUND_DIR, IMAGE_DIR, DEFAULT_POSE, DEFAULT_DIALOGUE_MUSIC
+from game import controls as KEYS
+from game.menu import options as OPT
 
 DATA_DIR = os.path.join("game", "dialogue", "data")
 VOICE_DIR = os.path.join("assets", "voice")      # recorded voiceovers: "voiceover": "milo_core_1.wav" in a line
 
+TEXT_SPEEDS = {"slow": 0.5, "normal": 1.0, "fast": 2.0, "instant": 10 ** 6}    # (11.11) x TYPE_SPEED
 TYPE_SPEED = 0.66           # letters per frame (60 fps -> ~40 letters per second) - author's value
 SOUND_EVERY = 2             # the talk sound starts again every N typed letters (spaces don't count) - continuous chatter
 PUNCTUATION_PAUSE = {".": 12, "!": 12, "?": 12, ",": 5, ";": 7, ":": 7}   # extra frames after these
@@ -320,11 +323,12 @@ class Dialogue:
                 if event.type != pygame.KEYDOWN:
                     continue
                 ready = self.choice_timer >= CHOICE_DELAY
-                if event.key in (pygame.K_w, pygame.K_UP):
+                if event.key in (KEYS.move_key("up"), pygame.K_UP):          # (11.11) the movement keys: Settings
                     self.selected = (self.selected - 1) % len(self.choices)
-                elif event.key in (pygame.K_s, pygame.K_DOWN):
+                elif event.key in (KEYS.move_key("down"), pygame.K_DOWN):
                     self.selected = (self.selected + 1) % len(self.choices)
-                elif event.key in (pygame.K_a, pygame.K_LEFT, pygame.K_d, pygame.K_RIGHT) and len(self.choices) > CHOICE_ROWS:
+                elif event.key in (KEYS.move_key("left"), pygame.K_LEFT, KEYS.move_key("right"), pygame.K_RIGHT) \
+                        and len(self.choices) > CHOICE_ROWS:
                     other = (self.selected + CHOICE_ROWS) % (2 * CHOICE_ROWS)      # same row, other column
                     self.selected = min(other, len(self.choices) - 1)
                 elif pygame.K_1 <= event.key <= pygame.K_9 and event.key - pygame.K_1 < len(self.choices):
@@ -380,7 +384,8 @@ class Dialogue:
             self.wait -= 1
             return
         before = int(self.shown)
-        self.shown = min(len(self.text), self.shown + TYPE_SPEED * self.line.get("speed", 1.0))
+        self.shown = min(len(self.text), self.shown + TYPE_SPEED * TEXT_SPEEDS[OPT.get("text_speed")]
+                         * self.line.get("speed", 1.0))         # (11.11) Settings: text speed
         for k, char in enumerate(self.text[before:int(self.shown)]):
             if not char.isspace():
                 self.typed_since_sound += 1

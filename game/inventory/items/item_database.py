@@ -243,7 +243,7 @@ class ItemDatabase:
                                     # 172 DPS +26Pierce +14Weakness + 40Range   |  252p    |   weight 2624
             "Ghost USP": Weapon("Ghost USP",
                                     "There is no record of this weapon.\nThere is no record of you finding it.",
-                                    "weapon",1780,0.42,{"pierce":[1],"confusion":[30,0.9],"weakness":[120,0.25],"glued":[120,0.25]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9800,16,18,["ghost_bullet"],
+                                    "weapon",1800,0.42,{"pierce":[1],"confusion":[30,0.9],"weakness":[120,0.25],"glued":[120,0.25]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9800,16,18,["ghost_bullet"],
                                     self.load_img("weapon/ghost_usp.png")),
                                     # 226 DPS +26Pierce +20Confusion +20Weakness +20Glued   |   312p   |   weight 4228
 
@@ -251,7 +251,7 @@ class ItemDatabase:
 
             "Ghost Rifle": Weapon("Ghost Rifle",
                                     "The ectoplasma is really wierd in touch\nYou are holding it anyway.",
-                                    "weapon",2730,0.24,{"pierce":[1],"confusion":[40,0.8],"weakness":[100,0.3],"glued":[100,0.3]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",10800,16,18,["ghost_bullet"],
+                                    "weapon",2800,0.24,{"pierce":[1],"confusion":[40,0.8],"weakness":[100,0.3],"glued":[100,0.3]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",10800,16,18,["ghost_bullet"],
                                     self.load_img("weapon/ghost_rifle.png"),True),
                                     # 521 DPS +32Pierce +80Ghost            |   633p   |   weight 11372
 
@@ -262,17 +262,17 @@ class ItemDatabase:
                                     # 567 DPS *0.95Recoil + 50Glued         |   589p   |   weight 6124
             "Ghost Shotgun": Weapon("Ghost Shotgun",
                                     "The ectoplasma is really wierd in touch\nYou are holding it anyway.",
-                                    "weapon",1860,0.8,{"pierce":[2],"confusion":[40,0.85],"weakness":[120,0.2],"glued":[120,0.2],"shotgun":["s",7]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",9000,16,18,["ghost_bullet"],
+                                    "weapon",1980,0.8,{"pierce":[2],"confusion":[40,0.85],"weakness":[120,0.2],"glued":[120,0.2],"shotgun":["s",7]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",8800,16,18,["ghost_bullet"],
                                     self.load_img("weapon/ghost_shotgun.png"),recoil=15),
                                     # 578 DPS *0.95Recoil +80Ghost          |  629p    |   weight 11372
             "Missile-3000": Weapon("Missile-3000",
                                     "The number isn't a model number.\nIt's a count...",
-                                    "weapon",14650,1.4,{"explosion":[100,0.88],"burn":[65,293],"slow":[90,0.33]},"Big explosion that slows and burns enemies",12000,26,15,["missile_blue"],
+                                    "weapon",11800,1.18,{"explosion":[100,0.88],"burn":[60,200],"slow":[90,0.33],"homing":[0.35]},"Homing missiles, big explosion\nthat slows and burns enemies",11100,26,14,["missile_blue"],
                                     self.load_img("weapon/rpg2.png")),
                                     # 286 DPS + 288Explosion + 40Burn +20Slow   |   634p   |   weight 11372
             "Laser SMG v2": Weapon("Laser SMG v2",
                                     "Don't you think it's too much DPS\nYeah i know the answer...",
-                                    "weapon",2390,0.21,{"pierce":[1],"binded":[60,0.1], "burst":[3,0.06]},"Pierces and has a small\nchance to bind an enemy\n3-round bursts",11800,14,24,["laser_red"],
+                                    "weapon",2450,0.21,{"pierce":[1],"binded":[60,0.2], "burst":[3,0.06]},"Pierces and has a small\nchance to bind an enemy\n3-round bursts",12200,14,26,["laser_red"],
                                     self.load_img("weapon/laser_smg2.png"),True),
                                     # 690 DPS +42Pierce +10Binded           |   742p   |   weight 11372
 
@@ -358,7 +358,7 @@ class ItemDatabase:
                 "Knight Armor",
                 "Several pieces have been replaced\nby parts that don't seem to\nbelong here.",
                 "armor", 42,1530,
-                {"berserk": [0.4, 0.2]}, "Berserk II\nIf below 40% health, dmg +20%",
+                {"berserk": [0.33, 0.2]}, "Berserk II\nIf below 33% health, dmg +20%",
                 self.load_img("armor/knight2.png")
             ),
             "Medieval Armor II": Armor(
@@ -499,8 +499,8 @@ class ItemDatabase:
             "Samurai God": Armor(
                 "Samurai God",
                 "You belived in him and you became him.",
-                "armor", 120,20030,
-                {"dodge": [0.5],"hitbox":[0.75]},"Chance to dodge bullets, smaller hitbox",
+                "armor", 0,20000,
+                {"dodge": [0.25],"hitbox":[0.80]},"Chance to dodge bullets, smaller hitbox",
                 self.load_img("armor/samurai4.png")
             ),
 
@@ -517,7 +517,7 @@ class ItemDatabase:
                 "Armor of the fallen Knight",
                 "That's the fallen one\nhe certainly died here",
                 "armor", 1430,45680,
-                {"berserk": [0.6, 0.6], "bind_chance": [0], "burn_imm": [1]}, "Berserk III\nIf below 60% health, dmg +60%\nImmune to binded and burn",
+                {"berserk": [0.3, 0.5], "bind_chance": [0], "burn_imm": [1]}, "Berserk III\nIf below 30% health, dmg +50%\nImmune to binded and burn",
                 self.load_img("armor/knight4.png")
             ),
             "Ghost Armor": Armor(
@@ -708,7 +708,7 @@ class ItemDatabase:
             "Atom": Trinket("Atom",
                 "A physical atom that you can hold in your hand.",
                 "trinket",
-                {"cluster":[3, 0.33]}, "Your explosions throw out 3 smaller ones\n(33% dmg each).",
+                {"cluster":[3, 0.20]}, "Your explosions throw out 3 smaller ones\n(20% dmg each).",
                 self.load_img("trinket/atom.png")
             ),
             "Pale Orb": Trinket("Pale Orb",
@@ -726,7 +726,7 @@ class ItemDatabase:
             "Magic Ring": Trinket("Magic Ring",
                 "The symbol inside the ring isn't magic.\nAt least, that's what the old books say.",
                 "trinket",
-                {"confusion_chance":[0.2], "bind_chance":[0.2], "friendly_fire":[1]}, "Enemies have only 1/5 of their chance\nto bind or confuse you.\nConfused enemies' shots also hurt other enemies.",
+                {"confusion_imm":[1], "binded_imm":[1], "friendly_fire":[1]}, "Immune to binding and confusion.\nConfused enemies' shots also hurt other enemies.",
                 self.load_img("trinket/magic_ring.png")
             ),
             "Magic Dust": Trinket("Magic Dust",
@@ -776,7 +776,7 @@ class ItemDatabase:
             "Crown": Trinket("Crown",
                 "It warps the space directly around your body,\nmaking your physical presence look strangely small.",
                 "trinket",
-                {"hitbox":[0.6]}, "Makes you smaller",
+                {"hitbox":[0.75]}, "Makes you smaller",
                 self.load_img("trinket/crown.png")
             ),
 

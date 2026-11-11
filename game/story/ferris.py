@@ -26,12 +26,35 @@ SHORTCUTS = [
      "biome": "underground_garden", "need": ["boss:factory", "visited:garden"]},
     {"id": "core", "name": "The Core", "level": "core", "at": ("arrival", "cellar:garden"),
      "biome": "the_core", "need": ["visited:core"]},
+    # (11.11) the Void: GIVEN, not sold ("free") - the moment you get there (Game.grant_free_shortcuts)
+    {"id": "void", "name": "The Void", "level": "void", "at": ("arrival", "core:core"),
+     "biome": "the_void", "need": ["visited:void"], "free": True},
+    {"id": "void_shrine", "name": "Void Shrine", "level": "void", "at": ("structure", "void_shrine"),
+     "biome": "the_void", "need": ["visited:void_shrine"], "free": True},
 ]
 BY_ID = {s["id"]: s for s in SHORTCUTS}
 
 
 def price(shortcut):
-    return round10(FIGHT_GOLD[shortcut["biome"]] * SHORTCUT_FIGHTS)
+    return 0 if shortcut.get("free") else round10(FIGHT_GOLD[shortcut["biome"]] * SHORTCUT_FIGHTS)
+
+
+def free_now(flags, owned):
+    """(11.11) The given shortcuts you have just earned (been there) and don't have yet."""
+    return [s for s in SHORTCUTS if s.get("free") and s["id"] not in owned and all(f in flags for f in s["need"])]
+
+
+def structure_rect(world, name):
+    return next((s["rect"] for s in getattr(world, "structures", []) if s["name"] == name), None)
+
+
+def at_structure(world, tile, name):
+    """(11.11) Is this tile inside that structure (e.g. the Void Shrine)?"""
+    rect = structure_rect(world, name)
+    if rect is None:
+        return False
+    x, y, w, h = rect
+    return x <= tile[0] < x + w and y <= tile[1] < y + h
 
 
 def _walkable(world, x, y):
@@ -74,6 +97,12 @@ def tile_of(shortcut, world):
         return (near[0], near[1] + 1)
     if kind == "arrival":
         return getattr(world, "arrivals", {}).get(rest[0])
+    if kind == "structure":                              # (11.11) next to a structure (the Void Shrine)
+        rect = structure_rect(world, rest[0])
+        if rect is None:
+            return None
+        x, y, w, h = rect
+        return _spot(world, (x + w // 2, y + h // 2), radius=(0, max(w, h)), allow_path=True)
     gate = next((g for g in world.gates if g["from"] == rest[0] and g["to"] == rest[1]), None)
     return tuple(gate["entry"]) if gate else None
 

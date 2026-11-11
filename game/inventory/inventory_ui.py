@@ -1,6 +1,7 @@
 import os
 import pygame
 from game.inventory import sigils as SG
+from game import controls as KEYS
 
 SIGIL_DIR = "assets/img/inventory/sigils"
 
@@ -487,10 +488,40 @@ class Inventory_ui:
         
         
 
+    def equip_selected(self):
+        if self.inventory.selected_item in self.inventory.active_items.values():
+            if self.inventory.unequip_item(self.inventory.selected_item):
+                self.selected_slot = None
+            else:
+                self.show_message("Inventory full")
+        elif self.inventory.selected_item:
+            self.inventory.equip_item(self.inventory.selected_item)
+            self.selected_slot = None
+
+    def ask_remove(self):
+        if self.inventory.selected_item:
+            self.confirm_remove = True   # popup asks before removing
+
+    def handle_keys(self, events):
+        """(11.11) The keys from Settings (controls.py): next page, equip / take off, remove (not set by default)."""
+        for event in events:
+            if KEYS.pressed(event, "tab") and len(self.tab_rects) > 1:
+                pages = list(self.tab_rects)
+                self.page = pages[(pages.index(self.page) + 1) % len(pages)]
+                self.selected_slot = None
+                self.inventory.selected_item = None
+                self.sfx.play("click")
+            elif KEYS.pressed(event, "equip") and self.page == "items":
+                self.sfx.play("use")
+                self.equip_selected()
+            elif KEYS.pressed(event, "delete") and self.page == "items":
+                self.ask_remove()
+
     def handle_click(self, pos, events):
         if self.confirm_remove:
             self.handle_confirm_click(pos, events)
             return None
+        self.handle_keys(events)
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for page, rect in self.tab_rects.items():
@@ -538,16 +569,8 @@ class Inventory_ui:
                         if i == 0:
                             return "map"
                         elif i == 1:
-                            if self.inventory.selected_item in self.inventory.active_items.values():
-                                if self.inventory.unequip_item(self.inventory.selected_item):
-                                    self.selected_slot = None
-                                else:
-                                    self.show_message("Inventory full")
-                            elif self.inventory.selected_item:
-                                self.inventory.equip_item(self.inventory.selected_item)
-                                self.selected_slot = None
+                            self.equip_selected()
                         elif i == 2:
-                            if self.inventory.selected_item:
-                                self.confirm_remove = True   # popup asks before removing
+                            self.ask_remove()
                             break
 

@@ -43,6 +43,7 @@ Example: `data/test_milo.json`.
 - **music** — music while talking (a name in `MusicManager`, optional). Default: `"dialogue"` from
   `speakers.py` — a placeholder: put a file at `assets/music/dialogue/dialogue.mp3` and it plays;
   without the file the biome music just keeps playing.
+  (11.11) `"music": "silence"` = no music at all while talking (the biome music comes back after).
 - **start** — the first node. Either a name (`"intro"`), or a list checked from the top: the first
   `{"if": ..., "goto": ...}` that is true wins, a plain name at the end is the default.
 - **node** — `lines` are said one after another. After them: `choices` (the player answers), or

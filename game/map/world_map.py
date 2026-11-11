@@ -5,6 +5,7 @@
 
 import pygame
 from game.map.map import MAP_SHOWS
+from game import controls as KEYS
 
 MIN_ZOOM_FACTOR = 1.0     # 1.0 = the whole world fits on the screen
 MAX_ZOOM = 28             # screen pixels per tile
@@ -117,7 +118,7 @@ class WorldMap:
         self.shortcut_request = None
         if self.confirm:                             # the Yes / No window takes all input
             for event in events:
-                if event.type == pygame.KEYDOWN and event.key in (pygame.K_ESCAPE, pygame.K_m):
+                if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or KEYS.pressed(event, "map"):
                     self.confirm = None
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if self.confirm_rects.get("yes") and self.confirm_rects["yes"].collidepoint(event.pos):
@@ -129,7 +130,7 @@ class WorldMap:
             return False
         for event in events:
             if event.type == pygame.KEYDOWN:
-                if event.key in (pygame.K_m, pygame.K_ESCAPE):
+                if event.key == pygame.K_ESCAPE or KEYS.pressed(event, "map"):      # (11.11) the map key: Settings
                     return True
                 if event.key == pygame.K_SPACE:
                     self.show_level(game_map, game_map.level)
@@ -267,6 +268,9 @@ class WorldMap:
         """Buttons over the places (like the warp buttons in FNaF World): bought = Travel, at Ferris = the price."""
         self.buttons = []
         for sc in self.shortcuts:
+            if sc["level"] == view.level and sc["tile"] is None and sc.get("find_tile"):
+                sc["tile"] = sc["find_tile"](view.world)          # (11.11) found when its level is shown
+                sc["find_tile"] = None
             if sc["level"] != view.level or sc["tile"] is None or not (sc["owned"] or self.ferris):
                 continue
             x, y = self.tile_to_screen(sc["tile"][0] + 0.5, sc["tile"][1] + 0.5)
