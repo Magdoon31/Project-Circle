@@ -9,11 +9,13 @@ import pygame, math, random
 #   {"kind": "split", "after": frames, "children": spec}  bursts into smaller bullets after a while
 #   {"kind": "land_ring", "children": spec}  a thrown bomb that throws out a ring of bullets where it lands
 #   {"kind": "slowdown", "decay": 0.97, "min": px}  starts fast, slows down every frame (Shroom Mother's spores)
+#     + "return": {"after": frames, "home": () -> (x, y)}  (12.11) then flies back to its owner and is gone there
 #   wave + "bounce": n, "bounds": (w, h)  the wobbling line bounces off the screen edges n times
 # spec (children) = {"bullets", "speed", "damage" (final), "width", "range", "type", "effects", "start" (degrees)}
 
 
 OFF_VIEW_MARGIN = 160            # px round the drawn area where a bullet is still drawn (its picture's size)
+RETURN_SPEED = (0.25, 11)        # (12.11) a returning spore: px a frame more every frame, at most
 
 
 def ring_of(x, y, spec, base_angle, bullet_type_info):
@@ -127,6 +129,9 @@ class projectile:
             self.vx, self.vy = self.dir_x * self.speed * v, self.dir_y * self.speed * v
             return True
         if kind == "slowdown":
+            if m.get("return") and self.age >= m["return"]["after"]:
+                self.fly_home(m["return"]["home"]())
+                return True
             self.speed = max(m["min"], self.speed * m["decay"])
             self.vx, self.vy = self.dir_x * self.speed, self.dir_y * self.speed
             return True
@@ -154,6 +159,17 @@ class projectile:
                 self.vx, self.vy = (t.x - self.x) / d * m["speed"], (t.y - self.y) / d * m["speed"]
             return True
         return False
+
+    def fly_home(self, home):
+        """A returning spore: speeds up towards its owner; there it is gone (its life ends)."""
+        dx, dy = home[0] - self.x, home[1] - self.y
+        d = math.hypot(dx, dy)
+        if d <= max(RETURN_SPEED[1], self.width):
+            self.range = 0
+            self.vx = self.vy = 0
+            return
+        self.speed = min(RETURN_SPEED[1], self.speed + RETURN_SPEED[0])
+        self.vx, self.vy = dx / d * self.speed, dy / d * self.speed
 
     def update(self,enemies):
         self.age += 1

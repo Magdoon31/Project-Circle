@@ -46,6 +46,7 @@
             },
             "lines": [
                 {
+                    "id": "wren_01",
                     "who": "wren",
                     "pose": "surprised",
                     "text": "You! The one who looks at things!",
@@ -54,6 +55,7 @@
                     }
                 },
                 {
+                    "id": "wren_02",
                     "who": "wren",
                     "pose": "surprised",
                     "text": "Hey - you. You look like someone who looks at things. I'm Wren.",
@@ -62,21 +64,25 @@
                     }
                 },
                 {
+                    "id": "wren_03",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "I followed the way down. Somebody had to. Look at this place - a garden underground, with no sun. It shouldn't exist."
                 },
                 {
+                    "id": "wren_04",
                     "who": "wren",
                     "pose": "serious",
                     "text": "I need your eyes. There are three places down here that bother me."
                 },
                 {
+                    "id": "wren_05",
                     "who": "wren",
                     "pose": "pointing",
                     "text": "Rows of stones with flowers. A playground swallowed by roots. And a lab someone left in a hurry."
                 },
                 {
+                    "id": "wren_06",
                     "who": "wren",
                     "pose": "neutral",
                     "text": "Go and look at them. Properly. Then tell me what you saw."
@@ -87,11 +93,13 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "wren_07",
                     "who": "wren",
                     "pose": "pointing",
                     "text": "Stones, playground, lab. Look at them properly - don't just walk past."
                 },
                 {
+                    "id": "wren_08",
                     "who": "wren",
                     "pose": "neutral",
                     "text": "Nothing yet? Take your time. I'll be here. Writing."
@@ -101,6 +109,7 @@
         "progress": {
             "lines": [
                 {
+                    "id": "wren_09",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "You saw one? Don't tell me yet. I want to hear all three together.",
@@ -116,6 +125,7 @@
                     }
                 },
                 {
+                    "id": "wren_10",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Two. One more. I can see it in your face - it's not nothing, is it?",
@@ -131,6 +141,7 @@
         "report": {
             "lines": [
                 {
+                    "id": "wren_11",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Well? What did you see?"
@@ -151,26 +162,31 @@
                     "text": "Papers with the words gone. Like someone took them off the page."
                 },
                 {
+                    "id": "wren_12",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "..."
                 },
                 {
+                    "id": "wren_13",
                     "who": "wren",
                     "pose": "serious",
                     "text": "None of it grew here. It was put here."
                 },
                 {
+                    "id": "wren_14",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Someone takes things from up there and hides them down here. On purpose."
                 },
                 {
+                    "id": "wren_15",
                     "who": "wren",
                     "pose": "serious",
                     "text": "I don't know who. I don't know why. But it's not an accident."
                 },
                 {
+                    "id": "wren_16",
                     "who": "wren",
                     "pose": "smile",
                     "text": "Here - for your trouble. I found it lying around. Everything down here is lying around."
@@ -187,11 +203,13 @@
             },
             "lines": [
                 {
+                    "id": "wren_17",
                     "who": "wren",
                     "pose": "neutral",
                     "text": "I'll stay here and write it all down. Every detail."
                 },
                 {
+                    "id": "wren_18",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "But paper isn't enough. Paper loses its words down here. I need something more."
@@ -202,16 +220,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "wren_19",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "Still writing. Still not enough."
                 },
                 {
+                    "id": "wren_20",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Put here. Hidden. On purpose. I keep reading it and it doesn't get better."
                 },
                 {
+                    "id": "wren_21",
                     "who": "wren",
                     "pose": "smile",
                     "text": "You again! Good. Have you seen anything else?"
@@ -231,11 +252,13 @@
         "need": {
             "lines": [
                 {
+                    "id": "wren_22",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "A voice. A recording. A letter. Anything from the people who were here before."
                 },
                 {
+                    "id": "wren_23",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Paper loses its words down here. But a voice... a voice might survive."
@@ -258,6 +281,7 @@
         "keep_eye": {
             "lines": [
                 {
+                    "id": "wren_24",
                     "who": "wren",
                     "pose": "smile",
                     "text": "Please do."
@@ -274,16 +298,19 @@
             },
             "lines": [
                 {
+                    "id": "wren_25",
                     "who": "wren",
                     "pose": "surprised",
                     "text": "A tape? Give it here. Gently!"
                 },
                 {
+                    "id": "wren_12",
                     "who": "wren",
                     "pose": "listening",
                     "text": "..."
                 },
                 {
+                    "id": "hal_22",
                     "who": "radio",
                     "pose": "static",
                     "horror": true,
@@ -291,41 +318,49 @@
                     "text": "We need to turn it off."
                 },
                 {
+                    "id": "wren_26",
                     "who": "wren",
                     "pose": "serious",
                     "text": "'Turn it off.'"
                 },
                 {
+                    "id": "wren_27",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "Turn what off? Something that... takes things? And hides them down here?"
                 },
                 {
+                    "id": "wren_28",
                     "who": "wren",
                     "pose": "serious",
                     "text": "So someone built it. Someone made the thing that does all this."
                 },
                 {
+                    "id": "wren_29",
                     "who": "wren",
                     "pose": "serious",
                     "text": "And they wanted to switch it off. But they didn't. Or they couldn't."
                 },
                 {
+                    "id": "wren_30",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "Why not?"
                 },
                 {
+                    "id": "wren_31",
                     "who": "wren",
                     "pose": "serious",
                     "text": "...That's it. I'm done waiting for answers to come to me."
                 },
                 {
+                    "id": "wren_32",
                     "who": "wren",
                     "pose": "pointing",
                     "text": "I'm going to look for them myself. Whoever 'we' is. Wherever they went."
                 },
                 {
+                    "id": "wren_33",
                     "who": "wren",
                     "pose": "smile",
                     "text": "Don't wait for me here. I'll find you. Or you'll find me."

@@ -2,42 +2,119 @@
     "_comment": "(10.11) Milo in the heart of the Core, before his fight (Game.meet_boss). The talk ends with the fight (open: boss_fight).",
     "partner": "milo",
     "start": [
-        {"if": {"flag": "talked:milo_core_fight"}, "goto": "again"},
+        {
+            "if": {
+                "flag": "talked:milo_core_fight"
+            },
+            "goto": "again"
+        },
         "first"
     ],
     "nodes": {
         "first": {
-            "do": {"flag": "talked:milo_core_fight"},
+            "do": {
+                "flag": "talked:milo_core_fight"
+            },
             "lines": [
-                {"who": "milo", "pose": "tired", "text": "You came all the way up."},
-                {"who": "milo", "pose": "sad", "text": "I asked you to turn around. Halfway. Remember?"},
-                {"who": "player", "pose": "serious", "text": "What are you protecting?"},
-                {"who": "milo", "pose": "serious", "text": "Everyone. Even you. Especially you."},
-                {"who": "milo", "pose": "serious", "text": "This heart keeps the world quiet. Every bad thing that ever happened here is locked under it."},
-                {"who": "milo", "pose": "serious", "text": "You switch it off, and it all comes back. Not slowly. All at once."}
+                {
+                    "id": "milo_core_fight_01",
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "You came all the way up."
+                },
+                {
+                    "id": "milo_core_fight_02",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "I asked you to turn around. Halfway. Remember?"
+                },
+                {
+                    "who": "player",
+                    "pose": "serious",
+                    "text": "What are you protecting?"
+                },
+                {
+                    "id": "milo_core_fight_03",
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Everyone. Even you. Especially you."
+                },
+                {
+                    "id": "milo_core_fight_04",
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "This heart keeps the world quiet. Every bad thing that ever happened here is locked under it."
+                },
+                {
+                    "id": "milo_core_fight_05",
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "You switch it off, and it all comes back. Not slowly. All at once."
+                }
             ],
             "choices": [
-                {"text": "I need to know.", "goto": "know"},
-                {"text": "Step aside, Milo.", "goto": "aside"}
+                {
+                    "text": "I need to know.",
+                    "goto": "know"
+                },
+                {
+                    "text": "Step aside, Milo.",
+                    "goto": "aside"
+                }
             ]
         },
         "know": {
-            "lines": [{"who": "milo", "pose": "sad", "text": "Then I'm sorry. I really am."}],
+            "lines": [
+                {
+                    "id": "milo_core_fight_06",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "Then I'm sorry. I really am."
+                }
+            ],
             "then": "fight"
         },
         "aside": {
-            "lines": [{"who": "milo", "pose": "tired", "text": "I can't. I never could."}],
+            "lines": [
+                {
+                    "id": "milo_core_fight_07",
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "I can't. I never could."
+                }
+            ],
             "then": "fight"
         },
         "fight": {
-            "do": {"open": "boss_fight"},
-            "lines": [{"who": "milo", "pose": "serious", "text": "Come on. Let's get it over with."}]
+            "do": {
+                "open": "boss_fight"
+            },
+            "lines": [
+                {
+                    "id": "milo_core_fight_08",
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Come on. Let's get it over with."
+                }
+            ]
         },
         "again": {
-            "do": {"open": "boss_fight"},
+            "do": {
+                "open": "boss_fight"
+            },
             "lines": [
-                {"who": "milo", "pose": "tired", "text": "You're back."},
-                {"who": "milo", "pose": "serious", "text": "Nothing has changed. I still can't let you through."}
+                {
+                    "id": "milo_core_fight_09",
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "You're back."
+                },
+                {
+                    "id": "milo_core_fight_10",
+                    "who": "milo",
+                    "pose": "serious",
+                    "text": "Nothing has changed. I still can't let you through."
+                }
             ]
         }
     }

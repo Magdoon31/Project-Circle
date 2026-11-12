@@ -7,6 +7,7 @@
 # Only the shape lives here (where the ground is, drawing it); the fight is void_fight.py.
 
 import math
+import random
 
 import pygame
 
@@ -203,9 +204,10 @@ class VoidArena:
         return ix, iy
 
     def far_island(self, x, y, at_least):
-        """An outer island at least this far away (where a lost weapon lands)."""
+        """A random outer island at least this far away (where a lost weapon lands; 12.11: was always the
+        farthest one - the same island every time)."""
         far = [p for p in self.outer if math.dist(p, (x, y)) >= at_least]
-        return max(far or self.outer, key=lambda p: math.dist(p, (x, y)))
+        return random.choice(far or self.outer)
 
     # --- drawing ------------------------------------------------------------------------------------------------
     def draw(self, screen, pale, timer):

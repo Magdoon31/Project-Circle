@@ -1,0 +1,36 @@
+; CREDITS (12.11) - what rolls up after every ending (game/story/credits.py), on a black screen.
+;   # Heading                    - a big line
+;   text                         - a normal line
+;   @ assets/img/credits/x.png   - a picture (left out until the file exists)
+;   (empty line)                 - a gap
+;   lines starting with ; are notes, not shown
+;   The LAST line comes alone on its own screen after everything else has rolled away.
+; Edit freely. Keep the Void music licence and the Cinzel font.
+
+# PROJECT CIRCLE
+
+
+# A game by
+Filip Góral aka Magdoon
+
+
+# Graphic artist
+Maksymilian Pawlak
+
+
+# Voice actors
+Szymon Penk
+
+
+# Music
+Void (the last boss): "Fire and Thunder" by Cjbeards
+licensed under Creative Commons Attribution 3.0 (CC BY 3.0)
+creativecommons.org/licenses/by/3.0
+
+
+# Fonts
+Cinzel - SIL Open Font License 1.1
+
+
+
+# Thank you for playing

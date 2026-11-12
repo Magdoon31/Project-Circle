@@ -112,6 +112,7 @@ MARKERS = {
     "P": {"name": "portal",       "becomes": ","},   # entry to another map (surface <-> cellar)
     "$": {"name": "gold",         "becomes": None},  # gold on the ground, picked up by walking over it
     "I": {"name": "item",         "becomes": None},  # item on the ground (fixed or random - see prefab @items)
+    "h": {"name": "secret_way",   "becomes": None},  # (11.11) looks like wall, walk into it: a secret room behind
 }
 
 # " " (space) in a prefab = empty: the generator fills it

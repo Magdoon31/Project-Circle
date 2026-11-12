@@ -117,11 +117,13 @@
             },
             "lines": [
                 {
+                    "id": "gus_01",
                     "who": "gus",
                     "pose": "grin",
                     "text": "Welcome, welcome, my friend! Welcome to Gus's Sweets, the finest candy in all of Sugarwood!"
                 },
                 {
+                    "id": "gus_02",
                     "who": "gus",
                     "pose": "smile",
                     "text": "Gumdrops, toffee, sugar glass... hand-made, every single one. The smile comes free of charge."
@@ -132,6 +134,7 @@
                     "text": "What do you have?"
                 },
                 {
+                    "id": "gus_03",
                     "who": "gus",
                     "pose": "grin",
                     "text": "Today? Ah. Today the shelves are... resting. Fresh batch tomorrow! Come back tomorrow, my friend."
@@ -144,16 +147,19 @@
             },
             "lines": [
                 {
+                    "id": "gus_04",
                     "who": "gus",
                     "pose": "grin",
                     "text": "My friend! You came back! A customer who comes back - that's the best kind of customer."
                 },
                 {
+                    "id": "gus_05",
                     "who": "gus",
                     "pose": "smile",
                     "text": "The batch? Ah. Not ready. Sugar's a moody thing. You can't rush sugar."
                 },
                 {
+                    "id": "gus_06",
                     "who": "gus",
                     "pose": "grin",
                     "text": "But when it's ready - oh, you'll be the first to know. First in line. Very important customer."
@@ -166,16 +172,19 @@
             },
             "lines": [
                 {
+                    "id": "gus_07",
                     "who": "gus",
                     "pose": "smile",
                     "text": "Hello again, my friend. Welcome to Gus's Sweets."
                 },
                 {
+                    "id": "gus_08",
                     "who": "gus",
                     "pose": "thinking",
                     "text": "Nothing today, no. The oven's being difficult. Ovens have feelings too, you know."
                 },
                 {
+                    "id": "gus_09",
                     "who": "gus",
                     "pose": "smile",
                     "text": "You've got a sweet tooth, I can tell. Strong teeth. Customer's teeth."
@@ -188,11 +197,13 @@
             },
             "lines": [
                 {
+                    "id": "gus_10",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Ah. You. Hello, my... friend."
                 },
                 {
+                    "id": "gus_11",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Still no candy. Still no batch. Still the finest candy in all of Sugarwood, though. In theory."
@@ -205,11 +216,13 @@
             },
             "lines": [
                 {
+                    "id": "gus_12",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Welcome to Gus's... you know what this is."
                 },
                 {
+                    "id": "gus_13",
                     "who": "gus",
                     "pose": "thinking",
                     "text": "Do you ever buy anything, friend? Anywhere? Or do you just walk around and talk to people?"
@@ -220,6 +233,7 @@
                     "text": "Mostly the second one."
                 },
                 {
+                    "id": "gus_14",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Mhm. Great. Wonderful business model."
@@ -232,16 +246,19 @@
             },
             "lines": [
                 {
+                    "id": "gus_15",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Friend. Buddy. Pal. You're here again."
                 },
                 {
+                    "id": "gus_16",
                     "who": "gus",
                     "pose": "thinking",
                     "text": "The other candy makers smile all day, you know. All day. Even when nobody's looking. I don't know how they do it."
                 },
                 {
+                    "id": "gus_17",
                     "who": "gus",
                     "pose": "tired",
                     "text": "My face hurts after an hour."
@@ -254,16 +271,19 @@
             },
             "lines": [
                 {
+                    "id": "gus_18",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "...Hi."
                 },
                 {
+                    "id": "gus_19",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "I'll be honest with you, friend. There's no batch. There was never going to be a batch tomorrow."
                 },
                 {
+                    "id": "gus_20",
                     "who": "gus",
                     "pose": "tired",
                     "text": "I just like saying 'tomorrow'. It sounds good. Sounds like business."
@@ -276,16 +296,19 @@
             },
             "lines": [
                 {
+                    "id": "gus_21",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "You again."
                 },
                 {
+                    "id": "gus_22",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "You know how many customers I had this year? One. You. And you don't buy."
                 },
                 {
+                    "id": "gus_23",
                     "who": "gus",
                     "pose": "angry",
                     "text": "I'm not angry. I'm a salesman. Salesmen don't get angry. We get... motivated."
@@ -298,11 +321,13 @@
             },
             "lines": [
                 {
+                    "id": "gus_24",
                     "who": "gus",
                     "pose": "angry",
                     "text": "Don't. Don't say anything. Let me guess. You're just looking."
                 },
                 {
+                    "id": "gus_25",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Of course you are."
@@ -316,31 +341,37 @@
             },
             "lines": [
                 {
+                    "id": "gus_26",
                     "who": "gus",
                     "pose": "angry",
                     "text": "Okay. That's it. Smile's off. Shop's closed."
                 },
                 {
+                    "id": "gus_27",
                     "who": "gus",
                     "pose": "angry",
                     "text": "Ten times. Ten times you came here, and not one gumdrop. Do you know what that does to a man?"
                 },
                 {
+                    "id": "gus_28",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "No more 'my friend'. You want to stand at my counter? Then you're going to be useful."
                 },
                 {
+                    "id": "gus_29",
                     "who": "gus",
                     "pose": "pointing",
                     "text": "The sugar casters out in the grove - those little show-offs throwing sugar bombs around. Sometimes one of them carries a Sugar Crystal."
                 },
                 {
+                    "id": "gus_30",
                     "who": "gus",
                     "pose": "thinking",
                     "text": "Pure stuff. The real thing. With one of those I could make an actual batch. A real one. Not a 'tomorrow' one."
                 },
                 {
+                    "id": "gus_31",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "Bring me one, and I'll give you something better than candy. Deal?"
@@ -360,6 +391,7 @@
         "snap_again": {
             "lines": [
                 {
+                    "id": "gus_32",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "Changed your mind? Sugar Crystal. Sugar casters. Something better than candy."
@@ -384,11 +416,13 @@
             },
             "lines": [
                 {
+                    "id": "gus_33",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "Good. Finally. A transaction."
                 },
                 {
+                    "id": "gus_34",
                     "who": "gus",
                     "pose": "pointing",
                     "text": "They're quick and they don't like being caught. Don't come back with excuses. Come back with a crystal."
@@ -398,11 +432,13 @@
         "just_looking": {
             "lines": [
                 {
+                    "id": "gus_35",
                     "who": "gus",
                     "pose": "tired",
                     "text": "...Of course you are."
                 },
                 {
+                    "id": "gus_36",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "The offer stands. The shop doesn't."
@@ -413,16 +449,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "gus_37",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "No crystal? Then no chatting. Time is money. Mostly money I don't have."
                 },
                 {
+                    "id": "gus_38",
                     "who": "gus",
                     "pose": "tired",
                     "text": "Sugar casters. Grove. Crystal. Do I need to draw you a picture?"
                 },
                 {
+                    "id": "gus_39",
                     "who": "gus",
                     "pose": "tired",
                     "text": "They run away when you get close? Yeah. So do customers."
@@ -442,16 +481,19 @@
         "tips": {
             "lines": [
                 {
+                    "id": "gus_40",
                     "who": "gus",
                     "pose": "pointing",
                     "text": "They throw from far away and hate it when you're close. So get close. Stay close."
                 },
                 {
+                    "id": "gus_41",
                     "who": "gus",
                     "pose": "neutral",
                     "text": "And don't stand in the white stuff. Trust me."
                 },
                 {
+                    "id": "gus_42",
                     "who": "gus",
                     "pose": "thinking",
                     "text": "Oh, and not every one of them has a crystal. Most don't. That's what makes it pure."
@@ -461,11 +503,13 @@
         "hand_in": {
             "lines": [
                 {
+                    "id": "gus_43",
                     "who": "gus",
                     "pose": "surprised",
                     "text": "Is that... hold on. Let me see that."
                 },
                 {
+                    "id": "gus_44",
                     "who": "gus",
                     "pose": "surprised",
                     "text": "That's a Sugar Crystal. A real one. Look at it shine."
@@ -485,6 +529,7 @@
         "not_yet": {
             "lines": [
                 {
+                    "id": "gus_45",
                     "who": "gus",
                     "pose": "tired",
                     "text": "...You're killing me, friend. Killing me."
@@ -501,21 +546,25 @@
             },
             "lines": [
                 {
+                    "id": "gus_46",
                     "who": "gus",
                     "pose": "happy",
                     "text": "Hah! Ha! A real batch. A real one!"
                 },
                 {
+                    "id": "gus_47",
                     "who": "gus",
                     "pose": "pointing",
                     "text": "Here. Take this. I used it to seal candy boxes, back when I had boxes to seal."
                 },
                 {
+                    "id": "gus_48",
                     "who": "gus",
                     "pose": "grin",
                     "text": "Sticks to anything. Monsters included. Don't point it at the shelves."
                 },
                 {
+                    "id": "gus_49",
                     "who": "gus",
                     "pose": "happy",
                     "text": "...Thanks. I mean it. That one wasn't a sales smile."
@@ -526,21 +575,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "gus_50",
                     "who": "gus",
                     "pose": "happy",
                     "text": "The batch is coming along. A real tomorrow, this time."
                 },
                 {
+                    "id": "gus_51",
                     "who": "gus",
                     "pose": "smile",
                     "text": "You're still not buying anything, are you? That's fine. You're a different kind of customer."
                 },
                 {
+                    "id": "gus_52",
                     "who": "gus",
                     "pose": "thinking",
                     "text": "Ever notice the others never stop smiling? Mine stops. I think that's a good thing."
                 },
                 {
+                    "id": "gus_53",
                     "who": "gus",
                     "pose": "grin",
                     "text": "Business is terrible. But the candy is real. One out of two, that's not bad."

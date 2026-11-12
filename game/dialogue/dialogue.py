@@ -15,9 +15,9 @@ import pygame
 from game.dialogue.speakers import SPEAKERS, SOUND_DIR, IMAGE_DIR, DEFAULT_POSE, DEFAULT_DIALOGUE_MUSIC
 from game import controls as KEYS
 from game.menu import options as OPT
+from game.lib import voicelines as VOICES
 
 DATA_DIR = os.path.join("game", "dialogue", "data")
-VOICE_DIR = os.path.join("assets", "voice")      # recorded voiceovers: "voiceover": "milo_core_1.wav" in a line
 
 TEXT_SPEEDS = {"slow": 0.5, "normal": 1.0, "fast": 2.0, "instant": 10 ** 6}    # (11.11) x TYPE_SPEED
 TYPE_SPEED = 0.66           # letters per frame (60 fps -> ~40 letters per second) - author's value
@@ -32,6 +32,12 @@ MAX_CHOICES = 6             # answers shown at once: up to 3 in a column, 2 colu
 CHOICE_ROWS = 3
 
 ADVANCE_KEYS = (pygame.K_SPACE, pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_e)
+
+# (12.11) ENDING monologues (data "auto": true): the lines go on by themselves - nobody can skip them, except a line
+# with "skippable": true (the breath after a fight; it waits for that key). A line stays this long after it is typed:
+AUTO_READ_BASE = 70         # frames
+AUTO_READ_PER_LETTER = 2.2  # frames per letter of the line ("hold": frames on a line = exactly that long)
+BACKDROPS = {"black": (0, 0, 0), "white": (255, 255, 255)}   # data "backdrop": a plain colour instead of the map
 
 
 def reserve_talk_channel():
@@ -177,16 +183,23 @@ class Dialogue:
         self.font_name = pygame.font.Font("assets/font/Nexa-Heavy.ttf", max(16, sh // 32))
         self.font_small = pygame.font.Font("assets/font/Nexa-ExtraLight.ttf", max(12, sh // 50))
         # the map as it was when the talk started, dimmed (Game redraws it when the money changes: set_background)
+        self.backdrop = BACKDROPS.get(self.data.get("backdrop"))     # (12.11) endings: a plain colour, nobody shown
+        self.auto = self.data.get("auto", False)                     # (12.11) endings: lines go on by themselves
         self.set_background(screen)
         self.sounds, self.images = {}, {}
         # the person you talk to (the only one shown): "partner" in the file, or the first one who isn't the player
-        self.partner = self.data.get("partner") or self._first_partner()
+        self.partner = None if self.backdrop else self.data.get("partner") or self._first_partner()
         self.pose = DEFAULT_POSE
         self.timer = 0
         self.goto(self._start_node())
 
     def set_background(self, picture):
         """The dimmed map behind the talk (and behind its minigames). money = the money shown on it."""
+        if self.backdrop:
+            self.background = pygame.Surface(picture.get_size())
+            self.background.fill(self.backdrop)
+            self.background_money = None
+            return
         self.background = picture.copy()
         dim = pygame.Surface(self.background.get_size(), pygame.SRCALPHA)
         dim.fill((0, 0, 0, DIM_ALPHA))
@@ -267,18 +280,12 @@ class Dialogue:
         self.end_timer = 0             # frames since the line was fully typed
         self.typed_since_sound = SOUND_EVERY   # the first letter makes a sound at once
         self.sound = self._sound(who, line.get("voice"))
-        # VOICEOVER (recorded by the author, only for important moments): the file plays instead of the talk sound
-        self.voiceover = None
-        if line.get("voiceover"):
-            path = os.path.join(VOICE_DIR, line["voiceover"])
-            if os.path.exists(path):
-                try:
-                    self.voiceover = pygame.mixer.Sound(path)
-                    channel = pygame.mixer.Channel(TALK_CHANNEL)
-                    channel.set_volume(self.sfx_volume)
-                    channel.play(self.voiceover)
-                except pygame.error:
-                    self.voiceover = None
+        # (11.11) VOICE LINE: a recording of this line (assets/sfx/voicelines/<who>/<id>) plays instead of the talk sound
+        self.voiceover = VOICES.load(who, line.get("id"))
+        if self.voiceover:
+            channel = pygame.mixer.Channel(TALK_CHANNEL)
+            channel.set_volume(self.sfx_volume)
+            channel.play(self.voiceover)
         self.ctx.apply(line.get("do"))
 
     def finish(self):
@@ -316,6 +323,9 @@ class Dialogue:
 
     # --- input + update ---------------------------------------------------------------------------
     def handle_events(self, events):
+        if self.auto:
+            self.handle_auto_events(events)
+            return
         for event in events:
             if self.choices is not None:
                 # answers: keyboard only. Moving works at once, CONFIRMING only after a short moment
@@ -342,6 +352,18 @@ class Dialogue:
                 self.advance()
             if self.finished:
                 return
+
+    def handle_auto_events(self, events):
+        """(12.11) An ending: only a "skippable" line can be cut short (the keys do nothing else)."""
+        if self.line.get("skippable") and any(e.type == pygame.KEYDOWN and e.key in ADVANCE_KEYS for e in events):
+            self.next_line()
+
+    def read_time(self):
+        """(12.11) Frames a fully typed line stays in an ending before the next one comes ("skippable": until the
+        key is pressed)."""
+        if self.line.get("skippable"):
+            return float("inf")
+        return self.line.get("hold") or int(AUTO_READ_BASE + AUTO_READ_PER_LETTER * len(self.text))
 
     def advance(self):
         if self.typing:
@@ -379,6 +401,8 @@ class Dialogue:
             return
         if not self.typing:
             self.end_timer += 1
+            if self.auto and self.end_timer >= self.read_time():
+                self.next_line()
             return
         if self.wait > 0:
             self.wait -= 1
@@ -419,13 +443,15 @@ class Dialogue:
         if self.choices is None:
             self._draw_name_tag(box)
             self._draw_text(self.text[:int(self.shown)], box.inflate(-pad * 2, -pad * 2))
-            if not self.typing and self.end_timer >= LINE_END_DELAY and self.timer // 25 % 2 == 0:
+            if not self.auto and not self.typing and self.end_timer >= LINE_END_DELAY and self.timer // 25 % 2 == 0:
                 tri_x, tri_y = box.right - pad * 1.6, box.bottom - pad * 1.3
                 pygame.draw.polygon(screen, (255, 255, 255), [(tri_x - 10, tri_y - 8), (tri_x + 10, tri_y - 8), (tri_x, tri_y + 6)])
             hint = "Space - continue"
         else:
             self._draw_choices(box.inflate(-pad * 2, -pad * 2))
             hint = ("W/S/A/D or arrows" if len(self.choices) > CHOICE_ROWS else "W/S or arrows") + " - choose   |   Space / Enter / 1-6 - answer"
+        if self.auto:
+            hint = "Space - continue" if self.line.get("skippable") else ""
         hint_img = self.font_small.render(hint, True, (170, 170, 170))
         screen.blit(hint_img, (box.right - hint_img.get_width(), box.bottom + sh // 120))
 

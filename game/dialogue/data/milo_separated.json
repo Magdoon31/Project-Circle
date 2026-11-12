@@ -17,21 +17,25 @@
             },
             "lines": [
                 {
+                    "id": "milo_separated_01",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Oh. You made it here too."
                 },
                 {
+                    "id": "milo_separated_02",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "This village is... quieter than mine. People here keep to themselves. They had their reasons."
                 },
                 {
+                    "id": "milo_separated_03",
                     "who": "milo",
                     "pose": "serious",
                     "text": "From here there are two ways. I can't pick for you. Wouldn't be fair."
                 },
                 {
+                    "id": "milo_separated_04",
                     "who": "milo",
                     "pose": "serious",
                     "text": "But listen. Whichever way you go in, it closes behind you. You don't come back until whatever lives there is beaten."
@@ -42,6 +46,7 @@
                     "text": "Closes? How?"
                 },
                 {
+                    "id": "milo_separated_05",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "It just does. Some doors are like that."
@@ -52,6 +57,7 @@
         "hub": {
             "lines": [
                 {
+                    "id": "milo_separated_06",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "So. What do you want to know?"
@@ -79,26 +85,31 @@
         "factory": {
             "lines": [
                 {
+                    "id": "milo_separated_07",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "The Factory's down there. Under the village. Toys, machines, conveyor belts that never stop."
                 },
                 {
+                    "id": "milo_separated_08",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Good: it's small. Rooms and corridors. You won't get lost for long."
                 },
                 {
+                    "id": "milo_separated_09",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Bad: it's dark, it's loud, and the toys don't always stay where you put them."
                 },
                 {
+                    "id": "milo_separated_10",
                     "who": "milo",
                     "pose": "grin",
                     "text": "And whatever they built down there, most of it shoots. If you want something that hits harder, that's where you'll find it."
                 },
                 {
+                    "id": "milo_separated_11",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "It also leads somewhere bigger. A lot bigger."
@@ -109,26 +120,31 @@
         "tundra": {
             "lines": [
                 {
+                    "id": "milo_separated_12",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "The Tundra is north. Snow, pines, and a cold that gets into your bones and pays rent."
                 },
                 {
+                    "id": "milo_separated_13",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Good: it's open. You see what's coming. Fewer surprises."
                 },
                 {
+                    "id": "milo_separated_14",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Bad: it's big, it's empty, and walking in snow is slow. Also, cold. Did I say cold?"
                 },
                 {
+                    "id": "milo_separated_15",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "People up there don't fight much. They just dress like the cold is out to get them. Thick coats, heavy armour. Whatever keeps you standing, it's up there."
                 },
                 {
+                    "id": "milo_separated_16",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "At the end there's a way down too. Same place the Factory leads to, from the other side."
@@ -142,6 +158,7 @@
             },
             "lines": [
                 {
+                    "id": "milo_separated_17",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Under? Dirt. Rocks. Roots. Normal under-stuff."
@@ -152,6 +169,7 @@
                     "text": "That's not what I meant."
                 },
                 {
+                    "id": "milo_separated_18",
                     "who": "milo",
                     "pose": "scary",
                     "text": "I know what you meant.",
@@ -159,6 +177,7 @@
                     "speed": 0.6
                 },
                 {
+                    "id": "milo_separated_19",
                     "who": "milo",
                     "pose": "smile",
                     "text": "...Sorry. Long day. It's just dirt. Promise."
@@ -169,6 +188,7 @@
         "bye": {
             "lines": [
                 {
+                    "id": "milo_separated_20",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Take care. Whichever way you pick... come back in one piece, okay?"
@@ -179,21 +199,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "milo_separated_21",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Factory or Tundra. Hit harder or hold out longer. Loud or cold. Life is full of terrible choices."
                 },
                 {
+                    "id": "milo_separated_22",
                     "who": "milo",
                     "pose": "serious",
                     "text": "People here don't like to talk about the old days. Maybe don't ask them."
                 },
                 {
+                    "id": "milo_separated_23",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "I keep thinking about that question of yours. About what's under. Forget I reacted like that."
                 },
                 {
+                    "id": "milo_separated_24",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Remember: in is easy. Out is the hard part."

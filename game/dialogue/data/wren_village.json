@@ -24,11 +24,13 @@
             },
             "lines": [
                 {
+                    "id": "wren_village_01",
                     "who": "wren",
                     "pose": "surprised",
                     "text": "Wait - you came from the Candy side? Through the forest?"
                 },
                 {
+                    "id": "wren_village_02",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "Did the monsters there look... right to you?"
@@ -39,26 +41,31 @@
                     "text": "Right?"
                 },
                 {
+                    "id": "wren_village_03",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Normal. Like monsters should look. I've been drawing them for years. They're changing. Every year a little stranger."
                 },
                 {
+                    "id": "wren_village_04",
                     "who": "wren",
                     "pose": "serious",
                     "text": "More teeth. More eyes. Colours that don't belong to them. Nobody else sees it. Or nobody wants to."
                 },
                 {
+                    "id": "wren_village_05",
                     "who": "wren",
                     "pose": "neutral",
                     "text": "I'm Wren. If you go further - down, or up north - look at things. Really look."
                 },
                 {
+                    "id": "wren_village_06",
                     "who": "wren",
                     "pose": "smile",
                     "text": "And then come tell me. Wherever I am."
                 },
                 {
+                    "id": "wren_village_07",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Before you go - take this. I found it somewhere it shouldn't have been.",
@@ -73,11 +80,13 @@
                     "text": "What is it?"
                 },
                 {
+                    "id": "wren_village_08",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "No idea. It's warm. And it's not the only one - I've seen the same mark on old stones further on."
                 },
                 {
+                    "id": "wren_village_09",
                     "who": "wren",
                     "pose": "smile",
                     "text": "If you find more, they're yours. Just tell me what they do."
@@ -88,16 +97,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "wren_village_10",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "Still drawing. The new ones have too many teeth."
                 },
                 {
+                    "id": "wren_village_11",
                     "who": "wren",
                     "pose": "neutral",
                     "text": "North or down - either way, look carefully. Then tell me."
                 },
                 {
+                    "id": "wren_village_12",
                     "who": "wren",
                     "pose": "smile",
                     "text": "Did you see anything strange? Everything's strange. That's the problem."
@@ -107,11 +119,13 @@
         "gift": {
             "lines": [
                 {
+                    "id": "wren_village_13",
                     "who": "wren",
                     "pose": "surprised",
                     "text": "Oh - it's you. Wait, I almost forgot."
                 },
                 {
+                    "id": "wren_village_07",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Before you go - take this. I found it somewhere it shouldn't have been.",
@@ -126,11 +140,13 @@
                     "text": "What is it?"
                 },
                 {
+                    "id": "wren_village_08",
                     "who": "wren",
                     "pose": "thinking",
                     "text": "No idea. It's warm. And it's not the only one - I've seen the same mark on old stones further on."
                 },
                 {
+                    "id": "wren_village_09",
                     "who": "wren",
                     "pose": "smile",
                     "text": "If you find more, they're yours. Just tell me what they do."

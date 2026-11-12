@@ -3,7 +3,10 @@ import os
 import random
 import hashlib
 
+from game import difficulty as DIFF
+
 MAX_SEED = 10**9
+ENDING_STARS = ("main", "extra", "secret")    # (12.11) the 3 stars on a save card, left to right
 LEVEL_TITLES = {"surface": "The Surface", "cellar": "Underground Garden", "core": "The Core", "void": "The Void",
                 "lunapark": "Lunapark"}           # (11.11) where you are, for saves without a biome in them
 
@@ -19,10 +22,6 @@ def seed_from_text(text):
     digest = hashlib.sha256(text.encode("utf-8")).digest()
     return int.from_bytes(digest[:8], "big") % MAX_SEED
 
-def to_bool(value):
-    # older saves stored hard_mode as the string "True"
-    return value is True or value == "True"
-
 class SaveManager:
     def __init__(self, player, inventory, map):
         self.player = player
@@ -36,7 +35,7 @@ class SaveManager:
         self.pending_name = None      # (11.11) the name typed for the next NEW game
         self.save_name = ""           # (11.11) the current save's name
         
-    def save_game(self, nr, hard_mode):
+    def save_game(self, nr, difficulty):
         if nr in (1,2,3):
             save_data = {
                         "player": {
@@ -65,7 +64,8 @@ class SaveManager:
                         "quests": self.game_quests.state() if self.game_quests else {},
                         "counters": dict(self.game_counters) if self.game_counters is not None else {},
                         "game": {
-                            "hard_mode" : to_bool(hard_mode),
+                            "difficulty": difficulty,                  # (12.11) easy / normal / hard
+                            "hard_mode" : difficulty == DIFF.HARD,      # (older versions of the game read this)
                             "name": self.save_name or f"Save {nr}"
                         }
                     }
@@ -113,7 +113,7 @@ class SaveManager:
                         # old save (fixed test map): new world, player goes to the village start
                         game.map.generate(random.randrange(1, 10**9))
                         game.player.x, game.player.y = game.map.start_position()
-                    game.hard_mode = to_bool(save_data["game"]["hard_mode"])
+                    game.difficulty = DIFF.from_save(save_data["game"])
                     self.save_name = save_data["game"].get("name") or f"Save {nr}"
                     for item_name in save_data["inventory"]["active_items"]:
                         item = game.inventory.ItemDB.get_item(item_name)
@@ -141,7 +141,8 @@ class SaveManager:
                 game.inventory.items = [game.inventory.ItemDB.get_item("Simple Pistol")]
 
     def slot_info(self, nr):
-        """(11.11) What the save screen shows about a slot (None = empty): name, hard, time (s), money, place, seed."""
+        """(11.11) What the save screen shows about a slot (None = empty): name, difficulty, time (s), money, place, seed,
+        (12.11) stars: which endings were reached in it, [main, extra, secret] as True / False."""
         try:
             with open(f"game/text/save{nr}.json", "r") as f:
                 data = json.load(f)
@@ -150,11 +151,12 @@ class SaveManager:
         player, world, game = data.get("player", {}), data.get("map", {}), data.get("game", {})
         biome = player.get("biome")
         return {"name": game.get("name") or f"Save {nr}",
-                "hard": to_bool(game.get("hard_mode")),
+                "difficulty": DIFF.from_save(game),
                 "time": int(player.get("playtime", 0)),
                 "money": player.get("money", 0),
                 "place": biome.replace("_", " ").title() if biome else LEVEL_TITLES.get(world.get("level") or "surface", "?"),
-                "seed": world.get("seed_text") or str(world.get("seed", ""))}
+                "seed": world.get("seed_text") or str(world.get("seed", "")),
+                "stars": [f"ending:{kind}" in world.get("flags", []) for kind in ENDING_STARS]}
 
     def reset_data(self, nr):
         if os.path.exists(f"game/text/save{nr}.json"):

@@ -17,16 +17,19 @@
             },
             "lines": [
                 {
+                    "id": "oliver_01",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "..."
                 },
                 {
+                    "id": "oliver_02",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Shh. You'll scare them."
                 },
                 {
+                    "id": "oliver_03",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Oliver. I fish."
@@ -37,26 +40,31 @@
                     "text": "Caught anything?"
                 },
                 {
+                    "id": "oliver_04",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Many things. Not the one I want."
                 },
                 {
+                    "id": "oliver_05",
                     "who": "oliver",
                     "pose": "thinking",
                     "text": "Years ago, something big swam under this ice. Bigger than me. It looked at me through the hole."
                 },
                 {
+                    "id": "oliver_06",
                     "who": "oliver",
                     "pose": "sad",
                     "text": "Then it was gone."
                 },
                 {
+                    "id": "oliver_07",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "So I wait."
                 },
                 {
+                    "id": "oliver_08",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "You can try too, if you like. The first cast is on me."
@@ -93,21 +101,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "oliver_09",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "...Oh. You."
                 },
                 {
+                    "id": "oliver_10",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Quiet today. Good."
                 },
                 {
+                    "id": "oliver_11",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Still waiting. Still here."
                 },
                 {
+                    "id": "oliver_12",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "The ice is thick today. The fish like that."
@@ -144,16 +156,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "oliver_13",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Another cast?"
                 },
                 {
+                    "id": "oliver_01",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "..."
                 },
                 {
+                    "id": "oliver_14",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "The water's patient. Are you?"
@@ -189,16 +204,19 @@
         "big": {
             "lines": [
                 {
+                    "id": "oliver_15",
                     "who": "oliver",
                     "pose": "thinking",
                     "text": "Long. Pale. Slow."
                 },
                 {
+                    "id": "oliver_16",
                     "who": "oliver",
                     "pose": "thinking",
                     "text": "It didn't look hungry. It looked... curious."
                 },
                 {
+                    "id": "oliver_17",
                     "who": "oliver",
                     "pose": "sad",
                     "text": "I've never told anyone that. Nobody asks."
@@ -209,26 +227,31 @@
         "down": {
             "lines": [
                 {
+                    "id": "oliver_18",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Fish. Cold water. The deeper, the better the fish."
                 },
                 {
+                    "id": "oliver_19",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "And at the very bottom, a pearl. I see it shine sometimes."
                 },
                 {
+                    "id": "oliver_20",
                     "who": "oliver",
                     "pose": "thinking",
                     "text": "It never stays still. Like it doesn't want to be found."
                 },
                 {
+                    "id": "oliver_21",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "You have to wait for a gap. Most people don't wait."
                 },
                 {
+                    "id": "oliver_22",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "And after a cast, the fish hide for a while. Everybody needs a rest."
@@ -240,16 +263,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "oliver_23",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "Not bad. Not the big one. But not bad."
                 },
                 {
+                    "id": "oliver_24",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "Patience. You have some."
                 },
                 {
+                    "id": "oliver_25",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "The ice is kind to you today."
@@ -261,11 +287,13 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "oliver_26",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Nothing. ...That's fishing."
                 },
                 {
+                    "id": "oliver_27",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Empty hook. It happens. Most days it happens."
@@ -276,6 +304,7 @@
         "poor": {
             "lines": [
                 {
+                    "id": "oliver_28",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "No coins? Then sit. Watching is free."
@@ -286,16 +315,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "oliver_29",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Not now. The fish need a rest. So do I."
                 },
                 {
+                    "id": "oliver_30",
                     "who": "oliver",
                     "pose": "smile",
                     "text": "They're hiding. They saw your last cast. Come back later."
                 },
                 {
+                    "id": "oliver_31",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "...Let the water settle first."
@@ -306,6 +338,7 @@
         "hub_resting": {
             "lines": [
                 {
+                    "id": "oliver_32",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "Sit, if you want. Watching is free."
@@ -329,6 +362,7 @@
         "bye": {
             "lines": [
                 {
+                    "id": "oliver_33",
                     "who": "oliver",
                     "pose": "calm",
                     "text": "...Mhm."

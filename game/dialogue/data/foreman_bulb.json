@@ -1,0 +1,94 @@
+{
+    "_comment": "(11.11) Lore item 1/3: the Broken Bulb (found in the secret room behind the Factory's control room) shown to the Foreman - in the Factory (foreman.json) or in the Core (foreman_core.json). He was there the night the creators tried to switch the system off. Sets lore_used:Broken Bulb.",
+    "partner": "foreman",
+    "music": "silence",
+    "start": "bulb",
+    "nodes": {
+        "bulb": {
+            "lines": [
+                {
+                    "id": "foreman_bulb_01",
+                    "who": "foreman",
+                    "pose": "surprised",
+                    "text": "Where did you get that?"
+                },
+                {
+                    "who": "player",
+                    "pose": "listening",
+                    "text": "Behind the control room. There was a crack in the wall."
+                },
+                {
+                    "id": "foreman_bulb_02",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "There's no room behind the control room. There never was."
+                },
+                {
+                    "id": "foreman_bulb_03",
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "..."
+                },
+                {
+                    "id": "foreman_bulb_04",
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "Fine. There was."
+                },
+                {
+                    "id": "foreman_bulb_05",
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "We sat in there that night. Five of us. Cold coffee, the blueprints, one lamp over the desk."
+                },
+                {
+                    "id": "foreman_bulb_06",
+                    "who": "foreman",
+                    "pose": "worried",
+                    "text": "Somebody pulled the big lever. Everything went dark at once. That bulb went with it - pop. Glass all over the plans."
+                },
+                {
+                    "id": "foreman_bulb_07",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Somebody laughed. We thought we'd done it. Switched the whole thing off."
+                },
+                {
+                    "id": "foreman_bulb_08",
+                    "who": "foreman",
+                    "pose": "worried",
+                    "text": "Then we heard the machines. Still humming. In the dark. Quieter... but humming.",
+                    "speed": 0.7
+                },
+                {
+                    "id": "foreman_bulb_09",
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "So we swept up the glass and told everyone it was fixed. Then we told ourselves."
+                },
+                {
+                    "id": "foreman_bulb_10",
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "Then we forgot who 'we' even were. It was easier."
+                },
+                {
+                    "id": "foreman_bulb_11",
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "...I'll keep this, if you don't mind. It's mine. I think it always was.",
+                    "do": {
+                        "take": "Broken Bulb",
+                        "flag": "lore_used:Broken Bulb"
+                    }
+                },
+                {
+                    "id": "foreman_bulb_12",
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "And you never heard any of this from me, inspector."
+                }
+            ]
+        }
+    }
+}

@@ -17,26 +17,31 @@
             },
             "lines": [
                 {
+                    "id": "milo_core_entrance_01",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Stop. Just for a second. Please."
                 },
                 {
+                    "id": "milo_core_entrance_02",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Up there is the Core. It's not a place for people. It was never meant to be."
                 },
                 {
+                    "id": "milo_core_entrance_03",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "It's hot. Pipes that burst, cables that bite, machines that don't care if you're standing where they move."
                 },
                 {
+                    "id": "milo_core_entrance_04",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "The air hums. After a while you start humming with it. Don't."
                 },
                 {
+                    "id": "milo_core_entrance_05",
                     "who": "milo",
                     "pose": "serious",
                     "text": "And the things that live there... they aren't monsters. They're parts. Parts don't stop."
@@ -47,11 +52,13 @@
                     "text": "Why are you telling me this?"
                 },
                 {
+                    "id": "milo_core_entrance_06",
                     "who": "milo",
                     "pose": "sad",
                     "text": "Because I want you to come back. And people who go up there without knowing don't."
                 },
                 {
+                    "id": "milo_core_entrance_07",
                     "who": "milo",
                     "pose": "tired",
                     "text": "If you go up, bring your best. Your very best. And maybe turn around halfway."
@@ -62,6 +69,7 @@
         "hub": {
             "lines": [
                 {
+                    "id": "milo_core_entrance_08",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "..."
@@ -88,11 +96,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_core_entrance_09",
                     "who": "milo",
                     "pose": "serious",
                     "text": "The heart of everything."
                 },
                 {
+                    "id": "milo_core_entrance_10",
                     "who": "milo",
                     "pose": "sad",
                     "text": "And someone who'll ask you to stop. One last time."
@@ -106,6 +116,7 @@
             },
             "lines": [
                 {
+                    "id": "milo_core_entrance_11",
                     "who": "milo",
                     "pose": "sad",
                     "text": "Ha. No. I'll be there. Just... not like that."
@@ -116,11 +127,13 @@
         "bye": {
             "lines": [
                 {
+                    "id": "milo_core_entrance_12",
                     "who": "milo",
                     "pose": "tired",
                     "text": "Okay. Okay."
                 },
                 {
+                    "id": "milo_core_entrance_13",
                     "who": "milo",
                     "pose": "sad",
                     "text": "Goodbye, outsider."
@@ -131,16 +144,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "milo_core_entrance_14",
                     "who": "milo",
                     "pose": "tired",
                     "text": "Still here. Good. Stay a little longer."
                 },
                 {
+                    "id": "milo_core_entrance_15",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "The hum is louder today. Can you hear it?"
                 },
                 {
+                    "id": "milo_core_entrance_16",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Bring your best. I mean it."

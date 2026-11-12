@@ -12,121 +12,145 @@
             },
             "lines": [
                 {
+                    "id": "wren_argument_01",
                     "who": "wren",
                     "pose": "angry",
                     "text": "-no, Milo, listen to me. Listen! The tape. 'We need to turn it off.' Someone built all of this. Someone can stop it."
                 },
                 {
+                    "id": "wren_argument_02",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Nobody can stop it, Wren."
                 },
                 {
+                    "id": "wren_argument_03",
                     "who": "wren",
                     "pose": "angry",
                     "text": "You don't know that."
                 },
                 {
+                    "id": "wren_argument_04",
                     "who": "milo",
                     "pose": "serious",
                     "text": "I know more than you think."
                 },
                 {
+                    "id": "wren_argument_05",
                     "who": "wren",
                     "pose": "angry",
                     "text": "Then tell me! For once, just tell me something true."
                 },
                 {
+                    "id": "wren_argument_06",
                     "who": "milo",
                     "pose": "serious",
                     "text": "...The Core isn't the answer."
                 },
                 {
+                    "id": "wren_argument_07",
                     "who": "wren",
                     "pose": "pointing",
                     "text": "It's the only way up. Everything leads there. The stones, the playground, the voice on the tape - it all points up."
                 },
                 {
+                    "id": "wren_argument_08",
                     "who": "milo",
                     "pose": "serious",
                     "text": "It points up because that's where people look."
                 },
                 {
+                    "id": "wren_argument_09",
                     "who": "milo",
                     "pose": "sad",
                     "text": "They go up. They break things. And for a while, everything is quiet."
                 },
                 {
+                    "id": "wren_argument_10",
                     "who": "milo",
                     "pose": "sad",
                     "text": "And then it starts again."
                 },
                 {
+                    "id": "wren_argument_11",
                     "who": "wren",
                     "pose": "surprised",
                     "text": "Starts again? What starts again?"
                 },
                 {
+                    "id": "wren_argument_12",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Everything."
                 },
                 {
+                    "id": "wren_argument_13",
                     "who": "wren",
                     "pose": "angry",
                     "text": "That doesn't make any sense."
                 },
                 {
+                    "id": "wren_argument_14",
                     "who": "milo",
                     "pose": "sad",
                     "text": "I know. That's the worst part."
                 },
                 {
+                    "id": "wren_argument_15",
                     "who": "wren",
                     "pose": "angry",
                     "text": "So what - we just sit here? Let the monsters get stranger every year? Let someone keep hiding things down here?"
                 },
                 {
+                    "id": "wren_argument_16",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "I didn't say that."
                 },
                 {
+                    "id": "wren_argument_17",
                     "who": "wren",
                     "pose": "angry",
                     "text": "You didn't say anything! You never do. You just stand there, one step ahead of everyone, smiling."
                 },
                 {
+                    "id": "milo_core_entrance_08",
                     "who": "milo",
                     "pose": "sad",
                     "text": "..."
                 },
                 {
+                    "id": "wren_argument_18",
                     "who": "wren",
                     "pose": "serious",
                     "text": "If the Core isn't the answer, then what is?"
                 },
                 {
+                    "id": "wren_argument_19",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Something nobody has found yet."
                 },
                 {
+                    "id": "wren_argument_20",
                     "who": "wren",
                     "pose": "serious",
                     "text": "Then I'll find it."
                 },
                 {
+                    "id": "wren_argument_21",
                     "who": "milo",
                     "pose": "worried",
                     "text": "Wren-"
                 },
                 {
+                    "id": "wren_argument_22",
                     "who": "wren",
                     "pose": "serious",
                     "text": "No. I'm done with riddles. I'll find out myself. Up there, down there, wherever it is."
                 },
                 {
+                    "id": "wren_argument_23",
                     "who": "wren",
                     "pose": "sad",
                     "text": "Goodbye, Milo."
@@ -137,11 +161,13 @@
                     "text": "Wren walks away without looking back."
                 },
                 {
+                    "id": "milo_core_entrance_08",
                     "who": "milo",
                     "pose": "sad",
                     "text": "..."
                 },
                 {
+                    "id": "wren_argument_24",
                     "who": "milo",
                     "pose": "sad",
                     "text": "She'll be back. Everybody comes back."

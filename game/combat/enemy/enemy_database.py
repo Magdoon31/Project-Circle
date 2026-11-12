@@ -2,6 +2,7 @@ from game.combat.enemy.enemy import Enemy
 from game.world.loot import LUCK_DROP
 from game.combat.bullet_types import BulletTypes
 import copy, random, math
+from game import difficulty as DIFF
 
 # SPAWNS (7.11): biome : [[lower, upper] number of enemies, {enemy: weight}]
 # WEIGHT = how heavy an enemy is (1 weak, e.g. fly ... 5 heavy, lots of bullets). A fight gets
@@ -23,15 +24,19 @@ MAX_ENEMIES = 15                # = spawn points around the player
 SPAWN_RING = (0.42, 0.40)       # the ring of spawn points: share of the screen width / height from the centre
 
 
-def fight_points(biome, hard_mode, rnd=random):
-    """How many points of enemies this fight gets."""
+def fight_points(biome, difficulty, rnd=random):
+    """How many points of enemies this fight gets (hard: +1 enemy at least, 12.11 easy: one fewer, at least 1)."""
     (low, high), weights = SPAWNS[biome]
     avg = sum(weights.values()) / len(weights)
-    count = rnd.randint(min(high, low + (1 if hard_mode else 0)), high)
+    shift = DIFF.ENEMY_COUNT_SHIFT[difficulty]
+    if shift < 0:
+        low, high = max(1, low + shift), max(1, high + shift)
+    count = rnd.randint(min(high, low + max(0, shift)), high)
     return round(count * avg)
 
 
 BELTS = [[0.30, 0.40, 1], [0.52, 0.62, -1], [0.74, 0.84, 1]]     # (8.11) Assembly Line's conveyor belts (share of the height)
+GLUE_FRAMES = 150                 # (11.11) Assembly Line: how long its rows and bottom vents glue you (was 90)
 MACHINES = {"assembly_machine_1", "assembly_machine_2", "assembly_machine_3"}   # stand still - belts don't move them
 BELT_RIDERS = {"belt_turret", "bomb_crate"}   # only ride the belts; gone when carried off the far end
 SQUARE = MACHINES | BELT_RIDERS                # drawn as boxes
@@ -135,7 +140,7 @@ class EnemyDB:
                 {"spawn": {"enemy_name": ["line_beetle", "belt_turret", "bomb_crate", "bomb_crate"], "amount": 1, "belt": True, "no_drops": True, "fade": [30, 30, 0.85], "cooldown": 2.6, "last_used": -150}}],
 
             "assembly_machine_3": [0,0,420,42,"enemy",0,60,0,150,"mechanical","random_normal",
-                {"spawn": {"enemy_name": ["belt_turret", "bomb_crate", "bomb_crate", "line_soldier", "scrap_beetle"], "hard_only": ["line_soldier", "scrap_beetle"], "amount": 1, "belt": True, "no_drops": True, "fade": [30, 30, 0.85], "cooldown": 2.4, "last_used": -150}}],
+                {"spawn": {"enemy_name": ["belt_turret", "bomb_crate", "bomb_crate", "scrap_beetle"], "hard_only": ["scrap_beetle"], "unfaded": ["scrap_beetle"], "amount": 1, "belt": True, "no_drops": True, "fade": [30, 30, 0.85], "cooldown": 2.4, "last_used": -150}}],
 
             # ... and what they make (no gold, nothing drops): small toys walk at you, turrets and crates just ride
             "line_soldier": [0,0,260,16,"enemy",2.2,140,0,0,"mechanical","to_player_normal",
@@ -305,7 +310,7 @@ class EnemyDB:
             # icicles. 3) a short snowstorm (3 s every 12 s: you only see around you) - everything at once, faster. ~19000 HP = ~75 s at the Tundra 1.0x weapon (324 DPS).
             "frost_golem": [960, 300, 19000, 85, "boss", 1.2, 270, 360, 25, "mystical", "to_player",
                 {"ice_walls": {"count": 3, "hits": 5, "life": 8, "long": 200, "thick": 44, "cooldown": 5.0, "last_used": -180},
-                 "ground_crack": {"cooldown": 3.0, "last_used": -60, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue"]}}}],
+                 "ground_crack": {"cooldown": 3.0, "last_used": -60, "speed": 16, "length": 1600, "every": 120, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue"]}}}],
             # ASSEMBLY LINE (factory, 8.11): a core at the top of a factory hall with conveyor belts across it. It can't
             # be hurt while its machines stand (def 150; they put toys / turrets / bomb crates on the belts - fewer toys once a phase lasts 30 s);
             # phases 33/33/33 %; break them -> the core is open for 16.5% of its HP, then sealed 2 s, then new machines
@@ -329,7 +334,8 @@ class EnemyDB:
             # a heart in the middle (milo_core) beats faster and faster, everything happens on its beats. Small (a bit
             # bigger than you). F1 Guard 100-75%, F2 Cracks 75-50%, F3 Overheat 50-25%, F4 Despair 25-0%, then he falls,
             # a fake "Win!", and the heart (F5, can't be lost). ~3 min at the Core's 1.0x weapon (2916 DPS, def 25).
-            "milo": [960, 220, 340000, 32, "boss", 0, 2500, 2500, 25, "human", "random_normal", {}],
+            # (11.11) Milo counts as UNDEAD (he is only kept going by the heart): the Holy Orb is very strong on him.
+            "milo": [960, 220, 340000, 32, "boss", 0, 2500, 2500, 25, "undead", "random_normal", {}],
             # THE VOID (11.11, the last boss): the fight itself is game/combat/void_fight.py - islands over the abyss
             # (2 x 2 screens), music "Fire and Thunder" (Cjbeards, CC BY 3.0). Its name is never the same (broken signs).
             # Its phases (F1-F3 ~17% each, then the checkpoint at 50%, F4 and F5 25% each) are what the system cut away: F1 Slime King / Prism, F2 Shroom Mother / Frost Golem,
@@ -351,7 +357,8 @@ class EnemyDB:
         }
         self.boss_info = {
             "void_boss": {"name": "", "phases": [
-                {"at": 0.84, "speed": 1.2, "color": [150, 220, 170], "attacks": {         # F2: the forest and the ice
+                {"at": 0.84, "speed": 1.2, "color": [150, 220, 170],                       # F2: the forest and the ice
+                 "hard_tweaks": {"burst": {"return_after": 300}, "leap": {"burst": {"return_after": 300}}}, "attacks": {
                     "burst": {**{"bullets": 30, "speed": [5, 11], "decay": 0.98, "min_speed": 2.0, "damage": 4500, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 3.2, "last_used": -90},
                     "leap": {"cooldown": 5.5, "last_used": 0, "up": 26, "air": 60, "land_damage": 8000, "burst": {"bullets": 30, "speed": [5, 11], "decay": 0.98, "min_speed": 2.0, "damage": 4500, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}},
                     "line": {"damage": 5000, "cooldown": 2.6, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {"slow": [40, 0.2]}, "type": ["arrow_blue", "laser_blue"]}}},   # (11.11: Frost Golem's row of icicles, not its crack - too hard on the bridges)
@@ -372,56 +379,63 @@ class EnemyDB:
                     "line": {"damage": 6000, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {}, "type": ["bullet_red"]}}}]},
             "milo": {"name": "Milo", "phases": [{"at": 0.75, "color": [255, 168, 80]}, {"at": 0.5, "color": [255, 138, 70]},
                                                 {"at": 0.25, "color": [255, 105, 60]}]},   # (11.11) 25% each
-            "night_bloom": {"name": "Night Bloom", "arena": {"darkness": {"light": 130, "fog": 0.75, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "phases": [
-                {"at": 0.9, "color": [200, 150, 230], "arena": {"darkness": {"light": 130, "fog": 0.8, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
+            "night_bloom": {"name": "Night Bloom",
+                            "hard": {"throw": {"radius": 100, "recoil": 260, "damage": 500, "width": 18, "exp_type": "", "cooldown": 4.2, "last_used": -120, "fly_time": 1.0, "light": 230, "effects": {}, "type": ["flower_orange"]}},
+                            "arena": {"darkness": {"light": 130, "fog": 0.75, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "phases": [
+                {"at": 0.9, "color": [200, 150, 230], "hard_tweaks": {"edge_rain": {"gaps": 1}}, "arena": {"darkness": {"light": 130, "fog": 0.8, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
                     "edge_rain": {"warn": 45, "cooldown": 5.5, "last_used": -120, "sides": ["left", "right"], "spacing": 64, "gaps": 2, "gap": 190, "speed": 4, "damage": 500, "width": 13, "range": 6000, "effects": {}, "type": ["flower_white"]},
-                    "sprinkler": {"damage": 450, "cooldown": 4.5, "last_used": -200, "width": 13, "speed": 7, "range": 5000, "streams": 4, "duration": 2.5, "every": 6, "turn": 8, "effects": {}, "type": ["flower_pink"]},
+                    "sprinkler": {"damage": 450, "cooldown": 5.5, "last_used": -200, "width": 13, "speed": 7, "range": 5000, "streams": 4, "duration": 1.67, "every": 6, "turn": 12, "effects": {}, "type": ["flower_pink"]},
                     "throw": {"radius": 100, "recoil": 260, "damage": 500, "width": 18, "exp_type": "", "cooldown": 3.8, "last_used": -90, "fly_time": 1.0, "light": 230, "effects": {}, "type": ["flower_orange"]}}},
-                {"at": 0.62, "color": [170, 210, 240], "arena": {"darkness": {"light": 130, "fog": 0.85, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
+                {"at": 0.62, "color": [170, 210, 240], "hard_set": {"shadow_alpha": 110}, "arena": {"darkness": {"light": 130, "fog": 0.85, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
                     "spiral": {"damage": 600, "cooldown": 2.6, "last_used": -60, "width": 13, "speed": 5, "range": 5000, "bullets": 16, "effects": {}, "type": ["spore"]},
                     "basic": {"damage": 650, "cooldown": 1.8, "last_used": -30, "width": 14, "speed": 9, "range": 5000, "repeat": [3, 0.2], "effects": {}, "type": ["flower_white"]},
                     "decoys": {"copies": 3, "copy": "bloom_copy", "keep_away": 360, "cooldown": 8.0, "last_used": -30}}},
-                {"at": 0.34, "color": [240, 120, 170], "arena": {"darkness": {"light": 300, "storm": {"every": 110, "flicker": [6, 1, 4, 2, 30], "fade": 24}}}, "attacks": {
+                {"at": 0.34, "color": [240, 120, 170], "hard_arena": {"darkness": {"storm": {"every": 220}}}, "arena": {"darkness": {"light": 300, "storm": {"every": 110, "flicker": [6, 1, 4, 2, 30], "fade": 24}}}, "attacks": {
                     "edge_rain": {"warn": 45, "cooldown": 6.8, "last_used": -120, "sides": ["left", "right", "top", "bottom"], "spacing": 64, "gaps": 2, "side_gaps": {"top": 4, "bottom": 4}, "gap": 190, "speed": 4, "damage": 540, "width": 12, "range": 7000, "effects": {}, "type": ["flower_white"]},
-                    "sprinkler": {"damage": 480, "cooldown": 8.0, "last_used": -200, "width": 11, "speed": 6, "range": 5000, "streams": 4, "duration": 2.0, "every": 6, "turn": 9, "effects": {}, "type": ["flower_pink"]},
+                    "sprinkler": {"damage": 480, "cooldown": 9.0, "last_used": -200, "width": 11, "speed": 6, "range": 5000, "streams": 4, "duration": 1.33, "every": 6, "turn": 13.5, "effects": {}, "type": ["flower_pink"]},
                     "throw": {"radius": 70, "recoil": 260, "damage": 500, "width": 18, "exp_type": "", "cooldown": 4.4, "last_used": -90, "fly_time": 1.0, "light": 230, "effects": {}, "type": ["flower_orange"]},
                     "spiral": {"damage": 600, "cooldown": 3.0, "last_used": -60, "width": 13, "speed": 5, "range": 5000, "bullets": 16, "effects": {}, "type": ["spore"]},
                     "decoys": {"copies": 3, "copy": "bloom_copy", "keep_away": 360, "cooldown": 9.0, "last_used": -30}}}]},
-            "assembly_line": {"name": "Assembly Line", "arena": {"belts": {"lanes": BELTS, "speed": 2}}, "phases": [   # (11.11) phases 2-3: its rows glue now and then (the Fire Ring, Factory)
-                {"at": 0.67, "color": [255, 170, 90], "arena": {"belts": {"lanes": BELTS, "speed": 2.6}}, "attacks": {
+            "assembly_line": {"name": "Assembly Line", "arena": {"belts": {"lanes": BELTS, "speed": 2}}, "phases": [   # (11.11) phases 2-3: its rows and the bottom vents glue (GLUE_FRAMES; the Fire Ring, Factory, protects)
+                {"at": 0.67, "color": [255, 170, 90], "arena": {"belts": {"lanes": BELTS, "speed": 2.6}}, "hard_tweaks": {"nozzles": {"lanes": 2}}, "attacks": {
                     "spawn": {"enemy_name": "assembly_machine_2", "amount": 2, "guards": True, "replace": True,
                               "at": [[0.2, 0.17], [0.8, 0.17]], "open_damage": 0.165, "rebuild": 2.0, "color": [170, 150, 120], "cooldown": 1.0, "last_used": -60},
-                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {"glued": [90, 0.35]}, "type": ["bullet_red"]},
+                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 14, "range": 4000, "bullets": 4, "every": 5, "effects": {"glued": [GLUE_FRAMES, 0.35]}, "type": ["bullet_red"]},
                     "nozzles": {"cooldown": 4.5, "last_used": -120, "lanes": 1, "warn": 45, "rows": 2, "bullets": 10, "every": 5,
                                 "speed": 14, "damage": 250, "width": 13, "range": 3000, "type": ["bullet_red"]}}},
                 {"at": 0.33, "color": [255, 110, 70], "arena": {"belts": {"lanes": BELTS, "speed": 3, "reverse": [480, 75]}}, "attacks": {
                     "spawn": {"enemy_name": "assembly_machine_3", "amount": 2, "guards": True, "replace": True,
                               "at": [[0.2, 0.17], [0.8, 0.17], [0.5, 0.93]], "open_damage": 0.165, "rebuild": 2.0, "color": [190, 130, 110], "cooldown": 1.0, "last_used": -60},
-                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 15, "range": 4000, "bullets": 4, "every": 5, "effects": {"glued": [90, 0.35]}, "type": ["bullet_red"]},
+                    "line": {"damage": 270, "cooldown": 3.0, "last_used": -30, "width": 13, "speed": 15, "range": 4000, "bullets": 4, "every": 5, "effects": {"glued": [GLUE_FRAMES, 0.35]}, "type": ["bullet_red"]},
                     "nozzles": {"cooldown": 3.5, "last_used": -60, "lanes": 1, "warn": 45, "rows": 2, "bullets": 10, "every": 5,
                                 "speed": 14, "damage": 250, "width": 13, "range": 3000, "type": ["bullet_red"]},
-                    "vents": {"cooldown": 3.0, "last_used": -90, "count": 1, "warn": 40, "pattern": "ring", "bullets": 9, "speed": 6, "damage": 230, "width": 13, "range": 3000, "type": ["normal_red"]},
-                    "vents_line": {"kind": "vents", "cooldown": 3.6, "last_used": -200, "count": 1, "warn": 40, "pattern": "line", "bullets": 4, "every": 5, "speed": 12, "damage": 230, "width": 12, "range": 3000, "type": ["bullet_red"]}}}]},
-            "frost_golem": {"name": "Frost Golem", "phases": [   # (11.11) slow + weakness often: the Frozen Ring (Tundra) is worth wearing here
-                {"at": 0.8, "speed": 1.6, "color": [200, 230, 255], "arena": {"ice": True}, "attacks": {
+                    "vents": {"cooldown": 3.0, "last_used": -90, "count": 1, "warn": 40, "pattern": "ring", "bullets": 9, "speed": 6, "damage": 230, "width": 13, "range": 3000, "effects": {"glued": [GLUE_FRAMES, 0.35]}, "type": ["normal_red"]},
+                    "vents_line": {"kind": "vents", "cooldown": 3.6, "last_used": -200, "count": 1, "warn": 40, "pattern": "line", "bullets": 4, "every": 5, "speed": 12, "damage": 230, "width": 12, "range": 3000, "effects": {"glued": [GLUE_FRAMES, 0.35]}, "type": ["bullet_red"]}}}]},
+            "frost_golem": {"name": "Frost Golem", "hard_tweaks": {"ground_crack": {"branches": 2}}, "phases": [   # (11.11) slow + weakness often: the Frozen Ring (Tundra) is worth wearing here
+                {"at": 0.8, "speed": 1.6, "color": [200, 230, 255], "arena": {"ice": True},
+                 "hard": {"throw": {"anywhere": True, "radius": 110, "recoil": 0, "damage": 250, "width": 18, "exp_type": "frost_",   # winter blasts
+                                    "cooldown": 2.6, "last_used": -90, "fly_time": 1.0, "repeat": [3, 0.3],
+                                    "effects": {"slow": [90, 0.3]}, "type": ["normal_blue"]}}, "attacks": {
                     "pulse": {"damage": 250, "cooldown": 3.2, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {"weakness": [180, 0.25]}, "type": ["flower_blue"]},
                     "line": {"damage": 250, "cooldown": 2.4, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue", "laser_blue"]}}},
-                {"at": 0.4, "speed": 1.6, "color": [235, 245, 255], "arena": {"blizzard": [180, 720]}, "attacks": {
+                {"at": 0.4, "speed": 1.6, "color": [235, 245, 255], "arena": {"blizzard": [180, 720]}, "hard_arena": {"ice": True}, "attacks": {
                     "ice_walls": {"count": 3, "hits": 5, "life": 8, "long": 200, "thick": 44, "cooldown": 4.0, "last_used": -60},
-                    "ground_crack": {"cooldown": 2.8, "last_used": 0, "speed": 16, "length": 1600, "every": 82, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue"]}},
+                    "ground_crack": {"cooldown": 2.8, "last_used": 0, "speed": 16, "length": 1600, "every": 120, "bullets": {"damage": 250, "speed": 6, "width": 13, "range": 5000, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue"]}},
                     "pulse": {"damage": 250, "cooldown": 2.6, "last_used": -60, "width": 14, "speed": 7, "range": 8000, "bullets": 16, "pulse": [45, 15], "effects": {"weakness": [180, 0.25]}, "type": ["flower_blue"]},
                     "line": {"damage": 250, "cooldown": 2.0, "last_used": -30, "width": 12, "speed": 15, "range": 4000, "bullets": 7, "every": 4, "effects": {"slow": [90, 0.3], "weakness": [180, 0.25]}, "type": ["arrow_blue", "laser_blue"]}}}]},
-            "shroom_mother": {"name": "Shroom Mother", "phases": [
-                {"at": 0.8, "speed": 2.2, "movement": "to_player", "color": [255, 170, 210], "attacks": {
+            "shroom_mother": {"name": "Shroom Mother", "hard_tweaks": {"leap": {"burst": {"effects": {"poison": [180, 20]}}}}, "phases": [
+                {"at": 0.8, "speed": 2.2, "movement": "to_player", "color": [255, 170, 210],
+                 "hard": {"sprinkler": {"damage": 70, "cooldown": 6.0, "last_used": -120, "width": 13, "speed": 6, "range": 6000,
+                                        "streams": 3, "duration": 2.0, "every": 7, "turn": 9, "effects": {}, "type": ["spore"]}}, "attacks": {
                     "spawn": {"enemy_name": "shroom_guard", "amount": [1, 2], "corners": True, "guards": True, "color": [230, 120, 170],
                               "cooldown": 19.0, "last_used": -1140}}},
-                {"at": 0.47, "speed": 1.4, "color": [255, 120, 190], "attacks": {
+                {"at": 0.47, "speed": 1.4, "color": [255, 120, 190], "hard_tweaks": {"burst": {"bullets": 20, "repeat": [3, 0.35]}}, "attacks": {
                     "burst": {**{"bullets": 32, "speed": [6, 13], "decay": 0.975, "min_speed": 2.0, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 2.6, "last_used": -60},
                     "leap": {"cooldown": 4.5, "last_used": 0, "up": 24, "air": 55, "land_damage": 120, "burst": {"bullets": 32, "speed": [6, 13], "decay": 0.8, "min_speed": 2.0, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}},
                     "wave": {"damage": 70, "cooldown": 3.0, "last_used": -90, "width": 13, "speed": 12, "range": 6000,
                              "bullets": 10, "every": 4, "amp": 30, "period": 36, "double": True, "bounce": 2, "opposite": True,
                              "effects": {}, "type": ["normal_red"]}}}]},
-            "prism": {"name": "Prism", "phases": [
+            "prism": {"name": "Prism", "hard_tweaks": {"line": {"opposite": True}}, "phases": [
                 {"at": 0.8, "speed": 2.0, "color": [230, 200, 255], "attacks": {
                     "sprinkler": {"damage": 22, "cooldown": 3.2, "last_used": -90, "width": 12, "speed": 8, "range": 4000,
                                   "streams": 4, "duration": 2.0, "every": 7, "turn": 7, "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]}},
@@ -434,13 +448,15 @@ class EnemyDB:
                              "bullets": 15, "spacing": 34, "gap": 3, "effects": {}, "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"]},
                     "split": {"damage": 30, "cooldown": 3.0, "last_used": 0, "width": 16, "speed": 8, "range": 3600, "effects": {},
                               "type": ["laser_red", "laser_yellow", "laser_green", "laser_blue", "laser_purple"], "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 20, "width": 11}}}}]},
-            "slime_king": {"name": "Slime King", "phases": [
-                {"at": 0.8, "speed": 1.6, "color": [150, 230, 150], "attacks": {
+            # (12.11) "hard..." = hard mode only (Enemy.apply_hard): what each boss does more there
+            "slime_king": {"name": "Slime King", "hard_tweaks": {"dash": {"spiral": {"bullets": 12, "speed": 7.5}}}, "phases": [
+                {"at": 0.8, "speed": 1.6, "color": [150, 230, 150], "hard_tweaks": {"spawn": {"amount": 3}}, "attacks": {
                     "throw": {"radius": 70, "recoil": 120, "damage": 12, "width": 16, "exp_type": "", "cooldown": 2.8,
                               "last_used": -90, "fly_time": 1.1, "effects": {}, "type": ["normal_green"],
                               "ring": {"bullets": 8, "speed": 6, "damage": 8, "width": 12}},
                     "spawn": {"enemy_name": "slime_small", "amount": 2, "cooldown": 6.0, "last_used": -120}}},
-                {"at": 0.4, "speed": 2.4, "color": [90, 200, 110], "attacks": {
+                {"at": 0.4, "speed": 2.4, "color": [90, 200, 110],
+                 "hard_tweaks": {"dash": {"windup": 15, "distance": 330, "cooldown": 2.8}}, "attacks": {
                     "dash": {"cooldown": 3.2, "last_used": -60, "dashes": 3, "windup": 21, "spiral_on": [1, 2],
                              "distance": 300, "dash_frames": 16, "type": ["normal_green"],
                              "spiral": {"bullets": 8, "damage": 8, "speed": 6, "width": 14, "range": 3000, "effects": {}}},
@@ -465,12 +481,12 @@ class EnemyDB:
             "flower_spitter": [("Rose", 0.10)],
             "candy_shroom": [("Bubble Gun", 0.02)],
             "gum_goblin": [("Tape", 0.04)],
-            "toy_soldier": [("Rifle A4", 0.04)],
-            "robo-bomber": [("G-Launcher", 0.04)],
-            "portable_factory": [("Blaster 2.0", 0.04)],
+            "toy_soldier": [("Blaster 2.0", 0.04)],
+            "robo-bomber": [("G-Launcher", 0.05)],
+            "portable_factory": [("Rifle A4", 0.06)],
             "frozen_orb": [("Liquidator Hose", 0.04), ("Frost Armor", 0.04)],
-            "ice_shooter": [("Frozen Ring", 0.05), ("Ice Mix", 0.05), ("Golden Chestplate", 0.04)],
-            "inferno_flower": [("RPG", 0.04)],
+            "ice_shooter": [("Frozen Ring", 0.07), ("Ice Mix", 0.05), ("Golden Chestplate", 0.04)],
+            "inferno_flower": [("RPG", 0.05)],
             "frost_flower": [("Ultra Blaster", 0.04)],
             "poison_skeleton": [("Laser Cannon 2.0", 0.04), ("Plate Armor", 0.04)],
             "pixie": [("Magic Dust", 0.04)],
@@ -487,7 +503,7 @@ class EnemyDB:
         # QUEST DROPS: enemy name -> [(item name, chance, quest id[, max owned]), ...]
         # only while that quest is active and the player has fewer than "max owned" (default 1) - at most one per fight
         self.quest_drops = {
-            "sugar_caster": [("Sugar Crystal", 0.05, "gus")],
+            "sugar_caster": [("Sugar Crystal", 0.08, "gus")],
             "robo-tesla": [("Fuse", 0.25, "foreman")],
             "toxic_flower": [("Glowing Sprout", 0.25, "gardener", 3)],      # (.., max you may own: 3 sprouts)
         }
@@ -536,11 +552,11 @@ class EnemyDB:
                 self.dropped_now.add(item_name)
         return dropped
 
-    def provoke_enemies(self, biome, hard_mode, screen):
+    def provoke_enemies(self, biome, difficulty, screen):
         """A normal fight: random enemies of the biome until the fight's points run out (see SPAWNS)."""
         money = 0
         weights = SPAWNS[biome][1]
-        points = fight_points(biome, hard_mode)
+        points = fight_points(biome, difficulty)
         spawnpoints = spawn_points(screen.get_width(), screen.get_height())
         provoked_enemies = []
         while points > 0 and spawnpoints:

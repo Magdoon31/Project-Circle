@@ -12,6 +12,7 @@ import random
 import pygame
 
 from game.combat.song.emitters import bullet
+from game import difficulty as DIFF
 
 BODIES = 4                        # the real one + 3 copies
 REACH = 520                       # px from you
@@ -34,8 +35,13 @@ SPRINKLER = {"every": 600, "streams": 4, "frames": 120, "step": 6, "turn": 8, "s
 
 
 class VoidCopies:
-    def __init__(self, boss_pos, player_pos, bullet_info, arena_size):
+    def __init__(self, boss_pos, player_pos, bullet_info, arena_size, shadowless=False, easy=False):
         self.info, self.arena_size = bullet_info, arena_size
+        # (12.11) "I Have a Job": fewer bullets in each of its shots
+        self.spiral = dict(SPIRAL, bullets=DIFF.fewer(SPIRAL["bullets"], easy))
+        self.burst = dict(BURST, shots=DIFF.fewer(BURST["shots"], easy))
+        self.sprinkler = dict(SPRINKLER, streams=DIFF.fewer(SPRINKLER["streams"], easy))
+        self.shadowless = shadowless                               # (12.11) hard mode: no body has a shadow
         self.middle = list(player_pos)
         self.turn = math.atan2(boss_pos[1] - player_pos[1], boss_pos[0] - player_pos[0])
         self.bodies = [list(boss_pos) for _ in range(BODIES)]      # [0] is the real one
@@ -106,7 +112,7 @@ class VoidCopies:
 
     # --- shooting -------------------------------------------------------------------------------------------
     def shoot(self, target):
-        for pattern in (SPIRAL, BURST, SPRINKLER):
+        for pattern in (self.spiral, self.burst, self.sprinkler):
             if self.timer % pattern["every"] == 0:
                 frames = pattern.get("frames", pattern.get("shots", 1) * pattern.get("gap", 1))
                 self.shooting.append([random.randrange(BODIES), pattern, frames, random.uniform(0, math.tau)])
@@ -121,12 +127,12 @@ class VoidCopies:
         body, pattern, left, angle = shot
         x, y = self.bodies[body]
         aim = math.atan2(target[1] - y, target[0] - x)
-        if pattern is SPIRAL:
+        if pattern is self.spiral:
             if left != 1:
                 return []
             n = pattern["bullets"]
             return [self.bullet(x, y, angle + i * math.tau / n, pattern) for i in range(n)]
-        if pattern is BURST:
+        if pattern is self.burst:
             return [self.bullet(x, y, aim, pattern)] if left % pattern["gap"] == 0 else []
         if left % pattern["step"]:                                   # the sprinkler
             return []
@@ -150,7 +156,7 @@ class VoidCopies:
         shadow.center = (r + 2, int(r * 1.95))
         for i, (x, y) in enumerate(self.bodies):
             picture.fill((0, 0, 0, 0))
-            if i == 0:
+            if i == 0 and not self.shadowless:
                 pygame.draw.ellipse(picture, SHADOW + (alpha,), shadow)
             pygame.draw.circle(picture, tuple(boss.color[:3]) + (alpha,), (r + 2, r + 2), r)
             screen.blit(picture, (int(x) - r - 2, int(y) - r - 2))

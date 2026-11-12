@@ -7,6 +7,7 @@ IMM_AFTER_HIT = 30                 # frames you can't be hurt after a hit (0.5 s
 # How fast you speed up / slow down (share of the speed per frame). The slide distance goes with (1 - k) / k.
 COMBAT_GRIP = (0.5, 0.25)          # (8.11) a light slide: 1/3 of the map's (map: ACCELERATION 0.25, FRICTION 0.1)
 ICE_GRIP = (0.083, 0.055)          # ice floor (a boss arena): 1.1x the old ice slide (was 0.09, 0.06)
+HARD_ICE_GRIP = (0.065, 0.042)     # (12.11) hard mode: the ice is more slippery (Combat sets it)
 REGEN_CALM_FRAMES = 180         # (10.11) armour regen only starts after 3 s without being hit
 INFINITE_FRAMES = 60 * 60 * 60     # "never wears off" in a fight (1 hour) - Toxic Gas
 
@@ -23,6 +24,8 @@ class Shooter :
         self.speed = 8
         self.og_speed = self.speed
         self.ice = False                   # slippery floor (set by Combat from the boss arena)
+        self.ice_grip = ICE_GRIP           # (12.11) ... how slippery (hard mode: HARD_ICE_GRIP)
+        self.hurt_mult = 1.0               # (12.11) every hit on you x this (hard mode: Combat sets HARD_ENEMY_DAMAGE)
         self.slide_x = self.slide_y = 0.0  # your sliding speed (a little everywhere, a lot on ice)
         self.rate_of_fire = (active_items["weapon"].rate_of_fire if active_items["weapon"] else 99999)
 
@@ -266,6 +269,7 @@ class Shooter :
 
                 if "close_call" in self.sigils:            # (8.11) Close Call's price: enemies hurt you more
                     amount *= SG.CLOSE_CALL_HURT
+                amount *= self.hurt_mult
                 amount = max(amount-self.defence, 1)
                 if "guard" in self.armor_effect and self.hp >= self.max_hp * self.armor_effect["guard"][0]:
                     amount *= 1-self.armor_effect["guard"][1]
@@ -462,7 +466,7 @@ class Shooter :
             vx /= length
             vy /= length
 
-        grip = ICE_GRIP if self.ice else COMBAT_GRIP     # ice: you speed up and stop slowly
+        grip = self.ice_grip if self.ice else COMBAT_GRIP     # ice: you speed up and stop slowly
         k = grip[0] if (vx or vy) else grip[1]
         self.slide_x += (vx * self.speed - self.slide_x) * k
         self.slide_y += (vy * self.speed - self.slide_y) * k

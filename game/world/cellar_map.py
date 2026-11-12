@@ -28,7 +28,8 @@ ROOM_COUNT = 24
 ROOM_SIZE = (11, 22)
 CORRIDOR_WIDTH = 3
 FACTORY_LOOT_ROOMS = 4                  # halls with gold piles (items are only in structures)
-REQUIRED_FACTORY_STRUCTURE = "factory_break_room"   # the Foreman's room - always tried first
+REQUIRED_FACTORY_STRUCTURES = ["factory_break_room",     # the Foreman's room - always tried first
+                               "factory_control_room"]   # (11.11) its secret room has the Broken Bulb
 FACTORY_STRUCTURES = 5                  # rooms with walls + entrance inside halls (prefabs with @biomes toy_factory)
 
 # always placed first in the Garden: Wren's camp + the 3 places of her investigation (quest "wren")
@@ -61,6 +62,8 @@ class CellarMap:
         self.structure_cells = set()       # hand-made walls that must never be cut
         self.prefab_cells = set()          # tiles of stamped prefabs (structures, boss buildings)
         self.arrivals = {}                 # where the player appears when coming through a portal: leads_from -> tile
+        self.hidden = {}                   # secret id -> cells drawn as wall until the player steps in (Map)
+        self.secret_ways = {}              # (11.11) secret id -> its ways in (a crack shows on them up close)
         self.wiggle = coarse_field(ValueNoise(seed * 11 + 9), 9, WIDTH, HEIGHT)   # makes tunnels bend
 
         self._make_garden_cave()
@@ -74,7 +77,6 @@ class CellarMap:
         self._garden_secrets()
         self.paths_cut = self._ensure_reachable()
         self.player_start = self.arrivals["surface:separated"]
-        self.hidden = {}                   # secret id -> cells drawn as wall until the player steps in (Map)
         self._sigil_secrets()
 
     def biome_at(self, x, y):
@@ -293,9 +295,9 @@ class CellarMap:
         for _ in range(1500):
             if placed >= FACTORY_STRUCTURES or not prefabs:
                 break
-            required = [p for p in prefabs if p.name == REQUIRED_FACTORY_STRUCTURE and not uses.get(p.name)]
-            base = required[0] if required and placed == 0 else self.rnd.choice(prefabs)
-            if uses.get(base.name, 0) >= (1 if base.list_setting("npcs") else 2):
+            required = [p for name in REQUIRED_FACTORY_STRUCTURES for p in prefabs if p.name == name and not uses.get(name)]
+            base = required[0] if required else self.rnd.choice(prefabs)
+            if uses.get(base.name, 0) >= self._factory_structure_limit(base):
                 continue
             ox0 = self.rnd.randint(fx + 2, fx + fw - 4)
             oy0 = self.rnd.randint(fy + 2, fy + fh - 4)
@@ -323,6 +325,12 @@ class CellarMap:
             self.structures.append({"name": prefab.name, "zone": "factory", "rect": (ox, oy, prefab.width, prefab.height)})
             uses[base.name] = uses.get(base.name, 0) + 1
             placed += 1
+
+    @staticmethod
+    def _factory_structure_limit(prefab):
+        """How many of this room a Factory may have: NPC rooms and the required (story) ones once, others twice."""
+        once = prefab.list_setting("npcs") or prefab.name in REQUIRED_FACTORY_STRUCTURES
+        return 1 if once else 2
 
     def _doors(self, prefab, ox, oy):
         """Walkable tiles on the edge of a prefab + the direction pointing out of the room."""
@@ -590,6 +598,14 @@ class CellarMap:
             self.pickups.append({"pos": (ox + x, oy + y), "type": "item", "item": item})
         for (x, y), npc_id in zip(prefab.markers_in_order("npc"), prefab.list_setting("npcs")):
             self.npcs.append({"pos": (ox + x, oy + y), "id": npc_id, "zone": zone})
+        self._stamp_secret(prefab, ox, oy)
+
+    def _stamp_secret(self, prefab, ox, oy):
+        """(11.11) A prefab's secret part ("h" marker): wall-looking until found (Map.hidden_cells)."""
+        ways, part = prefab.secret()
+        if part:
+            self.hidden[prefab.name] = {(ox + x, oy + y) for x, y in part}
+            self.secret_ways[prefab.name] = {(ox + x, oy + y) for x, y in ways}
 
     def _garden_secrets(self):
         """Quest / secret pickups in the Garden (own random generator, the rest of the cellar stays the same):

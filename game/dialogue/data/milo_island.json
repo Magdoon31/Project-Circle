@@ -16,24 +16,98 @@
                 "flag": "talked:milo_island"
             },
             "lines": [
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Oh. Look at that. You found the stone."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Congratulations. I've been standing on this little island since the very first second of the game."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Watching you walk in circles. Losing to slimes. Paying a man in a hood for a pistol."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Yes, I'm also standing by the fence. Don't think about it too hard. Nobody else does."},
-                {"who": "player", "pose": "serious", "text": "What is this place?"},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "This? This is content. Very mysterious, very deep lore. Glitching through walls with a glowing marble. Truly the peak of game design."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "You were hoping for a reward. A secret boss. An ending, maybe."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "There's nothing here yet. Somebody still has to make it mean something. Somebody is very busy."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "So go on. Back through your little stone. Tell everyone you found the island. They'll be thrilled."},
-                {"who": "milo", "pose": "smile", "text": "...Hey! Nice view from here, huh?"}
+                {
+                    "id": "milo_island_01",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "Oh. Look at that. You found the stone."
+                },
+                {
+                    "id": "milo_island_02",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "Congratulations. I've been standing on this little island since the very first second of the game."
+                },
+                {
+                    "id": "milo_island_03",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "Watching you walk in circles. Losing to slimes. Paying a man in a hood for a pistol."
+                },
+                {
+                    "id": "milo_island_04",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "Yes, I'm also standing by the fence. Don't think about it too hard. Nobody else does."
+                },
+                {
+                    "who": "player",
+                    "pose": "serious",
+                    "text": "What is this place?"
+                },
+                {
+                    "id": "milo_island_05",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "This? This is content. Very mysterious, very deep lore. Glitching through walls with a glowing marble. Truly the peak of game design."
+                },
+                {
+                    "id": "milo_island_06",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "You were hoping for a reward. A secret boss. An ending, maybe."
+                },
+                {
+                    "id": "milo_island_07",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "There's nothing here yet. Somebody still has to make it mean something. Somebody is very busy."
+                },
+                {
+                    "id": "milo_island_08",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "So go on. Back through your little stone. Tell everyone you found the island. They'll be thrilled."
+                },
+                {
+                    "id": "milo_island_09",
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "...Hey! Nice view from here, huh?"
+                }
             ]
         },
         "again": {
             "random_line": true,
             "lines": [
-                {"who": "milo", "pose": "smile", "text": "Nice view, huh?"},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "Still not finished. Come back after an update."},
-                {"who": "milo", "pose": "neutral", "voice": "scary", "text": "You came all the way back here. For this. Incredible dedication."}
+                {
+                    "id": "milo_island_10",
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Nice view, huh?"
+                },
+                {
+                    "id": "milo_island_11",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "Still not finished. Come back after an update."
+                },
+                {
+                    "id": "milo_island_12",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "voice": "scary",
+                    "text": "You came all the way back here. For this. Incredible dedication."
+                }
             ]
         }
     }

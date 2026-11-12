@@ -1,4 +1,5 @@
 import pygame, math, random, copy
+from game import difficulty as DIFF
 from game.combat.projectile import projectile as prjt
 
 CONTACT_KNOCKBACK = 35         # px the player is pushed away when an enemy touches them
@@ -10,6 +11,12 @@ PHASE_INVULN = 60               # frames a boss can't be hurt (and doesn't shoot
 FADING = {"line_soldier", "line_beetle", "scrap_beetle"}   # (8.11) the toys a machine makes fewer of late in a phase
 SLIDE_GRIP = (0.5, 0.25)       # (10.11) wanderers: speed-up / slow-down share per frame (= the player's COMBAT_GRIP)
 MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (the player runs 8)
+CRACK_BRANCH = math.radians(20)  # (12.11) a branching crack: its two arms go this far to each side of you
+RETURN_LIFE_MS = 6000          # (12.11) a returning spore lives this long after it turns back
+THROW_MARGIN = 120             # (12.11) a throw "anywhere" lands at least this far inside the arena
+SHADOW_COLOUR = (12, 22, 16)
+THINNED = ("bullets", "streams")   # (12.11) easy: these counts x DIFF.EASY_BULLETS
+HARD_KEYS = ("hard", "hard_tweaks", "hard_arena", "hard_set")   # boss_info / a phase: what hard mode changes
 
 # ATTACK TYPES (the key in the enemy's attack dict decides what it does):
 #   basic, shotgun, spiral, minigun, mine, throw, spawn, death_spiral, death_spawn  (the old ones)
@@ -44,7 +51,11 @@ MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (
 #   vents     {"count", "warn", "pattern": "ring" / "line", "bullets", "every", "speed", "damage", "width", "type"}
 #             vents in the bottom edge glow, then shoot a half ring up or a row at you (so you can't hide down there)
 #   "kind": "spawn"  any attack can say which type it is - so a boss can have two spawns ("spawn" + "bombers")
-#   spawn + "hard_only": [names]  those kinds only in hard mode (the boss's)
+#   spawn + "hard_only": [names]  those kinds only in hard mode (the boss's); + "unfaded": [names]  never made fewer
+#             late in a phase ("fade")
+# (12.11) line + "opposite": True  a second row straight back; ground_crack + "branches": 2  two cracks, one on each
+#   side of you; burst + "return_after": frames  then the spores fly back to the boss (and are gone there);
+#   throw + "anywhere": True  lands on a random spot of the arena (not near you)
 #   edge_rain {"warn": frames, "sides": ["left", "right", ...], "spacing": px, "gaps": n, "gap": px, "speed", "damage", "width", "type"}
 #             rows of bullets come in from the arena's sides; `gaps` holes (gap px wide) in each side's row are the
 #             only safe lanes (Night Bloom); "side_gaps": {"bottom": 4} = more holes on that side
@@ -63,7 +74,10 @@ MINE_CREEP = 1.2               # px per frame a mine crawls towards the player (
 # BOSS PHASES (7.11): EnemyDB.boss_info[name] = {"name": shown over the big HP bar, "phases": [{"at": 0.6, ...}]}.
 # When the HP drops to "at" x max HP the boss gets that phase: new "attacks" (replace the old ones; "hard": more
 # attacks added only in hard mode), and optionally
-# "speed", "movement", "color", "contact". Meanwhile PHASE_INVULN frames: it blinks, takes no damage, doesn't shoot;
+# "speed", "movement", "color", "contact". (12.11) HARD MODE (become_hard / apply_hard) - boss_info (phase 1) or a phase:
+# "hard" = more attacks, "hard_tweaks" = {attack: {key: value}} changes to its attacks (also inside, e.g.
+# {"leap": {"burst": {...}}}), "hard_arena" = changes to its arena, "hard_set" = {attribute: value} on the boss.
+# Meanwhile PHASE_INVULN frames: it blinks, takes no damage, doesn't shoot;
 # Combat clears every enemy bullet, flashes the screen and plays a sound (phase_event).
 
 
@@ -116,6 +130,9 @@ class Enemy:
         self.anchored = False          # (8.11) stays where it was put (Assembly Line's core and machines)
         self.anchor = None             # where that is (Combat notes it on the first frame)
         self.casts_shadow = False      # (8.11) Night Bloom: the real one has a shadow, its copies don't
+        self.hard = False              # (12.11) hard mode (Game: become_hard)
+        self.easy = False              # (12.11) "I Have a Job": fewer bullets (Combat: make_easy)
+        self.shadow_alpha = 255        # (12.11) ... how dark it is (hard mode: fainter - boss_info "hard_set")
         self.copies = []               # (8.11) its copies made by "split"
         self.invuln = 0                # frames left of a phase change (no damage, no shots, blinking)
         self.airborne = False          # a "leap": up in the air (off the screen, can't be hit)
@@ -167,9 +184,7 @@ class Enemy:
         if self.shielded():                                       # shielded by its guards
             pygame.draw.circle(screen, (120, 200, 255), (self.x, self.y), self.width + 10, 4)
         if self.casts_shadow:                                     # (8.11) the tell of the real Night Bloom
-            shade = pygame.Rect(0, 0, int(self.width * 1.8), int(self.width * 0.6))
-            shade.center = (self.x, self.y + self.width * 0.95)
-            pygame.draw.ellipse(screen, (12, 22, 16), shade)
+            self.draw_shadow(screen)
         if not (self.invuln and (self.invuln // 5) % 2):          # blinking while changing phase
             if self.shape == "square":                            # (8.11) machines, crates, turrets
                 box = pygame.Rect(0, 0, self.width * 2, self.width * 2)
@@ -390,7 +405,7 @@ class Enemy:
         return any(info.get("stop_phase") or info.get("rep_left") or (info.get("is_bursting") and ("streams" in info or "dashes" in info))
                    for info in self.attacks.values())
 
-    def attack_ready(self, attack_info, hard_mode, binded):
+    def attack_ready(self, attack_info, cooldown_mult, binded):
         """Returns True on the frame the attack should fire.
 
         stop_move: [frames BEFORE the shot, frames AFTER the shot] - the enemy stands still then.
@@ -398,7 +413,7 @@ class Enemy:
         So the waiting time does NOT count towards the cooldown."""
         if attack_info.get("is_bursting"):
             return True
-        cooldown_done = self.attack_timer - attack_info["last_used"] >= (attack_info["cooldown"] *(0.9 if hard_mode else 1.0)) * 60
+        cooldown_done = self.attack_timer - attack_info["last_used"] >= attack_info["cooldown"] * cooldown_mult * 60
 
         stop = attack_info.get("stop_move")
         if not stop:
@@ -428,7 +443,8 @@ class Enemy:
             return True
         return False
 
-    def attack(self, timer, player = None, hard_mode = False, enemy_db = None, aim = None):
+    def attack(self, timer, player = None, cooldown_mult = 1.0, enemy_db = None, aim = None):
+        # cooldown_mult: the difficulty's (game/difficulty.py) - x the attacks' cooldowns
         # aim = what the shots go for (the player, or the Mascot Plush decoy while it lives); touching hurts only the player
         aim = aim or player
 
@@ -483,7 +499,7 @@ class Enemy:
                             attack_info["rep_next"] = self.attack_timer + attack_info["repeat"][1] * 60
                             attack_info["last_used"] = self.attack_timer       # the cooldown starts after the LAST one
                     continue
-                if self.attack_ready(attack_info, hard_mode, binded):
+                if self.attack_ready(attack_info, cooldown_mult, binded):
                     new, spawned, done = self.fire(attack_name, attack_info, aim, enemy_db)
                     projectiles += new
                     enemies += spawned
@@ -607,7 +623,7 @@ class Enemy:
                     projectiles += [self.shot(a + k * math.tau / streams, info) for k in range(streams)]
                     info["burst_angle"] += math.radians(info["turn"]) * info["burst_dir"]
                 elif name == "line":
-                    projectiles.append(self.shot(a, info))
+                    projectiles += [self.shot(d, info) for d in ((a, a + math.pi) if info.get("opposite") else (a,))]
                 else:
                     for a, sign in [(d, s) for d in ((a, a + math.pi) if info.get("opposite") else (a,))
                                     for s in ((1, -1) if info.get("double") else (1,))]:
@@ -733,7 +749,7 @@ class Enemy:
                 amount = random.randint(*amount)               # e.g. [1, 2]: one or two
             for i in range(amount):
                 kind = random.choice(self.spawnable(info))
-                if info.get("fade") and self.owner and kind in FADING:
+                if info.get("fade") and self.owner and kind in FADING and kind not in info.get("unfaded", ()):
                     # (8.11) the boss's phase has lasted fade[0] s: fewer small toys (up to fade[2] skipped after
                     # another fade[1] s) - the fight can't drown you in them
                     age = (self.owner.attack_timer - self.owner.phase_started) / 60 - info["fade"][0]
@@ -806,9 +822,12 @@ class Enemy:
 
         elif name == "ground_crack":
             # GROUND CRACK (8.11, Frost Golem): a stomp - a crack runs from it towards you, bullets out to both sides
-            self.new_cracks.append({"x": self.x, "y": self.y, "angle": aim_angle, "speed": info["speed"],
-                                    "max": info["length"], "every": info["every"], "start": self.width,
-                                    "bullets": {**info["bullets"], "damage": self.damage * info["bullets"]["damage"]}})
+            # (12.11) "branches": 2 = two cracks, one on each side of you
+            angles = (aim_angle - CRACK_BRANCH, aim_angle + CRACK_BRANCH) if info.get("branches") == 2 else (aim_angle,)
+            for angle in angles:
+                self.new_cracks.append({"x": self.x, "y": self.y, "angle": angle, "speed": info["speed"],
+                                        "max": info["length"], "every": info["every"], "start": self.width,
+                                        "bullets": {**info["bullets"], "damage": self.damage * info["bullets"]["damage"]}})
             info["last_used"] = self.attack_timer
 
         elif name == "burst":
@@ -873,10 +892,13 @@ class Enemy:
             info["last_used"] = self.attack_timer
 
         elif name == "throw":
-            angle = random.uniform(0, math.tau)
-            distance = math.sqrt(random.uniform(0, info["recoil"]**2))
-            target_x = aim.x + math.cos(angle) * distance
-            target_y = aim.y + math.sin(angle) * distance
+            if info.get("anywhere"):                           # (12.11) a random spot in the arena (Frost Golem)
+                target_x, target_y = self.random_spot(THROW_MARGIN)
+            else:
+                angle = random.uniform(0, math.tau)
+                distance = math.sqrt(random.uniform(0, info["recoil"]**2))
+                target_x = aim.x + math.cos(angle) * distance
+                target_y = aim.y + math.sin(angle) * distance
             p = prjt(self.x, self.y, target_x, target_y, 0,
                      self.damage*info["damage"], "enemy",
                      info["width"], info["fly_time"]*1000,
@@ -893,7 +915,8 @@ class Enemy:
     # --- boss phases (7.11) --------------------------------------------------------------------------------
     def set_phases(self, info):
         self.boss_name = info.get("name")
-        self.arena = dict(info.get("arena", {}))           # phase 1's arena
+        self.arena = copy.deepcopy(info.get("arena", {}))  # phase 1's arena
+        self.first_hard = {k: info[k] for k in HARD_KEYS if k in info}   # (12.11) phase 1's hard-mode changes
         self.phases = sorted((dict(p) for p in info.get("phases", [])), key=lambda p: -p["at"])
         self.phase_marks = [p["at"] for p in self.phases]
 
@@ -903,10 +926,7 @@ class Enemy:
         phase = self.phases.pop(0)
         if "attacks" in phase:
             self.attacks = copy.deepcopy(phase["attacks"])
-            if getattr(self, "hard", False):
-                self.attacks.update(copy.deepcopy(phase.get("hard", {})))     # hard mode: extra attacks in this phase
-            for info in self.attacks.values():
-                info["last_used"] = self.attack_timer + info.get("last_used", 0)    # cooldowns start now
+            self.start_cooldowns(self.attacks)
         if "speed" in phase:
             self.speed = self.og_speed = phase["speed"]
         if "movement" in phase:
@@ -915,7 +935,11 @@ class Enemy:
             self.color = tuple(phase["color"])
         if "contact" in phase:
             self.contact_dmg = phase["contact"]
-        self.arena = dict(phase.get("arena", {}))
+        self.arena = copy.deepcopy(phase.get("arena", {}))
+        if self.hard:
+            self.apply_hard(phase)
+        if self.easy:
+            thin_out(self.attacks)
         self.aiming = None
         self.glow = 0
         self.dash_preview = None
@@ -931,6 +955,34 @@ class Enemy:
         self.invuln = PHASE_INVULN
         self.phase_started = self.attack_timer
         self.phase_event = True
+
+    # --- hard mode (12.11) ----------------------------------------------------------------------------------------
+    def become_hard(self):
+        """Hard mode for a boss: phase 1's changes now (each later phase brings its own: check_phase)."""
+        self.hard = True
+        self.apply_hard(getattr(self, "first_hard", {}))
+
+    def apply_hard(self, spec):
+        """A phase's hard-mode changes: "hard" = more attacks, "hard_tweaks" = {attack: {key: value}} changes to
+        its attacks, "hard_arena" = changes to its arena, "hard_set" = {attribute: value} on the boss."""
+        extra = copy.deepcopy(spec.get("hard", {}))
+        self.start_cooldowns(extra)
+        self.attacks.update(extra)
+        for name, changes in spec.get("hard_tweaks", {}).items():
+            if name in self.attacks:
+                deep_update(self.attacks[name], changes)
+        deep_update(self.arena, spec.get("hard_arena", {}))
+        for attribute, value in spec.get("hard_set", {}).items():
+            setattr(self, attribute, value)
+
+    def make_easy(self):
+        """(12.11) "I Have a Job": every attack has fewer bullets (its next phases too: check_phase)."""
+        self.easy = True
+        thin_out(self.attacks)
+
+    def start_cooldowns(self, attacks):
+        for info in attacks.values():
+            info["last_used"] = self.attack_timer + info.get("last_used", 0)    # cooldowns start now
 
     def edge_rain(self, info):
         """Rows of bullets from the arena's sides, each with a few holes - the only safe lanes."""
@@ -992,8 +1044,23 @@ class Enemy:
         for _ in range(info["bullets"]):
             p = self.shot(random.uniform(0, math.tau), info, speed=random.uniform(lo, hi))
             p.motion = {"kind": "slowdown", "decay": info.get("decay", 0.975), "min": info.get("min_speed", 1.5)}
+            if info.get("return_after"):                       # (12.11) after a while they fly back to it
+                p.motion["return"] = {"after": info["return_after"], "home": lambda: (self.x, self.y)}
+                p.range = info["return_after"] * 1000 / 60 + RETURN_LIFE_MS
             out.append(p)
         return out
+
+    def random_spot(self, margin):
+        """A random point in the arena, at least `margin` px from its edges."""
+        w, h = self.screen_size or (1920, 1080)
+        return random.uniform(margin, w - margin), random.uniform(margin, h - margin)
+
+    def draw_shadow(self, screen):
+        """Night Bloom's shadow - fainter (shadow_alpha) in hard mode's later phases (12.11)."""
+        size = (int(self.width * 1.8), int(self.width * 0.6))
+        shade = pygame.Surface(size, pygame.SRCALPHA)
+        pygame.draw.ellipse(shade, SHADOW_COLOUR + (self.shadow_alpha,), shade.get_rect())
+        screen.blit(shade, shade.get_rect(center=(self.x, self.y + self.width * 0.95)))
 
     def hp_bar(self, screen):
         if self.type == "boss":
@@ -1030,3 +1097,23 @@ class Enemy:
             if effect in EFFECT_COLORS:
                 radius = self.width + (i+1) * 6
                 pygame.draw.circle(screen, EFFECT_COLORS[effect], (int(self.x), int(self.y)), radius, 3)
+
+
+def deep_update(target, changes):
+    """Puts `changes` into `target` (a dict), going into the dicts inside it (the rest of them stays)."""
+    for key, value in changes.items():
+        if isinstance(value, dict) and isinstance(target.get(key), dict):
+            deep_update(target[key], value)
+        else:
+            target[key] = copy.deepcopy(value)
+
+
+def thin_out(spec):
+    """(12.11) Easy: fewer bullets in an attack (and in what it bursts into), wider gaps in rows from the walls."""
+    for key, value in spec.items():
+        if isinstance(value, dict):
+            thin_out(value)
+        elif key in THINNED and isinstance(value, int) and not isinstance(value, bool):
+            spec[key] = DIFF.fewer(value)
+        elif key == "spacing" and "sides" in spec:        # edge_rain: rows from the walls
+            spec[key] = round(value / DIFF.EASY_BULLETS)

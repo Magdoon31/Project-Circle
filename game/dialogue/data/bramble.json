@@ -7,26 +7,31 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "bramble_01",
                     "who": "bramble",
                     "pose": "proud",
                     "text": "Ah, a citizen! Or a visitor. Either way, welcome to the finest village in all the land. I would know. I'm the mayor."
                 },
                 {
+                    "id": "bramble_02",
                     "who": "bramble",
                     "pose": "smile",
                     "text": "Lovely weather today. It's always lovely weather. I like to think that's my doing."
                 },
                 {
+                    "id": "bramble_03",
                     "who": "bramble",
                     "pose": "sad",
                     "text": "Have you seen the well? I had it polished. Twice. Nobody noticed. Nobody ever notices."
                 },
                 {
+                    "id": "bramble_04",
                     "who": "bramble",
                     "pose": "proud",
                     "text": "A mayor's work is never done. Mostly it's standing here. But with dignity."
                 },
                 {
+                    "id": "bramble_05",
                     "who": "bramble",
                     "pose": "thinking",
                     "text": "If anyone asks, the fence was my idea. It was not my idea. But if anyone asks."
@@ -88,16 +93,19 @@
         "hook_yes": {
             "lines": [
                 {
+                    "id": "bramble_06",
                     "who": "bramble",
                     "pose": "sly",
                     "text": "The Angler's Hook? Hm. Hmmm. Perhaps it is in my possession. Perhaps it is not."
                 },
                 {
+                    "id": "bramble_07",
                     "who": "bramble",
                     "pose": "proud",
                     "text": "A mayor does not simply hand things out. A mayor must be... persuaded."
                 },
                 {
+                    "id": "bramble_08",
                     "who": "bramble",
                     "pose": "grin",
                     "text": "Beat me at sudoku, and we'll talk. I've never lost. Well. I've never lost to anyone who counts."
@@ -108,16 +116,19 @@
         "hook_no": {
             "lines": [
                 {
+                    "id": "bramble_09",
                     "who": "bramble",
                     "pose": "surprised",
                     "text": "The Angler's Hook? Goodness, no. What would a mayor want with a fishing hook?"
                 },
                 {
+                    "id": "bramble_10",
                     "who": "bramble",
                     "pose": "sly",
                     "text": "Though while you're here... do you, perchance, enjoy numbers? I have a little hobby."
                 },
                 {
+                    "id": "bramble_11",
                     "who": "bramble",
                     "pose": "grin",
                     "text": "Sudoku! The thinking person's battlefield. Beat me and I'll pay you. From the village treasury. Which is my pocket."
@@ -128,11 +139,13 @@
         "play": {
             "lines": [
                 {
+                    "id": "bramble_12",
                     "who": "bramble",
                     "pose": "sly",
                     "text": "So. Sudoku. Do you prefer to think, or to hurry?"
                 },
                 {
+                    "id": "bramble_13",
                     "who": "bramble",
                     "pose": "sly",
                     "text": "The first game is a gift from the village. After that, a modest fee. Rising, naturally, with every victory of yours.",
@@ -208,11 +221,13 @@
             },
             "lines": [
                 {
+                    "id": "bramble_14",
                     "who": "bramble",
                     "pose": "shocked",
                     "text": "Impossible. Every number in its place. That was a bloodbath. A dignified bloodbath, but still."
                 },
                 {
+                    "id": "bramble_15",
                     "who": "bramble",
                     "pose": "sad",
                     "text": "Fine. A deal's a deal. Here's the Hook. I was only... keeping it safe."
@@ -225,16 +240,19 @@
             },
             "lines": [
                 {
+                    "id": "bramble_16",
                     "who": "bramble",
                     "pose": "shocked",
                     "text": "Again?! You're draining the treasury. Fine. Here. Take it."
                 },
                 {
+                    "id": "bramble_17",
                     "who": "bramble",
                     "pose": "sad",
                     "text": "Hmph. Beginner's luck. Twice. Three times. Many times."
                 },
                 {
+                    "id": "bramble_18",
                     "who": "bramble",
                     "pose": "smile",
                     "text": "Well played. Truly. I hate it."
@@ -245,16 +263,19 @@
         "lost": {
             "lines": [
                 {
+                    "id": "bramble_19",
                     "who": "bramble",
                     "pose": "proud",
                     "text": "Ha! The mayor remains undefeated. Come back when your mind is sharper."
                 },
                 {
+                    "id": "bramble_20",
                     "who": "bramble",
                     "pose": "grin",
                     "text": "Close! Not really. But I'm being polite. Mayors are polite."
                 },
                 {
+                    "id": "bramble_21",
                     "who": "bramble",
                     "pose": "thinking",
                     "text": "Numbers are cruel, citizen. Cruel and beautiful."
@@ -265,6 +286,7 @@
         "poor": {
             "lines": [
                 {
+                    "id": "bramble_22",
                     "who": "bramble",
                     "pose": "proud",
                     "text": "Ah. Your purse is lighter than your ambition, citizen. Come back with coins."

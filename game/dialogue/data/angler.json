@@ -34,6 +34,7 @@
         "intro": {
             "lines": [
                 {
+                    "id": "angler_01",
                     "who": "angler",
                     "pose": "grumpy",
                     "text": "What. You're blockin' my light."
@@ -44,16 +45,19 @@
                     "text": "Sorry. I'm new here."
                 },
                 {
+                    "id": "angler_02",
                     "who": "angler",
                     "pose": "grumpy",
                     "text": "New. Hmph. Everybody's new these days. Nobody stays long enough to get old."
                 },
                 {
+                    "id": "angler_03",
                     "who": "angler",
                     "pose": "pointing",
                     "text": "Forty years I've fished this pond. Forty. And d'you know what I got to show for it?"
                 },
                 {
+                    "id": "angler_04",
                     "who": "angler",
                     "pose": "angry",
                     "text": "Nothin'. 'Cause somebody took my Hook."
@@ -64,21 +68,25 @@
                     "text": "Somebody stole it?"
                 },
                 {
+                    "id": "angler_05",
                     "who": "angler",
                     "pose": "angry",
                     "text": "\"Borrowed\". Three weeks ago. \"Just for a minute, old man.\" A minute. Ha."
                 },
                 {
+                    "id": "angler_06",
                     "who": "angler",
                     "pose": "thinking",
                     "text": "Can't remember who. My memory ain't what it used to be."
                 },
                 {
+                    "id": "angler_07",
                     "who": "angler",
                     "pose": "grumpy",
                     "text": "But it's somebody in this village. Don't look at me like that. I'm old, not stupid."
                 },
                 {
+                    "id": "angler_08",
                     "who": "angler",
                     "pose": "proud",
                     "text": "That Hook's the best in the land. No... no hat. No cap. That's what you young folks say, ain't it? No cap."
@@ -89,11 +97,13 @@
                     "text": "...Sure."
                 },
                 {
+                    "id": "angler_09",
                     "who": "angler",
                     "pose": "proud",
                     "text": "Knew it. Still got it."
                 },
                 {
+                    "id": "angler_10",
                     "who": "angler",
                     "pose": "neutral",
                     "text": "Bring it back and I'll make it worth your while. Go on, then. Shoo."
@@ -109,16 +119,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "angler_11",
                     "who": "angler",
                     "pose": "grumpy",
                     "text": "Got my Hook? No? Then why're you standin' here."
                 },
                 {
+                    "id": "angler_12",
                     "who": "angler",
                     "pose": "neutral",
                     "text": "Somebody in the village has it. Ask around. Use that young brain of yours."
                 },
                 {
+                    "id": "angler_13",
                     "who": "angler",
                     "pose": "grumpy",
                     "text": "Fish don't wait. And neither do I. Well. I do. But I don't like it."
@@ -136,11 +149,13 @@
             },
             "lines": [
                 {
+                    "id": "angler_14",
                     "who": "angler",
                     "pose": "surprised",
                     "text": "..."
                 },
                 {
+                    "id": "angler_15",
                     "who": "angler",
                     "pose": "happy",
                     "text": "That's it. That's my Hook. Look at that rust. Beautiful."
@@ -151,16 +166,19 @@
                     "text": "It was in the village, like you said."
                 },
                 {
+                    "id": "angler_16",
                     "who": "angler",
                     "pose": "proud",
                     "text": "'Course it was. Told you. Old, not stupid."
                 },
                 {
+                    "id": "angler_17",
                     "who": "angler",
                     "pose": "neutral",
                     "text": "Here. Take these. Found 'em by the water. Don't eat 'em all at once, they ain't candy."
                 },
                 {
+                    "id": "angler_18",
                     "who": "angler",
                     "pose": "smile",
                     "text": "And some coin for your trouble. You're alright, kid. Don't go tellin' anyone I said that."
@@ -171,16 +189,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "angler_19",
                     "who": "angler",
                     "pose": "neutral",
                     "text": "Biting good today. Somethin' big down there. Somethin' real big."
                 },
                 {
+                    "id": "angler_20",
                     "who": "angler",
                     "pose": "thinking",
                     "text": "Back in my day we didn't have monsters in the grass. We had... well. Also monsters. But smaller."
                 },
                 {
+                    "id": "angler_21",
                     "who": "angler",
                     "pose": "grumpy",
                     "text": "You again. Hmph. Fine. Stand there if you want. Just don't scare the fish."
@@ -191,21 +212,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "angler_22",
                     "who": "angler",
                     "pose": "neutral",
                     "text": "Heard you got past the sweet lands. Good. Never liked the smell. Like burnt sugar and lies."
                 },
                 {
+                    "id": "angler_23",
                     "who": "angler",
                     "pose": "thinking",
                     "text": "Once found a chest by the road, way back. Gold or wisdom, I had to pick. Took the gold. Always take the gold, kid."
                 },
                 {
+                    "id": "angler_24",
                     "who": "angler",
                     "pose": "serious",
                     "text": "Pond's been quiet since you started wanderin' far. Fish know things. Fish always know things."
                 },
                 {
+                    "id": "angler_25",
                     "who": "angler",
                     "pose": "thinking",
                     "text": "There's a windmill somewhere out east. Pays out every week if you visit. Or I dreamt that. One of the two."

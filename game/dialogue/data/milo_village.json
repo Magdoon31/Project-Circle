@@ -17,11 +17,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_village_01",
                     "who": "milo",
                     "pose": "surprised",
                     "text": "Oh! Hey. Sorry, didn't see you there."
                 },
                 {
+                    "id": "milo_village_02",
                     "who": "milo",
                     "pose": "smile",
                     "text": "You're new, right? Yeah. You've got that look. The \"where am I and why is the grass this green\" look."
@@ -32,21 +34,25 @@
                     "text": "...Where am I?"
                 },
                 {
+                    "id": "milo_village_03",
                     "who": "milo",
                     "pose": "wave",
                     "text": "The Village. Nice, quiet, smells like fresh bread most mornings. I'm Milo, by the way."
                 },
                 {
+                    "id": "milo_village_04",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Everybody here kind of does their own thing. Nobody asks too many questions. It's a good place."
                 },
                 {
+                    "id": "milo_village_05",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "Past the forest it gets louder, though. There's a meadow so colourful it hurts your eyes. Rainbow Fields, people call it."
                 },
                 {
+                    "id": "milo_village_06",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "And past that... more places. Sweeter ones. Colder ones. I haven't been everywhere. Not yet."
@@ -57,16 +63,19 @@
                     "text": "Is it safe out there?"
                 },
                 {
+                    "id": "milo_village_07",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Mostly! There are monsters. Cute ones. Cute and bitey."
                 },
                 {
+                    "id": "milo_village_08",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "But they leave you alone on the paths. Stay on the road and you're fine. Step into the grass and, well. They notice."
                 },
                 {
+                    "id": "milo_village_09",
                     "who": "milo",
                     "pose": "serious",
                     "text": "If a fight goes really bad, hold R and run. No shame in that. Running is a perfectly good strategy."
@@ -77,16 +86,19 @@
                     "text": "Do you run a lot?"
                 },
                 {
+                    "id": "milo_village_10",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Professionally."
                 },
                 {
+                    "id": "milo_village_11",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Oh, and the ways between the lands? Something always stands guard there. Big. Grumpy. You'll know it when you see it."
                 },
                 {
+                    "id": "milo_village_12",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Anyway. Welcome, outsider. Look around, meet people. Just... try not to get lost, okay?"
@@ -97,26 +109,31 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "milo_village_13",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Still here? Good. The Village needs people who stay."
                 },
                 {
+                    "id": "milo_village_14",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Remember: path good, grass bitey. That's basically all of my wisdom."
                 },
                 {
+                    "id": "milo_village_15",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Hold R if it gets bad. I know I keep saying it. I'll keep saying it."
                 },
                 {
+                    "id": "milo_village_16",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "You walk like someone who's looking for something. Everyone's looking for something here, I guess."
                 },
                 {
+                    "id": "milo_village_17",
                     "who": "milo",
                     "pose": "smile",
                     "text": "The bread lady makes the best rolls in the world. Don't tell her I said \"bread lady\"."

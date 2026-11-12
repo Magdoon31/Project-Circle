@@ -48,6 +48,7 @@ CHECKPOINT_MARK = (255, 228, 150)
 PALE_PHASE = 3                    # F4
 DISARM_PHASES = (2, 3)            # F3, F4
 DISARM_EVERY = 11 * 60
+HARD_DISARM_EVERY = DISARM_EVERY * 2 // 3   # (12.11) hard mode: 1.5x as often
 MILO_PHASES = (0, 1, 2, 3)        # gone in F5
 HELPERS_PHASE = 2                 # F3: the Factory's toys on the outer islands
 COPIES_PHASE = 3                  # F4: the boss and its copies round you
@@ -79,6 +80,8 @@ BOSS_COLOUR = (175, 150, 235)
 class VoidFight:
     def __init__(self, boss, make_boss, arena, music, bullet_info, font, now, light_ending=False, make_enemy=None):
         self.boss = boss
+        self.hard = getattr(boss, "hard", False)     # (12.11) hard mode: more helpers / turrets, no shadow
+        self.disarm_every = HARD_DISARM_EVERY if self.hard else DISARM_EVERY
         self.make_boss = make_boss                # () -> a new boss (Enemy) for a checkpoint
         self.make_enemy = make_enemy              # name -> a new Enemy (F3's helpers)
         self.arena = arena                        # VoidArena
@@ -162,6 +165,8 @@ class VoidFight:
             self.arena.keep_inside_ring(self.boss)
         if self.state in ("fight", "interlude", "final"):
             self.check_fall(combat)
+        elif self.state == "falling_apart":
+            self.keep_on_ground(combat.player)        # (12.11) while it dies: an invisible wall at the island's edge
         self.arena.push_bullets(combat.enemy_projectiles)
 
     def start_state(self, state):
@@ -231,18 +236,18 @@ class VoidFight:
         if phase != 2:
             combat.last_belts = None                       # the Factory's belts are gone with its phase
         self.copies = VoidCopies((self.boss.x, self.boss.y), (combat.player.x, combat.player.y), self.bullet_info,
-                                 self.arena.size) if phase == COPIES_PHASE else None
+                                 self.arena.size, shadowless=self.hard, easy=combat.easy_mode) if phase == COPIES_PHASE else None
         self.boss.hidden = self.copies is not None                   # (the copies draw it - fading, with its shadow)
         self.boss.untouchable = False
-        self.turrets = Turrets(self.bullet_info, self.arena.size) if phase == TURRETS_PHASE else None
+        self.turrets = Turrets(self.bullet_info, self.arena.size, self.hard, combat.easy_mode) if phase == TURRETS_PHASE else None
         if self.helpers:
             self.helpers.leave()
-        self.helpers = VoidHelpers(self.make_enemy) if phase == HELPERS_PHASE and self.make_enemy else None
+        self.helpers = VoidHelpers(self.make_enemy, self.hard) if phase == HELPERS_PHASE and self.make_enemy else None
 
     # --- the weapon -----------------------------------------------------------------------------------------------
     def update_weapon(self, combat):
         player = combat.player
-        if self.phase in DISARM_PHASES and self.weapon is None and self.timer % DISARM_EVERY == DISARM_EVERY - 1:
+        if self.phase in DISARM_PHASES and self.weapon is None and self.timer % self.disarm_every == self.disarm_every - 1:
             self.disarm_shots.append(PARTS.DisarmShot((self.boss.x, self.boss.y), (player.x, player.y)))
         for shot in self.disarm_shots[:]:
             shot.update((player.x, player.y))
@@ -275,6 +280,15 @@ class VoidFight:
             return                                         # (an island falling away takes you with it, always)
         self.falling = ((p.x, p.y), FALL_FRAMES)
         p.base_width = p.width
+
+    def keep_on_ground(self, player):
+        """(12.11) A step that would take you off the ground is undone (you can't leave the island or fall)."""
+        here = (player.x, player.y)
+        if self.arena.on_ground(*here):
+            self.last_ground = here
+        elif getattr(self, "last_ground", None):
+            player.x, player.y = self.last_ground
+            player.slide_x = player.slide_y = 0.0
 
     def sink(self, combat):
         """You get smaller and smaller where you fell; then a hit and back onto the nearest island."""

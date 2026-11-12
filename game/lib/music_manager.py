@@ -55,7 +55,7 @@ class MusicManager:
             if path:
                 self.music[name] = pygame.mixer.Sound(path)
         self.music_volume = 1.0
-        self.fixed_volume = {}       # (11.11) tracks that ignore the music slider: name -> volume (the Mascot's song)
+        self.volume_share = {}       # (11.11) tracks quieter / louder than the rest: name -> share of the music volume
         self.current = None          # name of the music playing now (biome / boss / menu ...)
         self.channel = None          # its channel (needed to pause it and come back at the same place)
         self.overlay = None          # music played OVER it for a while (the shop): see fade_to / fade_back
@@ -76,14 +76,17 @@ class MusicManager:
             if not os.path.exists(path):
                 return False
             self.music[name] = pygame.mixer.Sound(path)
-            self.music[name].set_volume(self.fixed_volume.get(name, self.music_volume))
+            self.music[name].set_volume(self.volume_of(name))
         return True
 
-    def set_fixed_volume(self, name, volume):
-        """(11.11) This track always plays at `volume`, whatever the music slider says."""
-        self.fixed_volume[name] = volume
+    def volume_of(self, name):
+        return self.music_volume * self.volume_share.get(name, 1.0)
+
+    def set_volume_share(self, name, share):
+        """(11.11) This track plays at `share` x the music volume (it follows the music slider)."""
+        self.volume_share[name] = share
         if name in self.music:
-            self.music[name].set_volume(volume)
+            self.music[name].set_volume(self.volume_of(name))
 
     def crossfade(self, name, ms=1500):
         """(8.11) The music playing now fades out while `name` fades in (boss phases)."""
@@ -187,4 +190,4 @@ class MusicManager:
             self.current = self.channel = None
     def update_volume(self):
         for name, music in self.music.items():
-            music.set_volume(self.fixed_volume.get(name, self.music_volume))
+            music.set_volume(self.volume_of(name))

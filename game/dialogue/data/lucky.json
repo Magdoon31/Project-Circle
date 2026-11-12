@@ -24,11 +24,13 @@
             },
             "lines": [
                 {
+                    "id": "lucky_01",
                     "who": "lucky",
                     "pose": "wave",
                     "text": "Step right up, step right up! A new face! A lucky face!"
                 },
                 {
+                    "id": "lucky_02",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Name's Lucky. Lucky by name, lucky by nature - and today, friend, maybe lucky by association!"
@@ -39,16 +41,19 @@
                     "text": "This place is... empty."
                 },
                 {
+                    "id": "lucky_03",
                     "who": "lucky",
                     "pose": "laugh",
                     "text": "Empty? It's exclusive! Every ride, every stall, every prize - all for you. No queues!"
                 },
                 {
+                    "id": "lucky_04",
                     "who": "lucky",
                     "pose": "pointing",
                     "text": "And the star of the show: the Wheel of Fortune. Put in a little gold, take out a lot of gold. Sometimes."
                 },
                 {
+                    "id": "lucky_05",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Mostly sometimes. Want a spin?"
@@ -123,16 +128,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "lucky_06",
                     "who": "lucky",
                     "pose": "wave",
                     "text": "Welcome back, welcome back! The wheel missed you. I could tell. It squeaked."
                 },
                 {
+                    "id": "lucky_07",
                     "who": "lucky",
                     "pose": "laugh",
                     "text": "Ah, my favourite customer! My only customer, but still my favourite!"
                 },
                 {
+                    "id": "lucky_08",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Feeling lucky? Of course you are. Everybody's lucky at Lucky's."
@@ -207,16 +215,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "lucky_09",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Another spin? The wheel's still warm!"
                 },
                 {
+                    "id": "lucky_10",
                     "who": "lucky",
                     "pose": "pointing",
                     "text": "The next one's the one. Probably."
                 },
                 {
+                    "id": "lucky_11",
                     "who": "lucky",
                     "pose": "laugh",
                     "text": "Round and round it goes! Where it stops - well, you know."
@@ -290,16 +301,19 @@
         "rules": {
             "lines": [
                 {
+                    "id": "lucky_12",
                     "who": "lucky",
                     "pose": "pointing",
                     "text": "Easy as candy! You pay, you spin, the wheel decides."
                 },
                 {
+                    "id": "lucky_13",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Grey - nothing. Blue - half back. White - your money back. Green - double. Gold - triple."
                 },
                 {
+                    "id": "lucky_14",
                     "who": "lucky",
                     "pose": "laugh",
                     "text": "And the pink one... the JACKPOT. Six times your gold. I've seen it happen! Once. Maybe twice."
@@ -310,21 +324,25 @@
         "tent": {
             "lines": [
                 {
+                    "id": "lucky_15",
                     "who": "lucky",
                     "pose": "nervous",
                     "text": "The big tent? Ah. That's where the Mascot sleeps."
                 },
                 {
+                    "id": "lucky_16",
                     "who": "lucky",
                     "pose": "nervous",
                     "text": "Biggest plush you've ever seen. Used to wave at the kids. Now it... doesn't really wave anymore."
                 },
                 {
+                    "id": "lucky_17",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "If you wake it up, it'll want to play. And it plays rough. But they say whoever beats it gets a prize!"
                 },
                 {
+                    "id": "lucky_18",
                     "who": "lucky",
                     "pose": "nervous",
                     "text": "I don't go in there. Bad for business. Bad for my teeth."
@@ -336,16 +354,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "lucky_19",
                     "who": "lucky",
                     "pose": "laugh",
                     "text": "A WINNER! Look at that! Ladies and gentlemen - well, you - a winner!"
                 },
                 {
+                    "id": "lucky_20",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Ha! See? I told you. Lucky's never lies. Rarely lies."
                 },
                 {
+                    "id": "lucky_21",
                     "who": "lucky",
                     "pose": "pointing",
                     "text": "Beginner's luck? Expert's luck! Spin again while it's hot!"
@@ -357,16 +378,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "lucky_22",
                     "who": "lucky",
                     "pose": "pointing",
                     "text": "Ooh! So close! Did you see that? SO close!"
                 },
                 {
+                    "id": "lucky_23",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Not this time, friend. But the wheel remembers who keeps trying."
                 },
                 {
+                    "id": "lucky_24",
                     "who": "lucky",
                     "pose": "nervous",
                     "text": "Oof. Well. The wheel giveth, and mostly the wheel taketh."
@@ -377,6 +401,7 @@
         "poor": {
             "lines": [
                 {
+                    "id": "lucky_25",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Ah-ah-ah. No gold, no go. Come back with heavier pockets, friend!"
@@ -387,6 +412,7 @@
         "hub_poor": {
             "lines": [
                 {
+                    "id": "lucky_26",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "Something else I can do for you?"
@@ -460,6 +486,7 @@
         "bye": {
             "lines": [
                 {
+                    "id": "lucky_27",
                     "who": "lucky",
                     "pose": "wave",
                     "text": "Come back soon! The wheel never sleeps! Unlike the Mascot."
@@ -478,16 +505,19 @@
                     "text": "[You show Lucky the coupon.]"
                 },
                 {
+                    "id": "lucky_28",
                     "who": "lucky",
                     "pose": "surprised",
                     "text": "Where did you... these were never printed."
                 },
                 {
+                    "id": "lucky_29",
                     "who": "lucky",
                     "pose": "grin",
                     "text": "I mean - of COURSE! The Golden Wheel! For our very special guests!"
                 },
                 {
+                    "id": "lucky_30",
                     "who": "lucky",
                     "pose": "pointing",
                     "text": "Five hundred a spin. And between us? The odds are... generous. Don't tell the Mascot."
@@ -496,4 +526,4 @@
             "then": "again"
         }
     }
-}
+}

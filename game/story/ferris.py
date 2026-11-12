@@ -20,10 +20,10 @@ SHORTCUTS = [
      "biome": "sugarwood_grove", "need": ["visited:candy"]},
     {"id": "factory", "name": "Toy Factory", "level": "cellar", "at": ("before_boss",),
      "biome": "toy_factory", "need": ["visited:factory"]},
+    # (11.11) the Garden: only its Tundra side (the Factory shortcut is close to the Factory side already) - sold
+    # once you have been in the Garden at all, whichever way you came
     {"id": "garden_tundra", "name": "Garden (Tundra side)", "level": "cellar", "at": ("arrival", "surface:tundra_pass"),
-     "biome": "underground_garden", "need": ["arrived:garden_tundra"]},
-    {"id": "garden_factory", "name": "Garden (Factory side)", "level": "cellar", "at": ("gate", "factory", "garden"),
-     "biome": "underground_garden", "need": ["boss:factory", "visited:garden"]},
+     "biome": "underground_garden", "need": ["visited:garden"]},
     {"id": "core", "name": "The Core", "level": "core", "at": ("arrival", "cellar:garden"),
      "biome": "the_core", "need": ["visited:core"]},
     # (11.11) the Void: GIVEN, not sold ("free") - the moment you get there (Game.grant_free_shortcuts)
@@ -33,6 +33,7 @@ SHORTCUTS = [
      "biome": "the_void", "need": ["visited:void_shrine"], "free": True},
 ]
 BY_ID = {s["id"]: s for s in SHORTCUTS}
+RENAMED = {"garden_factory": "garden_tundra"}    # (11.11) a shortcut bought before still counts as its new one
 
 
 def price(shortcut):
@@ -109,6 +110,7 @@ def tile_of(shortcut, world):
 
 def available(flags, owned):
     """Shortcuts the player has been to: [(shortcut, owned?)]."""
+    owned = set(owned) | {RENAMED[o] for o in owned if o in RENAMED}
     return [(s, s["id"] in owned) for s in SHORTCUTS if all(f in flags for f in s["need"])]
 
 

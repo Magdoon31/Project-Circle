@@ -17,11 +17,13 @@
             },
             "lines": [
                 {
+                    "id": "ferris_01",
                     "who": "ferris",
                     "pose": "neutral",
                     "text": "Name's Ferris. I move people. Fast. Not cheap."
                 },
                 {
+                    "id": "ferris_02",
                     "who": "ferris",
                     "pose": "neutral",
                     "text": "Show me where you've been and I'll take you back there. Places I haven't seen, I don't do.",
@@ -35,6 +37,7 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "ferris_03",
                     "who": "ferris",
                     "pose": "neutral",
                     "text": "Where to?",
@@ -43,6 +46,7 @@
                     }
                 },
                 {
+                    "id": "ferris_04",
                     "who": "ferris",
                     "pose": "neutral",
                     "text": "Back again? The road misses you.",

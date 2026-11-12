@@ -17,11 +17,13 @@
             },
             "lines": [
                 {
+                    "id": "wanderer_01",
                     "who": "wanderer",
                     "pose": "sitting",
                     "text": "...Oh. A traveller. Sit, if you like. The fire doesn't mind."
                 },
                 {
+                    "id": "wanderer_02",
                     "who": "wanderer",
                     "pose": "sitting",
                     "text": "I draw maps. Roads, rivers, the places in between. Mostly the places in between."
@@ -32,16 +34,19 @@
                     "text": "You sell them?"
                 },
                 {
+                    "id": "wanderer_03",
                     "who": "wanderer",
                     "pose": "smile",
                     "text": "To those who ask kindly. And pay. Kindness doesn't buy paper."
                 },
                 {
+                    "id": "wanderer_04",
                     "who": "wanderer",
                     "pose": "thinking",
                     "text": "The Village is cheap. Small, round, easy to draw."
                 },
                 {
+                    "id": "wanderer_05",
                     "who": "wanderer",
                     "pose": "thinking",
                     "text": "The Rainbow Fields took me a whole season. Colours are expensive. So is the patience to sit still while flowers look at you."
@@ -76,21 +81,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "wanderer_06",
                     "who": "wanderer",
                     "pose": "sitting",
                     "text": "The fire's still warm. So am I. Mostly."
                 },
                 {
+                    "id": "wanderer_07",
                     "who": "wanderer",
                     "pose": "thinking",
                     "text": "Every road leads somewhere. That's the problem with roads."
                 },
                 {
+                    "id": "wanderer_08",
                     "who": "wanderer",
                     "pose": "smile",
                     "text": "Looking for a map? I have a few. Fewer than I'd like."
                 },
                 {
+                    "id": "wanderer_09",
                     "who": "wanderer",
                     "pose": "sad",
                     "text": "I tried to draw what's past the sweet forest once. The ink kept running off the page."
@@ -151,6 +160,7 @@
             },
             "lines": [
                 {
+                    "id": "wanderer_10",
                     "who": "wanderer",
                     "pose": "smile",
                     "text": "The Village. Every fence, every chimney. Even the well the mayor keeps polishing."
@@ -165,11 +175,13 @@
             },
             "lines": [
                 {
+                    "id": "wanderer_11",
                     "who": "wanderer",
                     "pose": "smile",
                     "text": "The Rainbow Fields. Careful with it. Some of the colours are still wet."
                 },
                 {
+                    "id": "wanderer_12",
                     "who": "wanderer",
                     "pose": "thinking",
                     "text": "If the flowers look at you funny out there... it's not the map's fault."
@@ -179,6 +191,7 @@
         "poor": {
             "lines": [
                 {
+                    "id": "wanderer_13",
                     "who": "wanderer",
                     "pose": "sad",
                     "text": "Your purse is lighter than this map, traveller. Come back when it isn't."
@@ -191,16 +204,19 @@
             },
             "lines": [
                 {
+                    "id": "wanderer_14",
                     "who": "wanderer",
                     "pose": "thinking",
                     "text": "Why..."
                 },
                 {
+                    "id": "wanderer_15",
                     "who": "wanderer",
                     "pose": "sitting",
                     "text": "Because things change when nobody's looking. A map is a way of looking. All the time."
                 },
                 {
+                    "id": "wanderer_16",
                     "who": "wanderer",
                     "pose": "sad",
                     "text": "And because some mornings a road is gone. If it's on paper, at least it existed."
@@ -211,6 +227,7 @@
         "again_menu": {
             "lines": [
                 {
+                    "id": "wanderer_17",
                     "who": "wanderer",
                     "pose": "smile",
                     "text": "Anything else, traveller?"

@@ -41,6 +41,8 @@ from game.world import loot
 from game.story.milo import milo_npcs, path_locks, choose_path
 from game.story.wren import wren_npcs, auto_npc_near
 from game.story.garden import garden_npcs, PaleAltar
+from game.story.foreman import foreman_npcs
+from game.story.ending import EndingScene
 from game.story import ferris as FERRIS
 from game.world import pale_world as PALE
 from game.shop.shop import Shop
@@ -48,6 +50,7 @@ from game.shop.stock import ShopStock
 from game.shop import stock as S
 from game.inventory.sigils import Sigils, ALL_SIGILS, HAGGLER_PRICE, LUCKY_COIN_REROLL, LUCKY_COIN_GOLD
 from game.inventory import sigils as SG
+from game import difficulty as DIFF
 
 ESCAPE_GRACE_FRAMES = 180   # after running away: no random fight for the next 3 s of walking
 
@@ -72,7 +75,8 @@ VOID_MUSIC = [Part("void_phase1", _VOID + "phase1.ogg", 392, 31 * _VOID_BEAT, Tr
               Part("void_phase5", _VOID + "phase5.ogg", 22, 64 * _VOID_BEAT, True),
               Part("void_interlude", _VOID + "interlude.ogg", 402, 31190, False),
               Part("void_final", _VOID + "final_scene.ogg", 75, 61528, False)]
-MASCOT_SONG_VOLUME = 0.4            # (11.11) the Mascot's song always plays at 40% (not the music slider)
+MASCOT_SONG_SHARE = 0.6             # (11.11) the Mascot's song: this share of the music volume (default music -> ~40%)
+MUSIC_RECOMMENDED_BELOW = 0.05      # (11.11) music this quiet: the song fight says "Music recommended"
 MASCOT_PRIZE = "Mascot Plush"        # the Mascot (lunapark boss) gives this the first time it is beaten
 LOCKED_PATH_MESSAGE = "This way is shut. Finish the path you chose first."
 VISIT_FLAG_ZONES = {"separated", "lunapark", "garden", "core", "candy", "factory", "void"}   # flag "visited:<zone>" (the shopkeeper's mood)
@@ -112,18 +116,13 @@ DEBUG_FIGHT_KEY = pygame.K_f
 DEBUG_NEXT_PHASE_KEY = pygame.K_F9      # (11.11, test) in a boss fight: the boss loses just enough HP for its next phase
 PEACE_GUN = "Peace Gun"
 BOSS_TALKS = {"Milo": "milo_core_fight"}   # (10.11) bosses you talk to first; the talk ends with "open": "boss_fight"
+ENDING_FLAGS = {"main": {"ending:main"}, "extra": {"ending:extra"},       # (12.11) the stars on a save card;
+                "secret": {"ending:secret", "ending:extra"}}            # the Secret Ending counts as Extra too
 SILENCE = "silence"                      # (11.11) "music": "silence" in a dialogue file = no music while talking
 MILO_VOID_TALK = "milo_core_void"         # (10.11) after Milo's fight with the Peace Gun
 CORE_PLAYER_START = (0.5, 0.85)          # (10.11) Milo's fight: you start below the heart
 LORE_ITEMS = ["Broken Bulb", "Cassette Tape", "Old Note"]   # all 3 used at NPCs -> Secret Ending (Void boss)
 
-# TEMPORARY ending screens (the real endings come later)
-ENDINGS = {
-    "main": ("MAIN ENDING", "(work in progress)"),
-    "extra": ("EXTRA ENDING", "(work in progress)"),
-    "secret": ("SECRET ENDING", "(work in progress)"),
-}
-LIGHT_ENDINGS = {"secret"}               # (11.11) a white screen (the Void's fight fades to white before it)
 
 
 class Game:
@@ -155,7 +154,7 @@ class Game:
         self.combat_assets = CombatAssets(self.sfx)
         self.enemy_db = EnemyDB(self.sfx, self.bullet_type_info)
 
-        self.hard_mode = False
+        self.difficulty = DIFF.NORMAL       # (12.11) easy ("I Have a Job") / normal / hard - from the save
         self.timer = 0
 
         self.inventory = Inventory(self.screen)
@@ -223,6 +222,10 @@ class Game:
                 pass
         self.pale_altar = PaleAltar()
 
+    @property
+    def hard_mode(self):
+        return self.difficulty == DIFF.HARD
+
     def run(self):
         while self.running:
             self.trinket_effects = {}           # both trinkets (the 2nd one: Spare Pocket sigil)
@@ -241,7 +244,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.running = False
                     self.settings.settings_data_save()
-                    self.save_manager.save_game(self.save, self.hard_mode)
+                    self.save_manager.save_game(self.save, self.difficulty)
 
             if self.state == GameState.MENU:
                 self.update_menu(events, keys, mouse_pos)
@@ -263,9 +266,10 @@ class Game:
         pygame.quit()
 
     def update_menu(self, events, keys, pos):
-        change_state, save_nr, self.hard_mode = self.menu.handle_click(pos, events)
+        change_state, save_nr, difficulty = self.menu.handle_click(pos, events)
         self.menu.draw()
         if change_state == "start_game":
+            self.difficulty = difficulty or DIFF.NORMAL          # (a saved game: load_game reads its own)
             # making the world takes ~1 s - show something meanwhile (a saved world is rebuilt, a new one generated)
             self.screen.fill((0, 0, 0))
             text = "Loading terrain..." if self.save_manager.has_world(save_nr) else "Generating world..."
@@ -522,13 +526,13 @@ class Game:
         elif change_state == "quit":
 
             self.settings.settings_data_save()
-            self.save_manager.save_game(self.save, self.hard_mode)
+            self.save_manager.save_game(self.save, self.difficulty)
             self.running = False
 
         elif change_state == "save":
 
             self.settings.settings_data_save()
-            self.save_manager.save_game(self.save, self.hard_mode)
+            self.save_manager.save_game(self.save, self.difficulty)
             self.autosave_timer = 0
             self.map_ui.show_saved("Game saved")
 
@@ -553,7 +557,7 @@ class Game:
         elif choice == "quit":
             self.leave_fight()
             self.settings.settings_data_save()
-            self.save_manager.save_game(self.save, self.hard_mode)
+            self.save_manager.save_game(self.save, self.difficulty)
             self.running = False
         if self.fight_paused:
             self.pause_menu.draw()
@@ -618,7 +622,7 @@ class Game:
         # saves into the current slot; a small "Saving..." note in the corner (doesn't hide other messages)
         if self.save not in (1, 2, 3):
             return
-        self.save_manager.save_game(self.save, self.hard_mode)
+        self.save_manager.save_game(self.save, self.difficulty)
         self.settings.settings_data_save()
         self.autosave_timer = 0
         if show:
@@ -734,31 +738,15 @@ class Game:
         return all(f"lore_used:{name}" in self.map.flags for name in LORE_ITEMS)
 
     def show_ending(self, kind):
-        # TEMPORARY ending screen: title + "work in progress", click (after 1 s) -> (10.11) the main menu
-        title, subtitle = ENDINGS[kind]
-        light = kind in LIGHT_ENDINGS
-        background, ink, grey = ((255, 255, 255), (0, 0, 0), (90, 90, 90)) if light else ((0, 0, 0), (255, 255, 255), (170, 170, 170))
-        small = pygame.font.SysFont(None, 40)
-        self.music.stop()
-        frames = 0
-        while True:
-            frames += 1
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.running = False
-                    self.settings.settings_data_save()
-                    return
-                if event.type in (pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN) and frames > 60:
-                    self.go_to_main_menu()
-                    return
-            self.screen.fill(background)
-            centre = self.screen.get_rect().center
-            for text, font, colour, dy in ((title, self.font, ink, -40), (subtitle, small, grey, 20),
-                                           ("click to continue", small, (128, 128, 128), 120)):
-                img = font.render(text, True, colour)
-                self.screen.blit(img, img.get_rect(center=(centre[0], centre[1] + dy)))
-            pygame.display.flip()
-            self.clock.tick(60)
+        """(12.11) An ending (main / extra / secret): the voice ???, then the credits (story/ending.py), then the
+        main menu."""
+        self.map.flags.update(ENDING_FLAGS[kind])                 # (12.11) the save card's stars (saved below)
+        finished = EndingScene(self.screen, self.clock, self.music, OPT.volume("dialogue"), kind).run()
+        if not finished:                                          # the window was closed during it
+            self.running = False
+            self.settings.settings_data_save()
+            return
+        self.go_to_main_menu()
 
     def refresh_talk_background(self):
         """The dimmed map behind a talk / minigame is a picture - when the money changes (paying, a prize)
@@ -1116,7 +1104,7 @@ class Game:
         new_path = choose_path(self.map.level, self.map.flags, zone)
         if new_path:
             self.map.flags.add(new_path)                  # the first way walked into = the chosen path
-        key = (self.map.level, id(w), frozenset(f for f in self.map.flags if f.startswith(("boss:", "path:", "wren:", "ring:"))), zone)
+        key = (self.map.level, id(w), frozenset(f for f in self.map.flags if f.startswith(("boss:", "path:", "wren:", "ring:", "void_unlocked"))), zone)
         if key == getattr(self, "_story_key", None):
             return
         self._story_key = key
@@ -1124,7 +1112,9 @@ class Game:
         extra, wren_hidden = wren_npcs(self.map.level, w, self.map.flags, extra)    # Wren (and Milo arguing with her)
         extra, garden_hidden = garden_npcs(self.map.level, w, self.map.flags, extra)  # the whisper in the mushroom ring
         extra, _ = FERRIS.ferris_npcs(self.map.level, w, self.map.flags, extra)       # Ferris (shortcuts) in the Village
-        self.map.extra_npcs, self.map.hidden_npcs = extra, hidden | wren_hidden | garden_hidden
+        extra, foreman_hidden = foreman_npcs(self.map.level, w, self.map.flags, extra)  # (11.11) Foreman -> the Core
+        self.map.extra_npcs = extra
+        self.map.hidden_npcs = hidden | wren_hidden | garden_hidden | foreman_hidden
         self.map.locked_gates, self.map.locked_portals = path_locks(self.map.level, w, self.map.flags, zone)
         self.map.refresh_npcs()
 
@@ -1238,9 +1228,9 @@ class Game:
         self.enemy_db.owned_counts = self.owned_item_counts()
         self.enemy_db.dropped_now = set()
         self.enemy_db.luck = self.luck()
-        self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.hard_mode, self.sfx, assets=self.combat_assets)
+        self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.difficulty, self.sfx, assets=self.combat_assets)
         self.combat.floor = self.map.floor_color(self.player.biome)     # (8.11) the fight floor = the biome's ground
-        enemies, money = self.enemy_db.provoke_enemies(self.player.biome, self.hard_mode, self.screen)
+        enemies, money = self.enemy_db.provoke_enemies(self.player.biome, self.difficulty, self.screen)
         self.combat.enemies.extend(enemies)
         self.combat.money = money
         self.prepare_reward()
@@ -1310,8 +1300,8 @@ class Game:
         boss = self.enemy_db.get_boss(boss_name)
         if self.hard_mode:
             boss.hp = boss.max_hp = round(boss.max_hp * HARD_BOSS_HP)       # hard mode: every boss is tougher
-            boss.hard = True                                                # (phases may add "hard" attacks)
-        self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.hard_mode, self.sfx, boss_name, assets=self.combat_assets)
+            boss.become_hard()                                              # (12.11) its hard-mode attacks (boss_info)
+        self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.difficulty, self.sfx, boss_name, assets=self.combat_assets)
         self.combat.money += boss.money
         self.prepare_reward()
         self.combat.floor = self.map.floor_color(self.player.biome)
@@ -1329,14 +1319,15 @@ class Game:
         self.player.vx = self.player.vy = 0.0
         self.player_in_combat = self.new_shooter(bare=True)     # (11.11) no armour / trinket effects in this fight
         self.boss_music = []
-        self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.hard_mode, self.sfx, "mascot",
+        self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.difficulty, self.sfx, "mascot",
                              assets=self.combat_assets)
         self.state = GameState.COMBAT
         self.music.stop()
-        self.music.set_fixed_volume("mascot", MASCOT_SONG_VOLUME)
+        self.music.set_volume_share("mascot", MASCOT_SONG_SHARE)
         self.music.load("mascot", SONG_CHART.SONG_FILE)
         self.combat.song = SongFight(self.screen.get_size(), self.bullet_type_info, pygame.time.get_ticks(),
-                                     MASCOT_PRIZE, "mascot:prize" not in self.map.flags)
+                                     MASCOT_PRIZE, "mascot:prize" not in self.map.flags,
+                                     music_hint=OPT.volume("music") < MUSIC_RECOMMENDED_BELOW)
         self.combat.song.place_player(self.player_in_combat)
         self.player_in_combat.show_hp_bar = False          # you can't die here: only the hits count
         self.music.play_once("mascot")
@@ -1346,7 +1337,7 @@ class Game:
         boss = self.enemy_db.get_boss("void_boss")
         if self.hard_mode:
             boss.hp = boss.max_hp = round(boss.max_hp * HARD_BOSS_HP)
-            boss.hard = True
+            boss.become_hard()
         return boss
 
     def start_void_fight(self, gate):
@@ -1355,7 +1346,7 @@ class Game:
         self.player.vx = self.player.vy = 0.0
         self.player_in_combat = self.new_shooter()
         boss = self.make_void_boss()
-        self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.hard_mode, self.sfx,
+        self.combat = Combat(self.screen, self.player_in_combat, [boss], self.enemy_db, self.difficulty, self.sfx,
                              "void_boss", assets=self.combat_assets)
         self.combat.money += boss.money
         arena = VoidArena(self.screen.get_size())

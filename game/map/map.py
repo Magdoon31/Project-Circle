@@ -29,6 +29,14 @@ BOSS_OF_ZONE = {"village": "slime_king", "rainbow_fields": "prism", "candy": "sh
                 "factory": "assembly_line", "garden": "night_bloom", "core": "milo"}    # the real bosses (7.11, one by one): gate "from" -> EnemyDB.bosses
 FOG_COLOR = (18, 18, 22)        # unexplored part of the world map
 CONVEYOR_ANIM_SPEED = 60        # pixels per second the chevrons on conveyor belts move (just looks)
+QUEST_SPOTS = {                  # (11.11) NPC / place -> (quest, flag once it's done): a "!" while it is still to do
+    "clue_stones": ("wren", "clue:stones"),
+    "clue_playground": ("wren", "clue:playground"),
+    "clue_lab": ("wren", "clue:lab"),
+}
+QUEST_MARK_COLOUR = (255, 214, 60)
+CRACK_RANGE = 2.6               # (11.11) tiles: a secret way in shows its crack only this close
+CRACK_SHAPE = [(-0.3, -0.42), (-0.05, -0.12), (-0.2, 0.1), (0.12, 0.3), (0.05, 0.45)]   # parts of a tile
 
 # LEVELS: separate maps of the world, all generated from the same seed.
 # The cellar is generated only when the player goes there for the first time.
@@ -231,6 +239,11 @@ class Map:
     def npcs(self):
         """NPCs on the current level right now: the map's own (minus hidden ones) + those placed by the game."""
         return [n for n in self.world.npcs if n["id"] not in self.hidden_npcs] + self.extra_npcs
+
+    def quest_marked(self, npc):
+        """(11.11) Is this NPC / place still to do for an active quest (QUEST_SPOTS) -> drawn with a "!"."""
+        spot = QUEST_SPOTS.get(npc["id"])
+        return bool(spot) and spot[0] in self.active_quests and spot[1] not in self.flags
 
     def refresh_npcs(self):
         self.npc_cells = {tuple(n["pos"]) for n in self.npcs()}    # NPCs are solid - you bump into them
@@ -662,6 +675,22 @@ class Map:
             self.screen.blit(glow, glow.get_rect(center=(cx, cy)), special_flags=pygame.BLEND_RGB_ADD)
             self.draw_shrine(cx, cy, pickup["sigil"])
 
+    def draw_secret_cracks(self, hidden, visible, centre):
+        """(11.11) A secret way in (prefab marker "h") looks like wall - a thin crack shows on it, but only when the
+        player is close (CRACK_RANGE tiles), and fades in as they come nearer."""
+        ts = self.tile_size
+        player = (self.player.x / ts - 0.5, self.player.y / ts - 0.5)
+        for cells in getattr(self.world, "secret_ways", {}).values():
+            for cell in cells:
+                distance = math.dist(cell, player)
+                if cell not in hidden or distance > CRACK_RANGE or not visible(cell):
+                    continue
+                strength = min(1.0, (CRACK_RANGE - distance) / (CRACK_RANGE - 1))
+                colour = [int(c * (1 - 0.55 * strength)) for c in tile_color("#", self.world.biome_at(*cell))]
+                cx, cy = centre(cell)
+                points = [(cx + ts * dx, cy + ts * dy) for dx, dy in CRACK_SHAPE]
+                pygame.draw.lines(self.screen, colour, False, points, max(2, ts // 16))
+
     def _draw_conveyor(self, sx, sy, push):
         # moving chevrons show the direction of the belt
         ts = self.tile_size
@@ -722,6 +751,7 @@ class Map:
         def centre(pos):
             return (pos[0] + 0.5) * ts - cam_x, (pos[1] + 0.5) * ts - cam_y
 
+        self.draw_secret_cracks(hidden, visible, centre)
         for pos, text in getattr(world, "floor_text", []):          # e.g. "Not yet." in ### (pale_world.py)
             if visible(pos):
                 if not hasattr(self, "floor_font"):
@@ -751,8 +781,9 @@ class Map:
         for npc in self.npcs():
             if visible(npc["pos"]):
                 cx, cy = centre(npc["pos"])
-                pygame.draw.circle(self.screen, (230, 90, 230), (cx, cy), ts * 0.3)
-                label = self.font.render("?", True, (255, 255, 255))
+                marked = self.quest_marked(npc)
+                pygame.draw.circle(self.screen, QUEST_MARK_COLOUR if marked else (230, 90, 230), (cx, cy), ts * 0.3)
+                label = self.font.render("!" if marked else "?", True, (40, 30, 10) if marked else (255, 255, 255))
                 self.screen.blit(label, label.get_rect(center=(cx, cy)))
         for gate in world.gates:
             boss = gate["boss"]

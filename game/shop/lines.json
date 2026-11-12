@@ -1,5 +1,5 @@
 {
-    "_comment": "The shopkeeper (no name). Text only, no talk sound. Voice: assets/sfx/shop/<id>.mp3/.wav/.ogg (optional). kind: greet (opening the shop), buy, poor (not enough money), rare (small chance instead of a greeting, any mood; 'flag' = only once that story flag is set), boss (the FIRST greeting after beating a boss). moods: happy (start) -> calm (from Separated Village / the lunapark) -> neutral (from the Garden / the Core). (7.11) The BUYER on the Sell page (another person, no mood): kind sell_common / sell_medium / sell_rare = what he says when you sell an item of that rarity (loot weight 10 / 5 / 2 or drop-only). (7.11) pose: which shopkeeper picture is shown while he says it - normal / happy (assets/img/shopkeeper/shopkeeper_<pose>.png).",
+    "_comment": "The shopkeeper (no name). Text only, no talk sound. Voice: assets/sfx/voicelines/shopkeeper/<id>.mp3/.wav/.ogg (optional; the buyer: voicelines/buyer/). kind: greet (opening the shop), buy, poor (not enough money), rare (small chance instead of a greeting, any mood; 'flag' = only once that story flag is set), boss (the FIRST greeting after beating a boss). moods: happy (start) -> calm (from Separated Village / the lunapark) -> neutral (from the Garden / the Core). (7.11) The BUYER on the Sell page (another person, no mood): kind sell_common / sell_medium / sell_rare = what he says when you sell an item of that rarity (loot weight 10 / 5 / 2 or drop-only). (7.11) pose: which shopkeeper picture is shown while he says it - normal / happy (assets/img/shopkeeper/shopkeeper_<pose>.png). (12.11) kind sell_twin: the BUYER, very rarely (BUYER_TWIN_CHANCE in shop.py) when you switch to the Sell page.",
     "lines": [
         {
             "id": "greet_happy_1",
@@ -189,6 +189,12 @@
             "pose": "normal"
         },
         {
+            "id": "rare_5",
+            "kind": "rare",
+            "text": "People ask how to tell us apart. Simple! I’m the one who smiles.",
+            "pose": "happy"
+        },
+        {
             "id": "boss_1",
             "kind": "boss",
             "text": "You seem to be getting closer to something. Just make sure it's something you actually want to find.",
@@ -279,6 +285,11 @@
             "id": "sell_rare_2",
             "kind": "sell_rare",
             "text": "I'll pretend this isn't worth more."
+        },
+        {
+            "id": "sell_twin_1",
+            "kind": "sell_twin",
+            "text": "I’m the older one. By four minutes. They were very important minutes."
         }
     ]
 }

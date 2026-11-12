@@ -1,0 +1,142 @@
+{
+    "_comment": "(11.11) The Foreman in the Core, in one of the Core's structures (a control desk if there is one) - only after Milo was beaten with the Peace Gun (story/foreman.py). He gives the Old Note (lore item 3/3, for Milo in the Void) - he wrote it. Flag foreman:note.",
+    "partner": "foreman",
+    "start": [
+        {
+            "if": {
+                "item": "Broken Bulb",
+                "not_flag": "lore_used:Broken Bulb"
+            },
+            "goto": "bulb_notice"
+        },
+        {
+            "if": {
+                "flag": "foreman:note"
+            },
+            "goto": "again"
+        },
+        "note"
+    ],
+    "nodes": {
+        "note": {
+            "do": {
+                "flag": "foreman:note"
+            },
+            "lines": [
+                {
+                    "id": "foreman_core_01",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Psst. Over here. Don't make that face - it's me."
+                },
+                {
+                    "id": "foreman_core_02",
+                    "who": "foreman",
+                    "pose": "worried",
+                    "text": "I heard the heart stop. The whole Factory went quiet. First time in... I don't know how long."
+                },
+                {
+                    "id": "foreman_core_03",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "So I came up. I know, I know. 'I've always worked down there.' Not today."
+                },
+                {
+                    "id": "foreman_core_04",
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "Listen. I forgot to give you something. No - that's a lie. I didn't forget. I kept it."
+                },
+                {
+                    "id": "foreman_core_05",
+                    "who": "foreman",
+                    "pose": "serious",
+                    "text": "It's old. I wrote it, a long time ago. It might change your life. Or what's left of it."
+                },
+                {
+                    "id": "foreman_core_06",
+                    "who": "foreman",
+                    "pose": "sad",
+                    "text": "I'm sorry I didn't give it to you sooner. I should have. Back at the line, when you helped me.",
+                    "do": {
+                        "give": "Old Note"
+                    }
+                },
+                {
+                    "id": "foreman_core_07",
+                    "who": "foreman",
+                    "pose": "neutral",
+                    "text": "There's someone down there who should read it. You'll know who."
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "id": "foreman_core_08",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "I'm not going back down. Not yet."
+                },
+                {
+                    "id": "foreman_core_09",
+                    "who": "foreman",
+                    "pose": "worried",
+                    "text": "The heart's so quiet. I keep waiting for it to start again."
+                },
+                {
+                    "id": "foreman_core_10",
+                    "who": "foreman",
+                    "pose": "tired",
+                    "text": "Did you give it to them? ...No, don't tell me. Just do it."
+                }
+            ]
+        },
+        "bulb_notice": {
+            "lines": [
+                {
+                    "id": "foreman_32",
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Hold on. What's that in your pocket?"
+                },
+                {
+                    "id": "foreman_33",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Is that... glass?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Show him the broken bulb.",
+                    "goto": "dialogue:foreman_bulb"
+                },
+                {
+                    "text": "Nothing.",
+                    "goto": "carry_on"
+                }
+            ]
+        },
+        "carry_on": {
+            "lines": [
+                {
+                    "id": "foreman_34",
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Nothing. Sure. Everybody's got nothing in their pocket."
+                }
+            ],
+            "then": [
+                {
+                    "if": {
+                        "flag": "foreman:note"
+                    },
+                    "goto": "again"
+                },
+                "note"
+            ]
+        }
+    }
+}

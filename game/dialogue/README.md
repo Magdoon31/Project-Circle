@@ -54,8 +54,10 @@ Example: `data/test_milo.json`.
   `\n` in the text = new row.
 - **horror** (optional, on a line, `true`) — the background goes completely black and the music goes silent for
   this line (comes back on the next one). Lines with Milo's `"voice": "scary"` do it automatically.
-- **voiceover** (optional, on a line) — a recorded file in `assets/voice/` (e.g. `"voiceover": "milo_core_1.wav"`):
-  it plays instead of the talk sound. Only for important moments (endings ...). Missing file = normal talk sound.
+- **id** (on every NPC line, given by `python tools/voicelines.py`) — the line's recording:
+  `assets/sfx/voicelines/<who>/<id>.mp3` (or `.wav` / `.ogg`) plays instead of the talk sound. Missing file = normal
+  talk sound. After writing new lines run the tool again: they get ids and `VOICELINES.md` (the list to record) is
+  made again. The player's lines and narration (`look`, `antenna`) have no id.
 - **choice** — `text`, `goto` (`"end"` ends the talk), optional `if` (answer shown only when true), `do`.
 
 ## Conditions (`if`) and effects (`do`)

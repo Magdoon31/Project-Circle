@@ -4,7 +4,7 @@
 # TEST: right click = teleport to that place (DEBUG_CLICK_TELEPORT)
 
 import pygame
-from game.map.map import MAP_SHOWS
+from game.map.map import MAP_SHOWS, QUEST_MARK_COLOUR
 from game import controls as KEYS
 
 MIN_ZOOM_FACTOR = 1.0     # 1.0 = the whole world fits on the screen
@@ -209,7 +209,9 @@ class WorldMap:
                 pygame.draw.circle(screen, (140, 60, 255), pos, r + 2)
                 pygame.draw.circle(screen, (255, 255, 255), pos, r + 2, 2)
         for npc in (game_map.npcs() if view.is_current else world.npcs):
-            if view.is_explored(npc["pos"]):
+            if game_map.quest_marked(npc):
+                self.draw_quest_mark(npc["pos"], r)              # (11.11) a quest place: shown from far away
+            elif view.is_explored(npc["pos"]):
                 pygame.draw.circle(screen, (230, 90, 230), self.tile_to_screen(npc["pos"][0] + 0.5, npc["pos"][1] + 0.5), r)
         # quest items (e.g. the Gardener's sprouts, the Foreman's gear): ALWAYS shown while their quest is active
         collected = view._lvl["collected"]
@@ -262,6 +264,17 @@ class WorldMap:
             screen.blit(self.font_small.render(name, True, (230, 230, 230)), (sw // 50 + 28, y))
         if self.confirm:
             self.draw_confirm()
+
+    def draw_quest_mark(self, tile, r):
+        """(11.11) A "!" badge on a place an active quest wants you to visit (Map.QUEST_SPOTS)."""
+        pos = self.tile_to_screen(tile[0] + 0.5, tile[1] + 0.5)
+        big = max(r, 9) + 2 + (pygame.time.get_ticks() // 300) % 3
+        pygame.draw.circle(self.screen, (255, 255, 255), pos, big + 2)
+        pygame.draw.circle(self.screen, QUEST_MARK_COLOUR, pos, big)
+        if not hasattr(self, "mark_font"):
+            self.mark_font = pygame.font.Font(None, 30)
+        mark = self.mark_font.render("!", True, (40, 30, 10))
+        self.screen.blit(mark, mark.get_rect(center=(int(pos[0]), int(pos[1]))))
 
     # --- shortcuts (Ferris) ---------------------------------------------------------------------------------
     def draw_shortcuts(self, view):

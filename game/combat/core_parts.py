@@ -1,10 +1,11 @@
 # THE CORE FIGHT'S PARTS (10.11, Milo): the beating heart, Milo's mines and the lines he says over the fight. Only these pieces live here - the order of the fight is core_fight.py.
 
 import math
-import os
 import random
 
 import pygame
+
+from game.lib import voicelines as VOICES
 
 
 # --- the heart -----------------------------------------------------------------------------------------------
@@ -74,7 +75,7 @@ class Mine:
 
 # --- what Milo says over the fight ---------------------------------------------------------------------------
 SUBTITLE_FRAMES = 200
-VOICE_FILE = "assets/voice/milo_fight_{}.ogg"     # a recorded line, if there is one (later: voice lines)
+VOICE_SPEAKER = "milo"            # (11.11) recordings: assets/sfx/voicelines/milo/<line id> (lib/voicelines.py)
 
 
 class Subtitles:
@@ -86,11 +87,10 @@ class Subtitles:
         self.text = ""
         self.left = 0
 
-    def say(self, key, text):
+    def say(self, line_id, text):
         self.text, self.left = text, SUBTITLE_FRAMES
-        path = VOICE_FILE.format(key)
-        if os.path.exists(path):
-            voice = pygame.mixer.Sound(path)
+        voice = VOICES.load(VOICE_SPEAKER, line_id)
+        if voice:
             voice.set_volume(self.volume)
             voice.play()
 

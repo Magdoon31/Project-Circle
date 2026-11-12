@@ -1,0 +1,115 @@
+{
+    "_comment": "(12.11) EXTRA ENDING: the Void beaten without all 3 lore items. Black, the ending hum, then the credits.",
+    "partner": "narrator",
+    "backdrop": "black",
+    "auto": true,
+    "music": "ending",
+    "pictures": {
+        "name": "extra",
+        "from_line": 2
+    },
+    "start": "monologue",
+    "nodes": {
+        "monologue": {
+            "lines": [
+                {
+                    "id": "ending_extra_01",
+                    "who": "narrator",
+                    "text": "...",
+                    "skippable": true,
+                    "speed": 0.08
+                },
+                {
+                    "id": "ending_extra_02",
+                    "who": "narrator",
+                    "text": "So now you know."
+                },
+                {
+                    "id": "ending_extra_03",
+                    "who": "narrator",
+                    "text": "Not everything. But enough to stop pretending you don't."
+                },
+                {
+                    "id": "ending_extra_04",
+                    "who": "narrator",
+                    "text": "Someone once wanted a world with nothing bad in it. It's a kind wish. Most terrible things begin as kind wishes."
+                },
+                {
+                    "id": "ending_extra_05",
+                    "who": "narrator",
+                    "text": "Every sad day, every cruel word, every fear... they cut it out, and put it where nobody would have to look."
+                },
+                {
+                    "id": "ending_extra_06",
+                    "who": "narrator",
+                    "text": "It didn't vanish. Nothing ever does. It only piled up in the dark, and waited."
+                },
+                {
+                    "id": "ending_extra_07",
+                    "who": "narrator",
+                    "text": "What you fought down here wasn't a monster. It was everything nobody wanted to feel."
+                },
+                {
+                    "id": "ending_extra_08",
+                    "who": "narrator",
+                    "text": "And you won. Of course you won. It's very tired."
+                },
+                {
+                    "id": "ending_extra_09",
+                    "who": "narrator",
+                    "text": "But beating it doesn't send it anywhere. There is nowhere left to send it."
+                },
+                {
+                    "id": "ending_extra_10",
+                    "who": "narrator",
+                    "text": "That's the hard thing about understanding. It doesn't fix anything. It only takes away the excuse."
+                },
+                {
+                    "id": "ending_extra_11",
+                    "who": "narrator",
+                    "text": "Some people learn the truth and think the work is over. That's usually where it starts."
+                },
+                {
+                    "id": "ending_extra_12",
+                    "who": "narrator",
+                    "text": "The things we hide from ourselves don't disappear. They grow quiet, and heavy, and patient."
+                },
+                {
+                    "id": "ending_extra_13",
+                    "who": "narrator",
+                    "text": "You can't throw away the bad parts of a life. You can only learn to carry them. A little at a time."
+                },
+                {
+                    "id": "ending_extra_14",
+                    "who": "narrator",
+                    "text": "Somewhere up there, a voice is still repeating the same words, hoping someone will listen to the end."
+                },
+                {
+                    "id": "ending_extra_15",
+                    "who": "narrator",
+                    "text": "A light that went out one night is still waiting for someone to ask why."
+                },
+                {
+                    "id": "ending_extra_16",
+                    "who": "narrator",
+                    "text": "And a few old words were never read to the one they were written for."
+                },
+                {
+                    "id": "ending_extra_17",
+                    "who": "narrator",
+                    "text": "Unfinished things are like that. They don't call your name. They just wait by the door."
+                },
+                {
+                    "id": "ending_extra_18",
+                    "who": "narrator",
+                    "text": "Rest, if you can. The quiet up there will hold. For now."
+                },
+                {
+                    "id": "ending_extra_19",
+                    "who": "narrator",
+                    "text": "And when you're ready... come back down. It will still be here, waiting to be finished."
+                }
+            ]
+        }
+    }
+}

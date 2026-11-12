@@ -17,21 +17,25 @@
             },
             "lines": [
                 {
+                    "id": "milo_candy_01",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Hey. Two guards down. People are going to start telling stories about you."
                 },
                 {
+                    "id": "milo_candy_02",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "This is the Sugarwood Grove. Trees made of candy, rivers of syrup, and the worst toothache of your life."
                 },
                 {
+                    "id": "milo_candy_03",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Everything here is sweet. Everything. Even the things that shouldn't be."
                 },
                 {
+                    "id": "milo_candy_04",
                     "who": "milo",
                     "pose": "serious",
                     "text": "...Can I ask you something?"
@@ -42,6 +46,7 @@
                     "text": "Sure."
                 },
                 {
+                    "id": "milo_candy_05",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Do you like it here? This place. The whole... everything."
@@ -52,6 +57,7 @@
                     "text": "I think so. Why?"
                 },
                 {
+                    "id": "milo_candy_06",
                     "who": "milo",
                     "pose": "smile",
                     "text": "No reason! People leave, sometimes. Go too far. I like it when people stay, that's all."
@@ -63,21 +69,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "milo_candy_07",
                     "who": "milo",
                     "pose": "smile",
                     "text": "The candy makers here are nice. Sticky handshakes, though."
                 },
                 {
+                    "id": "milo_candy_08",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Don't drink from the syrup river. I'm not saying why. Just don't."
                 },
                 {
+                    "id": "milo_candy_09",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "I like watching people walk by. You're the only one who walks that way, though."
                 },
                 {
+                    "id": "milo_candy_10",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "You know what I like about this place? Nothing ever changes. Nothing."
@@ -101,6 +111,7 @@
         "hub": {
             "lines": [
                 {
+                    "id": "milo_candy_11",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Anyway! What else?"
@@ -127,11 +138,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_candy_12",
                     "who": "milo",
                     "pose": "laugh",
                     "text": "They make everything out of sugar. Houses, chairs, spoons. One of them made a sugar hat. It melted in the rain."
                 },
                 {
+                    "id": "milo_candy_13",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "They're nice. They smile a lot. Maybe a little too much. Ever seen someone smile while sleeping? Like that."
@@ -145,11 +158,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_candy_14",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "A village. Smaller than mine. Quieter."
                 },
                 {
+                    "id": "milo_candy_15",
                     "who": "milo",
                     "pose": "serious",
                     "text": "After that the road splits. You'll see."
@@ -160,6 +175,7 @@
         "bye": {
             "lines": [
                 {
+                    "id": "milo_candy_16",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Watch your teeth."

@@ -7,26 +7,31 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "dot_01",
                     "who": "dot",
                     "pose": "angry",
                     "text": "If you're here to tell me my rolls are too small, I swear to the oven gods-"
                 },
                 {
+                    "id": "dot_02",
                     "who": "dot",
                     "pose": "tired",
                     "text": "Morning! Or whatever it is. I've been up since four. Everything's a blur and it smells like cinnamon."
                 },
                 {
+                    "id": "dot_03",
                     "who": "dot",
                     "pose": "neutral",
                     "text": "The kitchen was a total slaughterhouse this morning. Flour everywhere. Like a snowstorm in there."
                 },
                 {
+                    "id": "dot_04",
                     "who": "dot",
                     "pose": "serious",
                     "text": "Don't touch the window sill. Pies cooling. Touch the pies and you lose a finger."
                 },
                 {
+                    "id": "dot_05",
                     "who": "dot",
                     "pose": "annoyed",
                     "text": "The mayor came by again. Ate three buns. Paid for one. Classic."
@@ -88,16 +93,19 @@
         "hook_yes": {
             "lines": [
                 {
+                    "id": "dot_06",
                     "who": "dot",
                     "pose": "guilty",
                     "text": "The Hook? Oh, THAT Hook. Yeah. I used it to get a tray off the top shelf. Long story."
                 },
                 {
+                    "id": "dot_07",
                     "who": "dot",
                     "pose": "sly",
                     "text": "Look, I'll give it back. But I'm not just handing it over, I've got my pride."
                 },
                 {
+                    "id": "dot_08",
                     "who": "dot",
                     "pose": "grin",
                     "text": "Play me a round of memory. If you win, it's yours. If you lose, you buy a bun. Kidding. Mostly."
@@ -108,16 +116,19 @@
         "hook_no": {
             "lines": [
                 {
+                    "id": "dot_09",
                     "who": "dot",
                     "pose": "annoyed",
                     "text": "The Angler's Hook? Why would I have that, do I look like I fish? I'm a baker. I bake."
                 },
                 {
+                    "id": "dot_10",
                     "who": "dot",
                     "pose": "sly",
                     "text": "...But you look bored. I've got a game. Cards, pairs, the whole thing. Fancy a round?"
                 },
                 {
+                    "id": "dot_11",
                     "who": "dot",
                     "pose": "grin",
                     "text": "Win and I'll pay you a bit. Lose and you've wasted your time. Which, honestly, is the real price."
@@ -128,11 +139,13 @@
         "play": {
             "lines": [
                 {
+                    "id": "dot_12",
                     "who": "dot",
                     "pose": "sly",
                     "text": "Twenty cards, ten pairs, and not much time. Ready?"
                 },
                 {
+                    "id": "dot_13",
                     "who": "dot",
                     "pose": "sly",
                     "text": "First game's on me. After that it costs you. And the more you win, the more it costs. Business.",
@@ -197,11 +210,13 @@
             },
             "lines": [
                 {
+                    "id": "dot_14",
                     "who": "dot",
                     "pose": "shocked",
                     "text": "Oh, son of a biscuit. You actually did it."
                 },
                 {
+                    "id": "dot_15",
                     "who": "dot",
                     "pose": "neutral",
                     "text": "Fine, fine. Here's the Hook. Tell the old grump it's a bit floury. That's a feature."
@@ -214,16 +229,19 @@
             },
             "lines": [
                 {
+                    "id": "dot_16",
                     "who": "dot",
                     "pose": "shocked",
                     "text": "Again?! Your memory's scary. Here, take your coins."
                 },
                 {
+                    "id": "dot_17",
                     "who": "dot",
                     "pose": "annoyed",
                     "text": "Son of a scone. Fine. Paid. Happy?"
                 },
                 {
+                    "id": "dot_18",
                     "who": "dot",
                     "pose": "smile",
                     "text": "Not bad. You'd make a decent baker. Terrible hours, though."
@@ -234,16 +252,19 @@
         "lost": {
             "lines": [
                 {
+                    "id": "dot_19",
                     "who": "dot",
                     "pose": "grin",
                     "text": "Ha! Time's up. Better luck next time, sweetcheeks. Kidding. Again tomorrow?"
                 },
                 {
+                    "id": "dot_20",
                     "who": "dot",
                     "pose": "smile",
                     "text": "Close one. You've got the memory of a goldfish. A clever goldfish, but still."
                 },
                 {
+                    "id": "dot_21",
                     "who": "dot",
                     "pose": "tired",
                     "text": "That's how I feel at four in the morning. Want another go?"
@@ -254,6 +275,7 @@
         "poor": {
             "lines": [
                 {
+                    "id": "dot_22",
                     "who": "dot",
                     "pose": "annoyed",
                     "text": "No coins, no cards. I've got rent. Well, I don't. But I've got principles."

@@ -1,0 +1,224 @@
+{
+    "_comment": "(11.11) Milo in the Void Shrine - not really him: what the Void remembers of him. Calm, sad, a little wrong about small things. Lore item 3/3: the Old Note (from the Foreman in the Core). Sets lore_used:Old Note.",
+    "partner": "milo",
+    "music": "silence",
+    "start": [
+        {
+            "if": {
+                "flag": "lore_used:Old Note"
+            },
+            "goto": "after"
+        },
+        {
+            "if": {
+                "flag": "talked:milo_void"
+            },
+            "goto": "again"
+        },
+        "first"
+    ],
+    "nodes": {
+        "first": {
+            "do": {
+                "flag": "talked:milo_void"
+            },
+            "lines": [
+                {
+                    "id": "milo_void_01",
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "Oh. Hi. You made it this far."
+                },
+                {
+                    "id": "milo_void_02",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Don't worry. I'm not going to stop you. I can't, really. I'm not here."
+                },
+                {
+                    "id": "milo_void_03",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "This place remembers me, that's all. I'm what's left over. Like a song stuck in your head."
+                },
+                {
+                    "id": "milo_void_04",
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "I remember the Village fence. The lake. You, losing to slimes. ...Was it slimes? It feels like slimes."
+                },
+                {
+                    "id": "milo_void_05",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Things get blurry down here. If I say something wrong, it's not lying. It's just... forgetting."
+                },
+                {
+                    "id": "milo_void_06",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "Sit for a while, if you want. Nobody else comes this way."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I have a note for you.",
+                    "if": {
+                        "item": "Old Note",
+                        "not_flag": "lore_used:Old Note"
+                    },
+                    "goto": "note"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "again": {
+            "random_line": true,
+            "lines": [
+                {
+                    "id": "milo_void_07",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Still here. Me too. Obviously."
+                },
+                {
+                    "id": "milo_void_08",
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "I keep counting the islands. I get a different number every time."
+                },
+                {
+                    "id": "milo_void_09",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "There was a song in the Lunapark. I can't remember how it goes. I remember that I liked it."
+                },
+                {
+                    "id": "milo_void_10",
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "You look tired. That's allowed here."
+                }
+            ],
+            "choices": [
+                {
+                    "text": "I have a note for you.",
+                    "if": {
+                        "item": "Old Note",
+                        "not_flag": "lore_used:Old Note"
+                    },
+                    "goto": "note"
+                },
+                {
+                    "text": "Bye.",
+                    "goto": "end"
+                }
+            ]
+        },
+        "note": {
+            "lines": [
+                {
+                    "who": "player",
+                    "pose": "listening",
+                    "text": "Someone wanted you to read this."
+                },
+                {
+                    "id": "milo_void_11",
+                    "who": "milo",
+                    "pose": "surprised",
+                    "text": "For me? Nobody writes to me."
+                },
+                {
+                    "id": "milo_void_12",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "'It was meant to last but something happened.'"
+                },
+                {
+                    "id": "milo_void_13",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "'We thought we were shutting it down.'"
+                },
+                {
+                    "id": "milo_void_14",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "'We were only putting it to sleep.'"
+                },
+                {
+                    "id": "milo_core_entrance_08",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "..."
+                },
+                {
+                    "id": "milo_void_15",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "Asleep. Not off. Asleep."
+                },
+                {
+                    "id": "milo_void_16",
+                    "who": "milo",
+                    "pose": "thinking",
+                    "text": "So all those years in front of that heart... I wasn't guarding a locked door. I was making sure nobody woke it up."
+                },
+                {
+                    "id": "milo_void_17",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "And it was dreaming the whole time. Everything it ever cut out is still down here. Dreaming."
+                },
+                {
+                    "id": "milo_void_18",
+                    "who": "milo",
+                    "pose": "tired",
+                    "text": "I should be angry. I think I'm just tired."
+                },
+                {
+                    "id": "milo_void_19",
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Thank you. Really. It's nice to know one thing for sure, in a place like this.",
+                    "do": {
+                        "take": "Old Note",
+                        "flag": "lore_used:Old Note"
+                    }
+                },
+                {
+                    "id": "milo_void_20",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Whatever is waiting at the end... it isn't evil. It's just everything nobody wanted. Be kind to it, if you can."
+                }
+            ]
+        },
+        "after": {
+            "random_line": true,
+            "lines": [
+                {
+                    "id": "milo_void_21",
+                    "who": "milo",
+                    "pose": "sad",
+                    "text": "It's still asleep. I can feel it breathing."
+                },
+                {
+                    "id": "milo_void_22",
+                    "who": "milo",
+                    "pose": "smile",
+                    "text": "Thanks for the letter. First one I ever got."
+                },
+                {
+                    "id": "milo_void_23",
+                    "who": "milo",
+                    "pose": "neutral",
+                    "text": "Go on. I'll remember you. For a while."
+                }
+            ]
+        }
+    }
+}

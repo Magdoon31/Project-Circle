@@ -17,12 +17,21 @@ from game.combat import wall_tactics as TACTICS
 from game.combat.darkness import Darkness
 from game.combat.song import fight as SONG
 from game.combat.enemy.enemy_database import WALL_BOUNCE, WALL_PASS
+from game.combat.player import shooter as SH
+from game import difficulty as DIFF
 
 # RUNNING AWAY: hold R in a normal fight. Every frame there is a chance to escape (no win, no death).
 # While holding R the player can't shoot.
 RUN_KEY = pygame.K_r
 RUN_CHANCE = 0.006            # per frame of holding R (~1.4 s on average)
 RUN_CHANCE_HARD_MODE = 0.004  # ~2 s on average
+HARD_ENEMY_DAMAGE = 1.15      # (12.11) hard mode: enemies (and bosses) hit 15% harder ...
+HARD_GOLD = 0.88              # ... and every fight gives 12% less gold
+NO_GOLD_BOSSES = {"milo", "void_boss"}   # (12.11) the last two bosses give no gold (nothing to buy after them)
+HARD_BOSS_REACH = 10000       # (12.11) hard mode: a boss's bullets live this long (ms) - they go off the map
+SHORT_REACH = 2000            # ... not the ones meant to vanish soon (shorter range) ...
+SLOW_BULLET = 4               # ... nor the slow ones (px a frame) ...
+OWN_REACH_MOTIONS = {"slowdown", "creep", "pulse", "land_ring"}   # ... nor spores, mines, pulsing rings, bombs
 CAN_RUN_FROM_BOSS = False
 DEATH_ATTACK_DELAY = 18      # frames (0.3 s) between a death and its death attack (warning ring)
 OUT_OF_ROOM = 300           # (11.11) px outside the room after which an enemy bullet flying away is gone
@@ -53,9 +62,31 @@ SONG_SFX_VOLUME = {"laser": 0.35, "circle": 0.8, "square": 1.0}   # (10.11) the 
 FLAWLESS_GOLD = 1.2           # no damage taken in a normal fight: x1.2 gold (not in hard mode)     # bosses are only fought on purpose (you walk into them)
 
 
+def reach_far(bullets):
+    """(12.11) Hard mode: a boss's bullets (and what they burst into) fly on till they leave the map."""
+    for p in bullets:
+        children = (p.motion or {}).get("children")
+        if children and children.get("range", 0) >= SHORT_REACH:
+            children["range"] = max(children["range"], HARD_BOSS_REACH)
+        if keeps_own_reach(p):
+            continue
+        p.range = max(p.range, HARD_BOSS_REACH)
+
+
+def explosion_look(effect):
+    """The look of a bullet's coloured explosion ("nova_", "frost_"), or None."""
+    return next((key[:-len("explosion")] for key in effect if key.endswith("_explosion")), None)
+
+
+def keeps_own_reach(p):
+    """Bullets whose short life is the point: thrown bombs, spores, mines, slow or short-range ones."""
+    kind = (p.motion or {}).get("kind")
+    return "throw" in p.effects or kind in OWN_REACH_MOTIONS or p.range < SHORT_REACH or p.speed < SLOW_BULLET
+
+
 class Combat:
 
-    def __init__(self, screen, player, enemies, enemy_db, hard_mode, sfx=None, boss=None, assets=None):
+    def __init__(self, screen, player, enemies, enemy_db, difficulty, sfx=None, boss=None, assets=None):
         # (8.11) `screen` = the room everything is drawn in (the display, or a bigger picture in a big room);
         # `view` = the display. In a big room the camera shows the part around the player (setup_room).
         self.screen = screen
@@ -96,7 +127,14 @@ class Combat:
         self.money_mult = random.randint(10,40)*0.05
         self.money_mult_og = self.money_mult
 
-        self.hard_mode = hard_mode
+        self.difficulty = difficulty                     # (12.11) game/difficulty.py
+        self.hard_mode = difficulty == DIFF.HARD
+        self.easy_mode = difficulty == DIFF.EASY
+        if self.hard_mode:
+            player.hurt_mult = HARD_ENEMY_DAMAGE
+            player.ice_grip = SH.HARD_ICE_GRIP
+        elif self.easy_mode:
+            player.hurt_mult = DIFF.EASY_ENEMY_DAMAGE
         self.timer = 0
 
         self.segments = assets.zap_segments
@@ -104,6 +142,7 @@ class Combat:
         self.zapped_enemies = []
         self.explosion_img = assets.explosion_img
         self.nova_explosion_img = assets.nova_explosion_img
+        self.explosion_looks = {"nova_": assets.nova_explosion_img, "frost_": assets.frost_explosion_img}
         self.explosions = []
         self.pending_explosions = []
         self.near_misses = 0          # enemy bullets that flew right past the player (Bullet Time sigil)
@@ -404,9 +443,10 @@ class Combat:
                     effect["explosion"].append(projectile.damage)
                     self.explosion((projectile.x,projectile.y), effect["explosion"],"player", effects=effect)
                     self.sfx.play("explosion") 
-                elif "nova_explosion" in effect:
-                    effect["nova_explosion"].append(projectile.damage)
-                    self.explosion((projectile.x,projectile.y), effect["nova_explosion"],"player",type="nova_", effects=effect)
+                elif explosion_look(effect):               # nova_ / (12.11) frost_ (Frost Golem's winter blasts)
+                    look = explosion_look(effect)
+                    effect[look + "explosion"].append(projectile.damage)
+                    self.explosion((projectile.x,projectile.y), effect[look + "explosion"],"player",type=look, effects=effect)
                     self.sfx.play("explosion") 
                 self.enemy_projectiles.remove(projectile)
                 continue   # already removed - must not be checked for a hit (double remove crash)
@@ -458,7 +498,12 @@ class Combat:
             self.move_enemy(enemy, target)                  # (8.11) with the walls in mind (wall_tactics.py)
             enemy.behind_wall = not TACTICS.sees((enemy.x, enemy.y), (target.x, target.y), getattr(self, "walls", []))
             enemy._walls = getattr(self, "walls", [])          # (8.11) new ice walls keep away from the standing ones
-            proj,enemies = enemy.attack(self.timer, self.player, self.hard_mode, self.enemy_db, aim=target)
+            if self.easy_mode and not enemy.easy:
+                enemy.make_easy()                             # (12.11) fewer bullets in its attacks
+            pace = DIFF.cooldown_mult(self.difficulty, enemy.type == "boss")
+            proj,enemies = enemy.attack(self.timer, self.player, pace, self.enemy_db, aim=target)
+            if self.hard_mode and enemy.type == "boss":
+                reach_far(proj)
             self.slow_bullets(proj)
             if getattr(enemy, "name", None) in WALL_BOUNCE:
                 for p in proj:
@@ -809,7 +854,8 @@ class Combat:
                 for a in angles:
                     self.enemy_projectiles.append(prjt(x, y, x + math.cos(a) * 1000, y + math.sin(a) * 1000, spec["speed"],
                                                        spec["damage"], "enemy", spec["width"], spec["range"],
-                                                       self.enemy_db.bullet_type_info, spec["type"]))
+                                                       self.enemy_db.bullet_type_info, spec["type"],
+                                                       effects=spec.get("effects", {})))    # (11.11) e.g. glue
                 n["left"] -= 1
                 n["next"] = spec.get("every", 4)
                 if n["left"] <= 0:
@@ -1067,10 +1113,13 @@ class Combat:
 
     def gold_multiplier(self):
         """Everything the gold is multiplied by: a normal fight's luck, Flawless (not in hard mode), the trinkets,
-        Game's (Lucky Coin). A boss: only Game's."""
+        Game's (Lucky Coin). A boss: only Game's; (12.11) Milo and the Void: no gold at all."""
+        hard = HARD_GOLD if self.hard_mode else 1.0              # (12.11)
+        if self.boss in NO_GOLD_BOSSES:
+            return 0
         if self.boss:
-            return self.gold_mult
-        mult = self.money_mult * self.gold_mult
+            return self.gold_mult * hard
+        mult = self.money_mult * self.gold_mult * hard
         if not self.hard_mode and self.flawless():
             mult *= FLAWLESS_GOLD
         if "enemy_gold" in self.player.trinket_effect:
@@ -1235,7 +1284,7 @@ class Combat:
                 self.void.draw_dead(self.screen, self.font_heavy["giant"])
         if self.win and self.song:
             self.song.draw_result(self.screen, self.font_heavy)
-        elif self.win or (self.core and self.core.shows_fake_win):
+        elif (self.win and not self.skip_end_screen) or (self.core and self.core.shows_fake_win):   # (12.11) endings: none
             if self.win_screen is None:
                 self.start_win_screen()
             self.win_screen.update()
@@ -1436,10 +1485,8 @@ class Combat:
             elif exp[2] > 0:
 
                 stage = math.ceil(exp[2]/4)
-                if exp[3]:
-                    img = pygame.transform.scale(self.nova_explosion_img[6-stage],(w*2,w*2))
-                else:
-                    img = pygame.transform.scale(self.explosion_img[6-stage],(w*2,w*2))
+                frames = self.explosion_looks.get(exp[3], self.explosion_img)
+                img = pygame.transform.scale(frames[6-stage],(w*2,w*2))
                 rect = img.get_rect(center=pos)
 
                 if exp[2]>8:

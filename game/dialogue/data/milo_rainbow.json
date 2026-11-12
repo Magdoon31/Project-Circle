@@ -17,6 +17,7 @@
             },
             "lines": [
                 {
+                    "id": "milo_rainbow_01",
                     "who": "milo",
                     "pose": "grin",
                     "text": "There you are! I heard the noise all the way from here. Big crash, lots of yelling. Was that you?"
@@ -27,31 +28,37 @@
                     "text": "...You heard that from here?"
                 },
                 {
+                    "id": "milo_rainbow_02",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Sound travels. Anyway. You beat it. The big grumpy thing. Honestly, I didn't think anyone could."
                 },
                 {
+                    "id": "milo_rainbow_03",
                     "who": "milo",
                     "pose": "laugh",
                     "text": "How did you even- no, don't tell me. I'd just get jealous."
                 },
                 {
+                    "id": "milo_rainbow_04",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "Welcome to Rainbow Fields. Every colour you can think of, and a few you can't."
                 },
                 {
+                    "id": "milo_rainbow_05",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "The flowers here are friendly. Mostly. Don't stare at them for too long. They stare back."
                 },
                 {
+                    "id": "milo_rainbow_06",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "Past the fields there's a forest made of sugar. You'll smell it before you see it."
                 },
                 {
+                    "id": "milo_rainbow_07",
                     "who": "milo",
                     "pose": "shrug",
                     "text": "And another one of those guards. Bigger. Grumpier. Probably."
@@ -62,11 +69,13 @@
         "before": {
             "lines": [
                 {
+                    "id": "milo_rainbow_08",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Hm? I've been here for a while."
                 },
                 {
+                    "id": "milo_rainbow_09",
                     "who": "milo",
                     "pose": "smile",
                     "text": "You walk slow. No offence."
@@ -80,11 +89,13 @@
         "advice": {
             "lines": [
                 {
+                    "id": "milo_rainbow_10",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Flowers that move are not flowers. That's the whole advice."
                 },
                 {
+                    "id": "milo_rainbow_11",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Oh, and if something sparkles in the grass, it's either gold or a very bad idea. Usually gold."
@@ -99,21 +110,25 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "milo_rainbow_12",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Isn't it beautiful? I could stand here all day. I kind of do."
                 },
                 {
+                    "id": "milo_rainbow_13",
                     "who": "milo",
                     "pose": "laugh",
                     "text": "Counted the colours once. Got to forty-two and then a flower bit me."
                 },
                 {
+                    "id": "milo_rainbow_14",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "You okay? You look like you're thinking hard. Don't think too hard here. It's a happy place."
                 },
                 {
+                    "id": "milo_rainbow_15",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "The wind smells like candy today. That means the sweet forest is close."
@@ -141,6 +156,7 @@
         "hub": {
             "lines": [
                 {
+                    "id": "milo_rainbow_16",
                     "who": "milo",
                     "pose": "smile",
                     "text": "So. Anything else on your mind?"
@@ -171,11 +187,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_rainbow_17",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "The Sugarwood Grove. Candy trees, syrup rivers. It smells amazing for about five minutes."
                 },
                 {
+                    "id": "milo_rainbow_18",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Then it smells like a dentist's nightmare."
@@ -186,6 +204,7 @@
         "bye": {
             "lines": [
                 {
+                    "id": "milo_rainbow_19",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Go get 'em. Carefully. Like, really carefully."

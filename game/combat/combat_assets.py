@@ -65,6 +65,15 @@ class CombatAssets:
         self.poison_zap_segments = [pygame.transform.scale(pygame.image.load(f"assets/img/combat/zap/poison_zap{nr}.png"),(64,64)) for nr in range(1,5)]
         self.explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/boom{nr}.png") for nr in range(1,7)]
         self.nova_explosion_img = [pygame.image.load(f"assets/img/combat/projectiles/nova_boom{nr}.png") for nr in range(1,7)]
+        self.frost_explosion_img = self.optional_boom("frost_boom", self.explosion_img)
         # the Mascot Plush on the battlefield (decoy.py): its own sprite, or a drawn placeholder if there is none
         plush = "assets/img/combat/decoy.png"
         self.decoy_img = pygame.image.load(plush).convert_alpha() if os.path.exists(plush) else None
+
+    @staticmethod
+    def optional_boom(name, fallback):
+        """(12.11) An explosion's 6 frames assets/img/combat/projectiles/<name>1-6.png, or `fallback` if any is missing."""
+        paths = [f"assets/img/combat/projectiles/{name}{nr}.png" for nr in range(1, 7)]
+        if not all(os.path.exists(p) for p in paths):
+            return fallback
+        return [pygame.image.load(p) for p in paths]

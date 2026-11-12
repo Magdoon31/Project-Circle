@@ -4,6 +4,13 @@
     "start": [
         {
             "if": {
+                "item": "Broken Bulb",
+                "not_flag": "lore_used:Broken Bulb"
+            },
+            "goto": "bulb_notice"
+        },
+        {
+            "if": {
                 "quest_done": "foreman"
             },
             "goto": "after"
@@ -40,11 +47,13 @@
             },
             "lines": [
                 {
+                    "id": "foreman_01",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "Stop right there. Hands where I can see them."
                 },
                 {
+                    "id": "foreman_02",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "Who sent you? The board? The inspection? It's the inspection, isn't it."
@@ -55,21 +64,25 @@
                     "text": "Nobody sent me."
                 },
                 {
+                    "id": "foreman_03",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "That's exactly what an inspector would say."
                 },
                 {
+                    "id": "foreman_04",
                     "who": "foreman",
                     "pose": "nervous",
                     "text": "Fine. Fine! Look around. Everything's in order. Safety rules on the wall. Cups washed. Mostly washed."
                 },
                 {
+                    "id": "foreman_05",
                     "who": "foreman",
                     "pose": "nervous",
                     "text": "I'm the Foreman. I run this place. Been running it since we bu- since I was hired. Long time ago. Normal hiring. Very normal."
                 },
                 {
+                    "id": "foreman_06",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "The workers? On break. Long break. Don't write that down."
@@ -80,26 +93,31 @@
         "problem": {
             "lines": [
                 {
+                    "id": "foreman_07",
                     "who": "foreman",
                     "pose": "worried",
                     "text": "...And Line Bloodbath is down. Has been for weeks. If the inspection sees that, I'm finished."
                 },
                 {
+                    "id": "foreman_08",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "You say you're not an inspector? Prove it. Help me get the line running."
                 },
                 {
+                    "id": "foreman_09",
                     "who": "foreman",
                     "pose": "thinking",
                     "text": "Three parts. A gear - there's one lying around somewhere in the halls, I'm sure of it. Almost sure."
                 },
                 {
+                    "id": "foreman_10",
                     "who": "foreman",
                     "pose": "nervous",
                     "text": "A meter. The shop sells those. And a fuse. The tesla robots carry spare fuses. Don't ask me why. I didn't design them."
                 },
                 {
+                    "id": "foreman_11",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "...I didn't. Design them."
@@ -124,6 +142,7 @@
             },
             "lines": [
                 {
+                    "id": "foreman_12",
                     "who": "foreman",
                     "pose": "neutral",
                     "text": "Good. Quiet, quick, and you were never here."
@@ -133,6 +152,7 @@
         "no": {
             "lines": [
                 {
+                    "id": "foreman_13",
                     "who": "foreman",
                     "pose": "angry",
                     "text": "Then stop looking at my line. Out. Out!"
@@ -143,11 +163,13 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "foreman_14",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "You again. Still not an inspector? ...Then help me with the line."
                 },
                 {
+                    "id": "foreman_15",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "Did someone follow you here? Check behind you. ...Okay. Talk."
@@ -167,11 +189,13 @@
         "waiting": {
             "lines": [
                 {
+                    "id": "foreman_16",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "Show me what you've got. Slowly."
                 },
                 {
+                    "id": "foreman_17",
                     "who": "foreman",
                     "pose": "neutral",
                     "text": "The gear. Good. Rusty, but good.",
@@ -180,6 +204,7 @@
                     }
                 },
                 {
+                    "id": "foreman_18",
                     "who": "foreman",
                     "pose": "tired",
                     "text": "Still no gear. It's in one of the far halls. On the floor. Look down once in a while.",
@@ -188,6 +213,7 @@
                     }
                 },
                 {
+                    "id": "foreman_19",
                     "who": "foreman",
                     "pose": "neutral",
                     "text": "A meter! Did anyone see you buy it? ...Good.",
@@ -196,6 +222,7 @@
                     }
                 },
                 {
+                    "id": "foreman_20",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "Meter. From the shop. Pay cash. No receipts.",
@@ -204,6 +231,7 @@
                     }
                 },
                 {
+                    "id": "foreman_21",
                     "who": "foreman",
                     "pose": "nervous",
                     "text": "A fuse. From a tesla? Did it... say anything? Never mind.",
@@ -212,6 +240,7 @@
                     }
                 },
                 {
+                    "id": "foreman_22",
                     "who": "foreman",
                     "pose": "thinking",
                     "text": "Fuse. The tesla robots. One in four carries a spare. Don't let them zap you twice.",
@@ -224,16 +253,19 @@
         "hand_in": {
             "lines": [
                 {
+                    "id": "foreman_23",
                     "who": "foreman",
                     "pose": "surprised",
                     "text": "Gear. Meter. Fuse. All three."
                 },
                 {
+                    "id": "foreman_24",
                     "who": "foreman",
                     "pose": "nervous",
                     "text": "Stand back. Further. Further than that."
                 },
                 {
+                    "id": "foreman_25",
                     "who": "foreman",
                     "pose": "happy",
                     "text": "...Listen. Hear that? Line Bloodbath. Running again."
@@ -255,11 +287,13 @@
             },
             "lines": [
                 {
+                    "id": "foreman_26",
                     "who": "foreman",
                     "pose": "neutral",
                     "text": "Here. A nail gun from the old toolbox. Nobody counts the tools. Nobody counts anything down here anymore."
                 },
                 {
+                    "id": "foreman_27",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "And if anyone asks - the line never stopped. Understood?"
@@ -270,25 +304,97 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "foreman_28",
                     "who": "foreman",
                     "pose": "neutral",
                     "text": "The line's running. Nothing comes out the other end, but it's running."
                 },
                 {
+                    "id": "foreman_29",
                     "who": "foreman",
                     "pose": "suspicious",
                     "text": "You didn't see the old blueprints in the control room. Right? Right."
                 },
                 {
+                    "id": "foreman_30",
                     "who": "foreman",
                     "pose": "worried",
                     "text": "The inspection still hasn't come. Good. Or bad. Means they forgot about us."
                 },
                 {
+                    "id": "foreman_31",
                     "who": "foreman",
                     "pose": "nervous",
                     "text": "Before? There was no 'before'. I've always worked here. Always."
                 }
+            ]
+        },
+        "bulb_notice": {
+            "lines": [
+                {
+                    "id": "foreman_32",
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Hold on. What's that in your pocket?"
+                },
+                {
+                    "id": "foreman_33",
+                    "who": "foreman",
+                    "pose": "nervous",
+                    "text": "Is that... glass?"
+                }
+            ],
+            "choices": [
+                {
+                    "text": "Show him the broken bulb.",
+                    "goto": "dialogue:foreman_bulb"
+                },
+                {
+                    "text": "Nothing.",
+                    "goto": "carry_on"
+                }
+            ]
+        },
+        "carry_on": {
+            "lines": [
+                {
+                    "id": "foreman_34",
+                    "who": "foreman",
+                    "pose": "suspicious",
+                    "text": "Nothing. Sure. Everybody's got nothing in their pocket."
+                }
+            ],
+            "then": [
+                {
+                    "if": {
+                        "quest_done": "foreman"
+                    },
+                    "goto": "after"
+                },
+                {
+                    "if": {
+                        "quest": "foreman",
+                        "item": [
+                            "Gear",
+                            "Meter",
+                            "Fuse"
+                        ]
+                    },
+                    "goto": "hand_in"
+                },
+                {
+                    "if": {
+                        "quest": "foreman"
+                    },
+                    "goto": "waiting"
+                },
+                {
+                    "if": {
+                        "flag": "talked:foreman"
+                    },
+                    "goto": "again"
+                },
+                "first"
             ]
         }
     }

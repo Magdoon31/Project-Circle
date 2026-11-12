@@ -23,6 +23,7 @@
             },
             "lines": [
                 {
+                    "id": "ring_voice_01",
                     "who": "whisper",
                     "pose": "dark",
                     "horror": true,
@@ -30,6 +31,7 @@
                     "text": "...closer..."
                 },
                 {
+                    "id": "ring_voice_02",
                     "who": "whisper",
                     "pose": "dark",
                     "horror": true,
@@ -37,6 +39,7 @@
                     "text": "Only the innocent may see what is true."
                 },
                 {
+                    "id": "ring_voice_03",
                     "who": "whisper",
                     "pose": "dark",
                     "horror": true,
@@ -44,6 +47,7 @@
                     "text": "Find the stone that has no colour."
                 },
                 {
+                    "id": "ring_voice_04",
                     "who": "whisper",
                     "pose": "dark",
                     "horror": true,
@@ -51,6 +55,7 @@
                     "text": "Come to it with nothing to hurt with."
                 },
                 {
+                    "id": "ring_voice_05",
                     "who": "whisper",
                     "pose": "dark",
                     "horror": true,
@@ -58,6 +63,7 @@
                     "text": "Stand. Be still."
                 },
                 {
+                    "id": "ring_voice_06",
                     "who": "whisper",
                     "pose": "dark",
                     "horror": true,

@@ -162,7 +162,10 @@ def plan(enemy, target, walls, size, timer):
         return Plan(there)
     bodies = bodies_for(enemy, walls)
     if is_chaser(enemy):
-        return Plan(step_towards(enemy, there, bodies, timer))
+        step = step_towards(enemy, there, bodies, timer)
+        # (11.11) going round a wall, "keep a distance" movers (gum goblin) must not stop at the corner: their
+        # distance check would measure the corner, not you - they walk straight to it instead
+        return Plan(step, chase=step != there and "distance" in enemy.movement_type)
     in_sight = sees(here, there, walls)
     if is_thrower(enemy):
         if not in_sight:

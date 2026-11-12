@@ -40,6 +40,7 @@ SPEAKERS = {
     "npc1":   {"name": "???", "sound": "talksound_NPC1.ogg", "color": (120, 200, 140)},
     "npc2":   {"name": "???", "sound": "talksound_NPC2.ogg", "color": (200, 140, 110)},
     "girl":   {"name": "???", "sound": "talksound_girl1.wav", "color": (240, 140, 190)},
+    "narrator": {"name": "???", "color": (225, 225, 232)},     # (12.11) the voice in the endings (no talk sound)
 }
 
 # which dialogue an NPC on the map starts (NPC id from the prefab @npcs / the map -> file in game/dialogue/data/)
@@ -61,6 +62,8 @@ NPC_DIALOGUES = {
     "gus": "gus",
     "hal": "hal",
     "foreman": "foreman",
+    "foreman_core": "foreman_core",     # (11.11) in the Core after Milo's Peace Gun ending: gives the Old Note
+    "milo_void": "milo_void",           # (11.11) Milo in the Void Shrine, a memory (takes the Old Note)
     "ice_fisher": "oliver",          # Oliver at the ice fishing camp (Tundra)
     "wren_village": "wren_village",  # Wren moves: Separated Village -> Garden camp -> near the Core way (story/wren.py)
     "wren": "wren",

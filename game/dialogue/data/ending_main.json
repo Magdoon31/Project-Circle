@@ -1,0 +1,110 @@
+{
+    "_comment": "(12.11) MAIN ENDING: Milo beaten without the Peace Gun. The screen goes black, the voice ??? speaks over the ending hum (assets/music/ending.mp3), then the credits (story/ending.py). Only the first line can be skipped; the rest goes on by itself.",
+    "partner": "narrator",
+    "backdrop": "black",
+    "auto": true,
+    "music": "ending",
+    "pictures": {
+        "name": "main",
+        "from_line": 2
+    },
+    "start": "monologue",
+    "nodes": {
+        "monologue": {
+            "lines": [
+                {
+                    "id": "ending_extra_01",
+                    "who": "narrator",
+                    "text": "...",
+                    "skippable": true,
+                    "speed": 0.08
+                },
+                {
+                    "id": "ending_main_01",
+                    "who": "narrator",
+                    "text": "It's quiet now. Listen to it for a moment."
+                },
+                {
+                    "id": "ending_main_02",
+                    "who": "narrator",
+                    "text": "You came a very long way to break something. Most people do."
+                },
+                {
+                    "id": "ending_main_03",
+                    "who": "narrator",
+                    "text": "They believe that if they find the thing that hurts and smash it, the hurting stops."
+                },
+                {
+                    "id": "ending_main_04",
+                    "who": "narrator",
+                    "text": "And for a while, it does. That part is true."
+                },
+                {
+                    "id": "ending_main_05",
+                    "who": "narrator",
+                    "text": "But the heart was never the reason. It was only the place where someone kept the reason."
+                },
+                {
+                    "id": "ending_main_06",
+                    "who": "narrator",
+                    "text": "Everything you cut away has to go somewhere. It doesn't disappear just because you stop looking at it."
+                },
+                {
+                    "id": "ending_main_07",
+                    "who": "narrator",
+                    "text": "Break a lock, and the door is still there. Break the door, and the room is still there."
+                },
+                {
+                    "id": "ending_main_08",
+                    "who": "narrator",
+                    "text": "The one who stood in your way knew that. He had seen this night before."
+                },
+                {
+                    "id": "ending_main_09",
+                    "who": "narrator",
+                    "text": "You didn't ask him why. Nobody ever asks why. Asking is slower than winning."
+                },
+                {
+                    "id": "ending_main_10",
+                    "who": "narrator",
+                    "text": "Don't be ashamed of it. Winning is a fine thing. It just isn't the same as understanding."
+                },
+                {
+                    "id": "ending_main_11",
+                    "who": "narrator",
+                    "text": "Somewhere below, something turns over in its sleep. It doesn't wake. Not yet."
+                },
+                {
+                    "id": "ending_main_12",
+                    "who": "narrator",
+                    "text": "Up there, the grass will grow back. The monsters will be sweet again. For a while."
+                },
+                {
+                    "id": "ending_main_13",
+                    "who": "narrator",
+                    "text": "And someone will wake up by a fence in a quiet village, and feel like they've been there before."
+                },
+                {
+                    "id": "ending_main_14",
+                    "who": "narrator",
+                    "text": "They'll be right."
+                },
+                {
+                    "id": "ending_main_15",
+                    "who": "narrator",
+                    "text": "If you want my advice... and nobody ever does, at the end..."
+                },
+                {
+                    "id": "ending_main_16",
+                    "who": "narrator",
+                    "text": "...next time, before you break something, ask what it was holding."
+                },
+                {
+                    "id": "ending_main_17",
+                    "who": "narrator",
+                    "text": "Sleep now. It's a long way back to the beginning."
+                }
+            ]
+        }
+    }
+}

@@ -1,33 +1,82 @@
 {
     "player": {
-        "x": 7964.166952713471,
-        "y": 4227.310071541646,
-        "money": 0,
-        "playtime": 7.066666666666647,
-        "biome": "village"
+        "x": 3383.5022583007812,
+        "y": 19712.5,
+        "money": 162,
+        "playtime": 465.9833333332382,
+        "biome": "rainbow_fields"
     },
     "inventory": {
         "active_items": [
-            "Simple Blaster"
+            "Simple Pistol",
+            "Gladiator's Chestplate"
         ],
         "active_trinket2": null,
         "items": [
-            "Simple Pistol"
+            "Simple Blaster",
+            "Leather Chestplate",
+            "Vest",
+            "Water Hose",
+            "Bubble Gun"
         ]
     },
     "map": {
-        "seed": 681849985,
+        "seed": 456951716,
         "seed_text": "",
         "level": "surface",
         "levels": {
             "surface": {
-                "collected": [],
+                "collected": [
+                    [
+                        14,
+                        124
+                    ],
+                    [
+                        16,
+                        125
+                    ],
+                    [
+                        17,
+                        126
+                    ],
+                    [
+                        56,
+                        135
+                    ],
+                    [
+                        59,
+                        72
+                    ],
+                    [
+                        63,
+                        72
+                    ],
+                    [
+                        74,
+                        224
+                    ],
+                    [
+                        77,
+                        223
+                    ],
+                    [
+                        111,
+                        88
+                    ],
+                    [
+                        132,
+                        58
+                    ]
+                ],
                 "defeated": [],
                 "away": [],
-                "explored": "eNrtzzENAAAIA7Dh3zQK9pPQOmgCAAAAAAAAAADw2HRubm5ubm5ubm5ubm5uAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwHULI4ABsQ=="
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
             }
         },
-        "flags": []
+        "flags": [
+            "talked:milo_village",
+            "visited:candy"
+        ]
     },
     "quests": {},
     "counters": {
@@ -35,10 +84,28 @@
             "owned": [],
             "active": {}
         },
-        "shortcuts": []
+        "shortcuts": [],
+        "shop": {
+            "stage": [],
+            "shelves": [
+                {
+                    "item": "Old Pistol",
+                    "biome": "village",
+                    "sold": false
+                },
+                {
+                    "item": "Vest",
+                    "biome": "village",
+                    "sold": false
+                }
+            ],
+            "used": 1,
+            "greeted": []
+        }
     },
     "game": {
-        "hard_mode": false,
-        "name": "Main"
+        "difficulty": "hard",
+        "hard_mode": true,
+        "name": "TEST HARD"
     }
 }

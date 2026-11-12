@@ -57,16 +57,19 @@
             },
             "lines": [
                 {
+                    "id": "gardener_01",
                     "who": "gardener",
                     "pose": "whisper",
                     "text": "Shh... she's sleeping."
                 },
                 {
+                    "id": "gardener_02",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "Oh. A visitor. Mind the moss, it bruises."
                 },
                 {
+                    "id": "gardener_03",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "I'm the gardener. Just the gardener. Everybody forgot my name a long time ago, and I let them."
@@ -77,31 +80,37 @@
                     "text": "How long have you been down here?"
                 },
                 {
+                    "id": "gardener_04",
                     "who": "gardener",
                     "pose": "thinking",
                     "text": "Since the garden came down. Or since I came down with it. I don't remember which came first."
                 },
                 {
+                    "id": "gardener_05",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "The plants remember, I think. Plants remember everything. They just don't talk about it."
                 },
                 {
+                    "id": "gardener_06",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "...Would you help an old man? My hands aren't what they were."
                 },
                 {
+                    "id": "gardener_07",
                     "who": "gardener",
                     "pose": "pointing",
                     "text": "There are sprouts that glow. Real ones, from before. Two of them grow far from here, where nobody walks."
                 },
                 {
+                    "id": "gardener_08",
                     "who": "gardener",
                     "pose": "tired",
                     "text": "And the toxic flowers... one of them swallowed a sprout. Greedy thing. You'll have to take it back."
                 },
                 {
+                    "id": "gardener_09",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "Bring me all three, and I'll show you something."
@@ -126,11 +135,13 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "gardener_10",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "Back again? The moss remembers you."
                 },
                 {
+                    "id": "gardener_11",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "Mind your step. Everything here is older than it looks."
@@ -154,21 +165,25 @@
         "stones": {
             "lines": [
                 {
+                    "id": "gardener_12",
                     "who": "gardener",
                     "pose": "sad",
                     "text": "...I do."
                 },
                 {
+                    "id": "gardener_13",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "Every morning. Or what I call morning, down here."
                 },
                 {
+                    "id": "gardener_14",
                     "who": "gardener",
                     "pose": "sad",
                     "text": "Somebody should remember them. The plants can't carry flowers."
                 },
                 {
+                    "id": "gardener_15",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "So. Will you help me with the sprouts?"
@@ -188,6 +203,7 @@
         "no": {
             "lines": [
                 {
+                    "id": "gardener_16",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "No hurry. Nothing down here is in a hurry."
@@ -202,11 +218,13 @@
             },
             "lines": [
                 {
+                    "id": "gardener_17",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "Thank you. Far corners, where nobody walks - that's where they like it."
                 },
                 {
+                    "id": "gardener_18",
                     "who": "gardener",
                     "pose": "serious",
                     "text": "And the toxic flower... be careful. They bite."
@@ -217,16 +235,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "gardener_19",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "Far corners, where nobody walks. And mind the toxic flowers."
                 },
                 {
+                    "id": "gardener_20",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "They glow, you can't miss them. Unless you're not looking. Most people aren't."
                 },
                 {
+                    "id": "gardener_21",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "One, two, three. I'll wait. I'm good at waiting."
@@ -236,16 +257,19 @@
         "sprouts_in": {
             "lines": [
                 {
+                    "id": "gardener_22",
                     "who": "gardener",
                     "pose": "happy",
                     "text": "All three. Look at them glow..."
                 },
                 {
+                    "id": "gardener_23",
                     "who": "gardener",
                     "pose": "thinking",
                     "text": "But they're thirsty. Down here the water is all wrong - except at the end of the old pier."
                 },
                 {
+                    "id": "gardener_24",
                     "who": "gardener",
                     "pose": "pointing",
                     "text": "The lake there is clean. Cold, but clean. Take my watering can and fill it at the very end."
@@ -268,6 +292,7 @@
         "wait_water": {
             "lines": [
                 {
+                    "id": "gardener_25",
                     "who": "gardener",
                     "pose": "pointing",
                     "text": "The pier. The very end. The water is cleaner where nobody stands."
@@ -277,31 +302,37 @@
         "watered": {
             "lines": [
                 {
+                    "id": "gardener_26",
                     "who": "gardener",
                     "pose": "happy",
                     "text": "You've got it? Give it here, give it here..."
                 },
                 {
+                    "id": "gardener_27",
                     "who": "gardener",
                     "pose": "whisper",
                     "text": "There we go. Drink, little ones."
                 },
                 {
+                    "id": "gardener_28",
                     "who": "gardener",
                     "pose": "happy",
                     "text": "...See that? They glow brighter already."
                 },
                 {
+                    "id": "gardener_29",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "You've done more for this garden than anybody in years."
                 },
                 {
+                    "id": "gardener_30",
                     "who": "gardener",
                     "pose": "pointing",
                     "text": "Here. A map of the garden, the way I know it. Every corner, every root."
                 },
                 {
+                    "id": "gardener_31",
                     "who": "gardener",
                     "pose": "grin",
                     "text": "And this - I bottled it from the toxic flowers. Nasty stuff. Whatever you shoot, it keeps stinging. And stinging."
@@ -319,6 +350,7 @@
             },
             "lines": [
                 {
+                    "id": "gardener_32",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "Don't open it indoors."
@@ -329,16 +361,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "gardener_33",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "They're growing. Slowly. Everything down here grows slowly."
                 },
                 {
+                    "id": "gardener_34",
                     "who": "gardener",
                     "pose": "calm",
                     "text": "Every morning the stones, every evening the sprouts. It's a quiet life. A good one."
                 },
                 {
+                    "id": "gardener_35",
                     "who": "gardener",
                     "pose": "smile",
                     "text": "Mind the toxic flowers. And thank you."

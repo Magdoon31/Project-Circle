@@ -28,10 +28,12 @@ MASCOT_COLOUR = (255, 196, 64)     # a round boss like the others
 PROGRESS_HEIGHT = 4               # px: the thin song progress bar at the top
 FLASH_ALPHA = 46                  # climax: the arena flashes pink on every beat
 PLAYER_START = (0.5, 0.8)
+MUSIC_HINT = "Music recommended"   # (11.11) shown at the start when the music is (almost) off - the fight is a song
+MUSIC_HINT_FRAMES = 300           # 5 s, the last second fades
 
 
 class SongFight:
-    def __init__(self, arena, bullet_info, now_ms, prize_name, prize_available, cues=None):
+    def __init__(self, arena, bullet_info, now_ms, prize_name, prize_available, cues=None, music_hint=False):
         self.arena = arena                                  # (w, h) px
         self.bullet_info = bullet_info
         self.clock = SongClock(self.beat_times(), now_ms)
@@ -51,6 +53,7 @@ class SongFight:
         self.prize_available = prize_available
         self.layer = pygame.Surface(arena, pygame.SRCALPHA)
         self.sounds = []                                    # what landed this frame (Combat plays it)
+        self.music_hint_left = MUSIC_HINT_FRAMES if music_hint else 0
 
     # --- helpers ---------------------------------------------------------------------------------------------
     def to_px(self, share):
@@ -218,6 +221,16 @@ class SongFight:
         pygame.draw.rect(screen, PINK, (bar.x, bar.y, int(bar.width * share), bar.height))
         name = font.render("Mascot", True, (240, 230, 245))
         screen.blit(name, name.get_rect(midbottom=(w // 2, bar.top - 6)))
+        self.draw_music_hint(screen, font, bar.bottom + 14)
+
+    def draw_music_hint(self, screen, font, top):
+        """(11.11) "Music recommended" under the bar for a few seconds, when the music is (almost) off."""
+        if self.music_hint_left <= 0:
+            return
+        self.music_hint_left -= 1
+        hint = font.render(MUSIC_HINT, True, PINK)
+        hint.set_alpha(min(255, self.music_hint_left * 255 // 60))
+        screen.blit(hint, hint.get_rect(midtop=(screen.get_width() // 2, top)))
 
     def draw_result(self, screen, fonts):
         w, h = screen.get_size()

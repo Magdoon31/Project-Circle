@@ -8,6 +8,8 @@
 #   @items random, Hook          <- one entry per I marker, in reading order ("random" = from the biome pool)
 #   @npcs angler                 <- one id per N marker, in reading order
 #   @gold 30-60                  <- optional, gold per $ marker (default: biome range)
+#   h (11.11) = a secret way in: it and everything behind it (walled off from the rest) looks like wall until
+#               the player walks into it (Prefab.secret(); the generator puts it in world.hidden)
 #   ; lines starting with ; (before the map) are comments
 #   <empty line>
 #   then the map itself, one row per line, chars from game/world/tiles.py
@@ -51,6 +53,33 @@ class Prefab:
             return becomes
         return char
 
+    def secret(self):
+        """(11.11) (the "h" ways in, the whole secret part incl. them) in prefab coordinates - the cells that can't be
+        reached from the prefab's open edge without going through an "h". (set(), set()) if it has no secret."""
+        ways = set(self.markers.get("secret_way", []))
+        if not ways:
+            return set(), set()
+        open_part = self._reachable_from_edge(blocked=ways)
+        part = {(x, y) for y in range(self.height) for x in range(self.width)
+                if self.rows[y][x] not in (EMPTY, "#") and (x, y) not in open_part}
+        return ways, part | ways
+
+    def _reachable_from_edge(self, blocked):
+        """Cells (not wall, not empty, not blocked) reachable from the walkable cells on the prefab's edge."""
+        inside = lambda x, y: 0 <= x < self.width and 0 <= y < self.height \
+            and self.rows[y][x] not in (EMPTY, "#") and (x, y) not in blocked
+        todo = [(x, y) for y in range(self.height) for x in range(self.width)
+                if (x in (0, self.width - 1) or y in (0, self.height - 1)) and inside(x, y)
+                and not TILES[self.tile_at(x, y)]["solid"]]
+        seen = set(todo)
+        while todo:
+            x, y = todo.pop()
+            for n in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+                if n not in seen and inside(*n):
+                    seen.add(n)
+                    todo.append(n)
+        return seen
+
     def markers_in_order(self, marker):
         # positions of one marker type in reading order (left->right, top->bottom)
         return sorted(self.markers.get(marker, []), key=lambda p: (p[1], p[0]))
@@ -83,13 +112,38 @@ def load_prefab_file(path, name=None):
     return Prefab(settings.get("name", name), settings, rows)
 
 
+ORDERED_LISTS = (("item", "items"), ("npc", "npcs"))     # markers whose @list follows their reading order
+
+
 def rotate(prefab, turns):
-    """The same prefab turned 90 degrees clockwise `turns` times (0-3). Markers move with it."""
+    """The same prefab turned 90 degrees clockwise `turns` times (0-3). Markers move with it - also the @items /
+    @npcs that belong to them (11.11: the reading order changes when turned, the list is put in the new order)."""
     rows = prefab.rows
     for _ in range(turns % 4):
         h, w = len(rows), len(rows[0])
         rows = ["".join(rows[h - 1 - x][y] for x in range(h)) for y in range(w)]
-    return Prefab(prefab.name, dict(prefab.settings), rows)
+    settings = dict(prefab.settings)
+    for marker, key in ORDERED_LISTS:
+        if key in settings:
+            settings[key] = ", ".join(_reordered(prefab, marker, key, turns))
+    return Prefab(prefab.name, settings, rows)
+
+
+def _reordered(prefab, marker, key, turns):
+    """The @list of a marker in the reading order of the turned prefab (entries without a marker stay at the end)."""
+    values = prefab.list_setting(key)
+    spots = prefab.markers_in_order(marker)
+    turned = [(_turn(pos, prefab.height, prefab.width, turns), value) for pos, value in zip(spots, values)]
+    turned.sort(key=lambda item: (item[0][1], item[0][0]))
+    return [value for _, value in turned] + values[len(spots):]
+
+
+def _turn(pos, height, width, turns):
+    """Where a cell goes when the prefab is turned 90 degrees clockwise `turns` times."""
+    x, y = pos
+    for _ in range(turns % 4):
+        x, y, height, width = height - 1 - y, x, width, height
+    return x, y
 
 
 _structure_cache = None

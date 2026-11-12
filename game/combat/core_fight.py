@@ -11,7 +11,7 @@
 #   F4 "Despair"   (25-0%)    everything but the cracks (the breathing weaker, the rewinds rarer); he circles steadily
 #   Milo falls -> the heart stops, silence, a strange ~2 s ... then a (fake) "Win! CLICK".
 #   F5 (after the click) - a fight you can't lose: Milo lies there, the heart has lost its shield and races.
-#     without the Peace Gun: break the heart -> "See you soon." -> white -> Main ending (Game)
+#     without the Peace Gun: break the heart -> "See you soon." -> black (12.11) -> Main ending (Game)
 #     with the Peace Gun:    shoot the heart once -> it stops; Milo talks about the Void (Game: a talk, Void opens)
 # Milo says a line at the start and at every phase (subtitles now, recorded lines later - core_parts.Subtitles).
 
@@ -24,6 +24,7 @@ from game.combat import core_parts as PARTS
 from game.combat.song.emitters import Spinner, bullet
 from game.combat.time_rewind import TimeRewind
 from game.menu import options as OPT
+from game import difficulty as DIFF
 
 LINES = {"enter": "Every beat of this heart is a day nobody gets hurt.",
          "phase2": "Hear it speeding up? That's you. You're doing that.",
@@ -32,6 +33,8 @@ LINES = {"enter": "Every beat of this heart is a day nobody gets hurt.",
          "fall": "...no.",
          "dont": "Don't... please...",
          "goodbye": "See you soon."}
+
+VOICE_ID = "core_battle_{}"       # (11.11) the id of each line's recording (VOICELINES.md, speaker milo)
 
 DAMAGE = {"ring": 2200, "burst": 2400, "crack": 2400, "wave": 2400, "mine": 2200, "stream": 2000}
 BULLET_KIND = {"ring": "normal_red", "burst": "bullet_red", "mine": "normal_yellow", "stream": "normal_red",
@@ -49,14 +52,22 @@ PEEK_GLOW = (255, 240, 170)
 PEEK_ORBIT = 190                  # px from the heart while stepping out (closer than his usual walk)
 CRACK = {"speed": 12, "every": 10 ** 6, "bullets": None}   # (no bullets: the crack itself hurts - Combat)
 CRACKS_AT_ONCE = {1: 3}           # F2 (none in F4)
+# (12.11) HARD MODE: a bigger F1 ring, more cracks in F2; F3: twice the mines and the wave without gaps; F4: 3x mines
+GUARD_RING = 8
+HARD_GUARD_RING = 12
+HARD_CRACKS_AT_ONCE = {1: 4}
+OVERHEAT_MINE_BEATS, HARD_OVERHEAT_MINE_BEATS = (1,), (1, 3)        # k % PEEK_EVERY: Milo drops a mine (F3)
+DESPAIR_MINE_BEATS, HARD_DESPAIR_MINE_BEATS = (6,), (0, 3, 6)       # k % 8: Milo drops a mine (F4)
 BREATH = {1: 2.0, 3: 1.2}         # px per frame the heart pulls you in (F2, F4), at most (on the beat)
 BREATH_NEAR = (0.5, 1.4)          # ... weaker far from the heart, stronger close to it
 REWIND_EVERY = {1: 12 * 60, 3: 20 * 60}   # frames between rewinds (F2, F4)
 REWIND_WARN_BEATS = 1             # the ghost (where you'll end up) shows this long before
 GHOST = (170, 210, 255)
+BURST_SPEEDS = (9, 10.5, 12)      # Milo's 3 shots at you, one behind the other
 WAVE_BULLETS, WAVE_GAP, WAVE_SPEED = 40, math.radians(16), 4.5   # a ring from the heart with 2 gaps (each this wide)
 FALL_SILENCE = 140                # frames between Milo falling and the (fake) "Win!" - a bit too long, on purpose
-WHITE_FRAMES = 120                # the heart breaks: the screen goes white this long
+WHITE_FRAMES = 120                # the heart breaks: the screen goes dark this long
+END_COLOUR = (0, 0, 0)            # (12.11) black, like the Main ending after it (was white)
 MILO_COLOUR = (255, 196, 96)      # warm amber (redder every phase: EnemyDB.boss_info)
 HEART_COLOUR = (200, 30, 60)
 
@@ -64,6 +75,8 @@ HEART_COLOUR = (200, 30, 60)
 class CoreFight:
     def __init__(self, milo, heart_enemy, arena, bullet_info, font, peace_gun):
         self.milo = milo
+        self.hard = getattr(milo, "hard", False)
+        self.easy = False
         self.heart_enemy = heart_enemy
         self.arena = arena
         self.centre = (arena[0] / 2, arena[1] / 2)
@@ -117,6 +130,7 @@ class CoreFight:
 
     # --- every frame -----------------------------------------------------------------------------------------
     def update(self, combat):
+        self.easy = combat.easy_mode                    # (12.11) "I Have a Job": fewer bullets
         self.sounds = []
         self.timer += 1
         if self.timer == 1 and self.state == "fight" and self.phase == -1:
@@ -137,7 +151,7 @@ class CoreFight:
         self.finished, self.outcome = True, outcome
 
     def say(self, key):
-        self.subtitles.say(key, LINES[key])
+        self.subtitles.say(VOICE_ID.format(key), LINES[key])
 
     # --- F1-F4 -----------------------------------------------------------------------------------------------
     def update_fight(self, combat):
@@ -176,7 +190,7 @@ class CoreFight:
             self.say(f"phase{phase + 1}")
         spin = {2: dict(arms=3, rate=1.5, turn=25), 3: dict(arms=2, rate=1.5, turn=-30)}.get(phase)
         if spin:
-            spec = dict(spin, speed=6, width=12, kind=BULLET_KIND["stream"], damage=DAMAGE["stream"], reach=None)
+            spec = dict(spin, arms=DIFF.fewer(spin["arms"], self.easy), speed=6, width=12, kind=BULLET_KIND["stream"], damage=DAMAGE["stream"], reach=None)
             self.spinner = Spinner(self.heart.beat, 10 ** 6, spec, self.bullet_info, self.arena)
 
     def on_beat(self, combat):
@@ -187,7 +201,7 @@ class CoreFight:
 
     def beat_guard(self, k, player, combat):
         if k % 2 == 0:
-            self.ring(combat, self.centre, 8, 5, k * 11)
+            self.ring(combat, self.centre, HARD_GUARD_RING if self.hard else GUARD_RING, 5, k * 11)
         else:
             self.burst(combat, player)
 
@@ -200,8 +214,8 @@ class CoreFight:
     def beat_overheat(self, k, player, combat):
         if k % PEEK_EVERY == 0:
             self.peek_until = self.heart.beat + PEEK_BEATS
-        if k % PEEK_EVERY == 1:                            # (out in the open by now)
-            self.mines.append(PARTS.Mine((self.milo.x, self.milo.y), self.heart.beat + 4))
+        if k % PEEK_EVERY in (HARD_OVERHEAT_MINE_BEATS if self.hard else OVERHEAT_MINE_BEATS):   # (out in the open)
+            self.drop_mine()
         if k % 8 == 6:
             self.wave(combat, k)
 
@@ -210,37 +224,44 @@ class CoreFight:
             self.burst(combat, player)
         if k % 8 == 2:
             self.wave(combat, k)
-        if k % 8 == 6:
-            self.mines.append(PARTS.Mine((self.milo.x, self.milo.y), self.heart.beat + 4))
+        if k % 8 in (HARD_DESPAIR_MINE_BEATS if self.hard else DESPAIR_MINE_BEATS):
+            self.drop_mine()
 
     # --- attacks -----------------------------------------------------------------------------------------------
+    def drop_mine(self):
+        self.mines.append(PARTS.Mine((self.milo.x, self.milo.y), self.heart.beat + 4))
+
     def shot(self, origin, angle, speed, kind):
         return bullet(*origin, angle, speed, 12, BULLET_KIND[kind], self.bullet_info, self.arena,
                       DAMAGE[kind], None)
 
     def ring(self, combat, origin, count, speed, turn_deg, kind="ring"):
         start = math.radians(turn_deg)
+        count = DIFF.fewer(count, self.easy)
         combat.enemy_projectiles += [self.shot(origin, start + i * math.tau / count, speed, kind)
                                      for i in range(count)]
 
     def burst(self, combat, player):
-        """3 shots at you in a row (one behind the other)."""
+        """3 shots at you in a row (one behind the other; easy: 2)."""
         a = math.atan2(player.y - self.milo.y, player.x - self.milo.x)
-        combat.enemy_projectiles += [self.shot((self.milo.x, self.milo.y), a, speed, "burst") for speed in (9, 10.5, 12)]
+        speeds = BURST_SPEEDS[:DIFF.fewer(len(BURST_SPEEDS), self.easy)]
+        combat.enemy_projectiles += [self.shot((self.milo.x, self.milo.y), a, speed, "burst") for speed in speeds]
 
     def cracks(self, combat):
         """A few cracks run from the heart in random directions at once (they hurt to touch, no bullets)."""
-        for n in range(CRACKS_AT_ONCE[self.phase]):
+        for n in range((HARD_CRACKS_AT_ONCE if self.hard else CRACKS_AT_ONCE)[self.phase]):
             combat.add_crack(dict(CRACK, damage=DAMAGE["crack"], x=self.centre[0], y=self.centre[1],
                                   angle=random.uniform(0, math.tau), max=self.arena[0] + self.arena[1],
                                   start=self.heart_enemy.base_width), sound=n == 0)
 
     def wave(self, combat, k):
-        """A ring of bullets from the heart with 2 gaps (opposite each other) to slip through."""
+        """A ring of bullets from the heart with 2 gaps (opposite each other) to slip through (hard mode, F3: none)."""
         first = math.radians(k * 37 % 360)
-        for i in range(WAVE_BULLETS):
-            a = first + i * math.tau / WAVE_BULLETS
-            if min(abs((a - g + math.pi) % math.tau - math.pi) for g in (first, first + math.pi)) < WAVE_GAP:
+        gaps = not (self.hard and self.phase == 2)
+        count = DIFF.fewer(WAVE_BULLETS, self.easy)
+        for i in range(count):
+            a = first + i * math.tau / count
+            if gaps and min(abs((a - g + math.pi) % math.tau - math.pi) for g in (first, first + math.pi)) < WAVE_GAP:
                 continue
             combat.enemy_projectiles.append(self.shot(self.centre, a, WAVE_SPEED, "wave"))
 
@@ -428,7 +449,7 @@ class CoreFight:
         self.subtitles.draw(screen)
         if self.state == "white":
             veil = pygame.Surface(screen.get_size())
-            veil.fill((255, 255, 255))
+            veil.fill(END_COLOUR)
             veil.set_alpha(min(255, int(255 * self.timer / (WHITE_FRAMES * 0.7))))
             screen.blit(veil, (0, 0))
 

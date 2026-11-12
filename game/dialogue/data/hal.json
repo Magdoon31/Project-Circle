@@ -59,11 +59,13 @@
             },
             "lines": [
                 {
+                    "id": "hal_01",
                     "who": "hal",
                     "pose": "pointing",
                     "text": "Contact! Hold position, stranger. Don't touch the dials."
                 },
                 {
+                    "id": "hal_02",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "Name's Hal. Radio operator, Silverpine Tundra station. Only station. Only operator. Over."
@@ -74,16 +76,19 @@
                     "text": "Over?"
                 },
                 {
+                    "id": "hal_03",
                     "who": "hal",
                     "pose": "smile",
                     "text": "Habit. Thirty years on the radio does that. You stop saying 'goodbye' and start saying 'over'."
                 },
                 {
+                    "id": "hal_04",
                     "who": "hal",
                     "pose": "thinking",
                     "text": "Not much traffic lately. Three antennas out there, all three dead. Frost gets in the boxes. Monsters chew the wires. Mostly the frost."
                 },
                 {
+                    "id": "hal_05",
                     "who": "hal",
                     "pose": "tired",
                     "text": "Without them I'm listening to snow. Static, static, static. Over."
@@ -107,16 +112,19 @@
         "listening": {
             "lines": [
                 {
+                    "id": "hal_06",
                     "who": "hal",
                     "pose": "thinking",
                     "text": "Anything. Everything. A voice, a song, a weather report from somewhere warm."
                 },
                 {
+                    "id": "hal_07",
                     "who": "hal",
                     "pose": "serious",
                     "text": "...There used to be something on channel nine. Late at night. I never caught all of it."
                 },
                 {
+                    "id": "hal_08",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "Get the antennas back up and maybe I will. So. Can I count on you?"
@@ -136,6 +144,7 @@
         "no": {
             "lines": [
                 {
+                    "id": "hal_09",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "Copy. The offer stays on the frequency. Over and out."
@@ -150,16 +159,19 @@
             },
             "lines": [
                 {
+                    "id": "hal_10",
                     "who": "hal",
                     "pose": "smile",
                     "text": "Copy that! Three antennas, scattered around the Tundra. You'll know them. Tall, metal, sad-looking."
                 },
                 {
+                    "id": "hal_11",
                     "who": "hal",
                     "pose": "pointing",
                     "text": "Open the box at the bottom, match the wires by colour. Red to red, blue to blue. Even a penguin could do it."
                 },
                 {
+                    "id": "hal_12",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "Not that we have penguins. Report back when all three are humming. Over."
@@ -169,6 +181,7 @@
         "again": {
             "lines": [
                 {
+                    "id": "hal_13",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "Back on the frequency, stranger? The antennas are still dead. Want the job?"
@@ -189,11 +202,13 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "hal_14",
                     "who": "hal",
                     "pose": "tired",
                     "text": "Nothing yet. Static. Pure, high-quality static. Over."
                 },
                 {
+                    "id": "hal_15",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "The antennas won't fix themselves, stranger. I asked them. Twice."
@@ -203,6 +218,7 @@
         "progress1": {
             "lines": [
                 {
+                    "id": "hal_16",
                     "who": "hal",
                     "pose": "smile",
                     "text": "One antenna up! I can hear the wind on a whole new frequency. Two to go. Over."
@@ -212,11 +228,13 @@
         "progress2": {
             "lines": [
                 {
+                    "id": "hal_17",
                     "who": "hal",
                     "pose": "serious",
                     "text": "Two up. There's something between the static now. Can't make it out. One more, stranger."
                 },
                 {
+                    "id": "hal_18",
                     "who": "hal",
                     "pose": "serious",
                     "text": "...Hurry. Please. Over."
@@ -226,16 +244,19 @@
         "finale": {
             "lines": [
                 {
+                    "id": "hal_19",
                     "who": "hal",
                     "pose": "happy",
                     "text": "All three! I can hear everything. The whole Tundra, loud and clear."
                 },
                 {
+                    "id": "hal_20",
                     "who": "hal",
                     "pose": "serious",
                     "text": "Listen. Channel nine. Here it comes..."
                 },
                 {
+                    "id": "hal_21",
                     "who": "radio",
                     "pose": "static",
                     "horror": true,
@@ -243,6 +264,7 @@
                     "text": "...need to... turn it off."
                 },
                 {
+                    "id": "hal_22",
                     "who": "radio",
                     "pose": "static",
                     "horror": true,
@@ -250,6 +272,7 @@
                     "text": "We need to turn it off."
                 },
                 {
+                    "id": "hal_23",
                     "who": "radio",
                     "pose": "static",
                     "horror": true,
@@ -257,26 +280,31 @@
                     "text": "We need to turn it off. We need to turn it off. We need to"
                 },
                 {
+                    "id": "hal_24",
                     "who": "hal",
                     "pose": "scared",
                     "text": "...That's it. That's all it says. Over and over."
                 },
                 {
+                    "id": "hal_25",
                     "who": "hal",
                     "pose": "scared",
                     "text": "I heard it before. Years ago. Never this clear."
                 },
                 {
+                    "id": "hal_26",
                     "who": "hal",
                     "pose": "serious",
                     "text": "Who needs to turn what off? ...No. Don't answer that. I have a feeling I really don't want to know."
                 },
                 {
+                    "id": "hal_27",
                     "who": "hal",
                     "pose": "pointing",
                     "text": "I recorded it. Take the tape and get it away from my radio."
                 },
                 {
+                    "id": "hal_28",
                     "who": "hal",
                     "pose": "neutral",
                     "text": "Or, if you'd rather not carry that thing around... take my old flare gun instead. Can't have both. Over."
@@ -302,6 +330,7 @@
             },
             "lines": [
                 {
+                    "id": "hal_29",
                     "who": "hal",
                     "pose": "smile",
                     "text": "Thanks for the antennas, stranger. I mean it. From now on I'm sticking to the weather channel. Over and out."
@@ -312,16 +341,19 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "hal_30",
                     "who": "hal",
                     "pose": "smile",
                     "text": "Weather report: cold. Tomorrow: colder. Over."
                 },
                 {
+                    "id": "hal_31",
                     "who": "hal",
                     "pose": "serious",
                     "text": "Channel nine's quiet now. I keep it switched off. Mostly."
                 },
                 {
+                    "id": "hal_32",
                     "who": "hal",
                     "pose": "tired",
                     "text": "You still have that tape? Don't play it near me. Over.",
@@ -330,6 +362,7 @@
                     }
                 },
                 {
+                    "id": "hal_33",
                     "who": "hal",
                     "pose": "smile",
                     "text": "The antennas are holding. Good work, stranger. Over."
@@ -345,6 +378,7 @@
             },
             "lines": [
                 {
+                    "id": "hal_34",
                     "who": "hal",
                     "pose": "smile",
                     "text": "Good choice. Some things are better left unheard. Thanks for the antennas, stranger. Over and out."

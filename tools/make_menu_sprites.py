@@ -27,6 +27,8 @@ PALETTES = {      # body gradient (top -> bottom), top bevel, bottom rim, the da
               "top": (255, 255, 250), "rim": (160, 127, 190), "lip": (112, 80, 142)},
     "red": {"body": [(255, 240, 228), (250, 214, 204), (232, 160, 160), (200, 100, 116)],
             "top": (255, 250, 246), "rim": (176, 60, 84), "lip": (118, 30, 52)},
+    "green": {"body": [(244, 255, 238), (214, 246, 206), (160, 222, 166), (96, 176, 120)],     # (12.11) easy
+              "top": (250, 255, 246), "rim": (58, 140, 88), "lip": (28, 92, 54)},
 }
 
 MAIN, SAVES, ESC, SETTINGS, SHARED = "main", "saves", "esc", "settings", ""
@@ -69,13 +71,17 @@ WORDS = {         # file name -> (text, letter size, palette, folder)
     "btn_defaults": ("Default", 72, "red", SETTINGS),
     # in more than one place
     "btn_back": ("Back", 72, "cream", SHARED),
+    # (12.11) added last: the words before keep their look (each word's seed comes from its place in this list)
+    "btn_i_have_a_job": ("I Have a Job", 84, "green", SAVES),
 }
 SAME_HEIGHT = "HQqgj"            # the tallest and lowest letters: the height every word gets
 SLIDER = (640, 44)                # px: the volume slider's track (the game scales it)
 KNOB = 64
+STAR = 96                         # px: an ending star on a save card (the game scales it)
 FILL_PAD = 11                     # px from the track's edge to the lit part - the same on all four sides
 ICON = 96
 CARD = (480, 620)                 # px (the game scales it)
+CARD_PALETTE = {"easy": "green", "normal": "cream", "hard": "red"}   # a save card's frame (= game/difficulty.py)
 
 
 # --- words ------------------------------------------------------------------------------------------------------
@@ -194,15 +200,15 @@ def gradient(size, colours):
 
 
 def card(kind):
-    """kind: normal / hard / empty."""
+    """kind: easy / normal / hard / empty."""
     w, h = CARD
     img = Image.new("RGBA", CARD, (0, 0, 0, 0))
     body = {"normal": [(40, 28, 62), (18, 12, 30)], "hard": [(96, 22, 38), (38, 6, 14)],
-            "empty": [(30, 24, 44), (16, 12, 24)]}[kind]
+            "easy": [(24, 64, 42), (8, 28, 16)], "empty": [(30, 24, 44), (16, 12, 24)]}[kind]
     mask = Image.new("L", CARD)
     ImageDraw.Draw(mask).rounded_rectangle((6, 6, w - 7, h - 7), 28, fill=150 if kind == "empty" else 232)
     img.paste(gradient(CARD, body), (0, 0), mask)
-    p = PALETTES["red" if kind == "hard" else "cream"]
+    p = PALETTES[CARD_PALETTE.get(kind, "cream")]
     frame = gradient(CARD, [p["top"], p["body"][2], p["rim"]])
     border = Image.new("L", CARD)
     d = ImageDraw.Draw(border)
@@ -311,15 +317,29 @@ def icon(kind):
     return styled(m, edge, ICON * 2, "cream", seed=11, cracks=False)
 
 
+def star(palette):
+    """(12.11) A five-pointed star in the words' style (no cracks), in a save card's colours (cream / red / green)."""
+    mask = Image.new("L", (STAR, STAR))
+    c, outer, inner = STAR / 2, STAR / 2 - 8, STAR / 2 * 0.42
+    points = [(c + math.cos(math.radians(-90 + i * 36)) * (outer if i % 2 == 0 else inner),
+               c + 2 + math.sin(math.radians(-90 + i * 36)) * (outer if i % 2 == 0 else inner)) for i in range(10)]
+    ImageDraw.Draw(mask).polygon(points, fill=255)
+    m = np.array(mask)
+    edge = np.array(mask.filter(ImageFilter.MaxFilter(5)))
+    return styled(m, edge, STAR * 2, palette, seed=13, cracks=False)
+
+
 def main():
     for folder in (MAIN, SAVES, ESC, SETTINGS):
         os.makedirs(f"{ROOT}/{folder}", exist_ok=True)
     for i, (name, (text, size, palette, folder)) in enumerate(WORDS.items()):
         word(text, size, palette, seed=i * 7 + 3).save(path(folder, name))
-    for kind in ("normal", "hard", "empty"):
+    for kind in ("easy", "normal", "hard", "empty"):
         card(kind).save(path(SAVES, "card_" + kind))
     for name, img in zip(("slider_track", "slider_fill", "slider_knob"), slider_parts()):
         img.save(path(SETTINGS, name))
+    for palette in ("cream", "red", "green"):        # a normal / a hard mode / an easy save card
+        star(palette).save(path(SAVES, "star_" + palette))
     for kind in ("master", "music", "sounds", "dialogue", "arrow_left", "arrow_right"):
         icon(kind).save(path(SETTINGS, "icon_" + kind))
     print(len(WORDS), "words, the cards, the slider and its icons written to", ROOT)

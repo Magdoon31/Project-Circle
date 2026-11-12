@@ -23,31 +23,37 @@
             },
             "lines": [
                 {
+                    "id": "milo_core_entrance_08",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "..."
                 },
                 {
+                    "id": "milo_garden_factory_01",
                     "who": "milo",
                     "pose": "tired",
                     "text": "You're here. Of course you're here."
                 },
                 {
+                    "id": "milo_garden_factory_02",
                     "who": "milo",
                     "pose": "pointing",
                     "text": "This is the Garden. Everything that grows down here grew without the sun. Think about that for a second."
                 },
                 {
+                    "id": "milo_garden_factory_03",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "It's huge. Bigger than everything up there put together. People get lost. Some of them like it."
                 },
                 {
+                    "id": "milo_garden_factory_04",
                     "who": "milo",
                     "pose": "serious",
                     "text": "I'm going to ask you something, and I want a real answer."
                 },
                 {
+                    "id": "milo_garden_factory_05",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Why do you keep looking?",
@@ -75,26 +81,31 @@
             },
             "lines": [
                 {
+                    "id": "milo_garden_factory_06",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Wrong."
                 },
                 {
+                    "id": "milo_garden_factory_07",
                     "who": "milo",
                     "pose": "sad",
                     "text": "Maybe. Maybe it is."
                 },
                 {
+                    "id": "milo_garden_factory_08",
                     "who": "milo",
                     "pose": "sad",
                     "text": "But wrong things can still be good to live in. Did you ever think of that?"
                 },
                 {
+                    "id": "milo_garden_factory_09",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Up there people laugh, and bake bread, and fish. If you pull on the wrong thread..."
                 },
                 {
+                    "id": "milo_garden_factory_10",
                     "who": "milo",
                     "pose": "tired",
                     "text": "Never mind. Go. Look. Just... be careful what you find."
@@ -108,16 +119,19 @@
             },
             "lines": [
                 {
+                    "id": "milo_garden_factory_11",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Walking around. Through two guards. Down a hole. Into the dark."
                 },
                 {
+                    "id": "milo_garden_factory_12",
                     "who": "milo",
                     "pose": "tired",
                     "text": "Sure. Walking around."
                 },
                 {
+                    "id": "milo_garden_factory_13",
                     "who": "milo",
                     "pose": "smile",
                     "text": "I'm not stupid, you know. I just pretend really well."
@@ -134,16 +148,19 @@
             },
             "lines": [
                 {
+                    "id": "milo_core_entrance_08",
                     "who": "milo",
                     "pose": "surprised",
                     "text": "..."
                 },
                 {
+                    "id": "milo_garden_factory_14",
                     "who": "milo",
                     "pose": "sad",
                     "text": "Wow. Okay."
                 },
                 {
+                    "id": "milo_garden_factory_15",
                     "who": "milo",
                     "pose": "serious",
                     "text": "I was nice to you from the very first day. Remember that.",
@@ -151,6 +168,7 @@
                     "speed": 0.7
                 },
                 {
+                    "id": "milo_garden_factory_16",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Go on, then. It's your business. Clearly."
@@ -164,11 +182,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_garden_factory_17",
                     "who": "milo",
                     "pose": "surprised",
                     "text": "Oh! You came from the other side too?"
                 },
                 {
+                    "id": "milo_garden_factory_18",
                     "who": "milo",
                     "pose": "grin",
                     "text": "Wow. You found it. The big secret. The... second entrance."
@@ -179,11 +199,13 @@
                     "text": "That's it?"
                 },
                 {
+                    "id": "milo_garden_factory_19",
                     "who": "milo",
                     "pose": "laugh",
                     "text": "That's it. Congratulations. It's a tunnel. Very exciting tunnel. Ten out of ten."
                 },
                 {
+                    "id": "milo_garden_factory_20",
                     "who": "milo",
                     "pose": "smile",
                     "text": "And yes, I was here first. Again. Don't ask."
@@ -195,26 +217,31 @@
             "random_line": true,
             "lines": [
                 {
+                    "id": "milo_garden_factory_21",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "Mushrooms glow down here. Nobody planted them. They just decided to."
                 },
                 {
+                    "id": "milo_garden_factory_22",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "Sometimes I hear the roots. They creak like old doors."
                 },
                 {
+                    "id": "milo_garden_factory_23",
                     "who": "milo",
                     "pose": "tired",
                     "text": "You're still looking. I can tell. You've got that face."
                 },
                 {
+                    "id": "milo_garden_factory_24",
                     "who": "milo",
                     "pose": "serious",
                     "text": "The deeper you go, the quieter it gets. That's not a good sign. Just so you know."
                 },
                 {
+                    "id": "milo_garden_factory_25",
                     "who": "milo",
                     "pose": "sad",
                     "text": "I'd tell you to go home. But you'd just ask me where home is."
@@ -242,6 +269,7 @@
         "hub": {
             "lines": [
                 {
+                    "id": "milo_garden_factory_26",
                     "who": "milo",
                     "pose": "tired",
                     "text": "...What else."
@@ -272,11 +300,13 @@
             },
             "lines": [
                 {
+                    "id": "milo_garden_factory_27",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "A garden. Things grow. Nobody tends it. It tends itself."
                 },
                 {
+                    "id": "milo_garden_factory_28",
                     "who": "milo",
                     "pose": "thinking",
                     "text": "It got bigger every year. Nobody remembers it being small."
@@ -290,6 +320,7 @@
             },
             "lines": [
                 {
+                    "id": "milo_garden_factory_29",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "I walk fast."
@@ -300,6 +331,7 @@
                     "text": "You don't."
                 },
                 {
+                    "id": "milo_garden_factory_30",
                     "who": "milo",
                     "pose": "neutral",
                     "text": "...I walk fast."
@@ -313,16 +345,19 @@
             },
             "lines": [
                 {
+                    "id": "milo_garden_factory_31",
                     "who": "milo",
                     "pose": "serious",
                     "text": "Somewhere deep in here, there's a way up. Not to the surface. Somewhere else."
                 },
                 {
+                    "id": "milo_garden_factory_32",
                     "who": "milo",
                     "pose": "serious",
                     "text": "A guard sits in front of it. And behind it..."
                 },
                 {
+                    "id": "milo_garden_factory_33",
                     "who": "milo",
                     "pose": "scary",
                     "text": "Please don't.",
@@ -330,6 +365,7 @@
                     "speed": 0.6
                 },
                 {
+                    "id": "milo_garden_factory_34",
                     "who": "milo",
                     "pose": "smile",
                     "text": "Sorry. Forget it. It's a door. Doors are boring."
@@ -340,6 +376,7 @@
         "bye": {
             "lines": [
                 {
+                    "id": "milo_garden_factory_35",
                     "who": "milo",
                     "pose": "tired",
                     "text": "Yeah. You should."

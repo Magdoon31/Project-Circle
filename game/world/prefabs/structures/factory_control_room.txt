@@ -1,11 +1,15 @@
 @name factory_control_room
 @biomes toy_factory
-@items random
+@items Broken Bulb, random
 ; The control room. All screens show the same frozen image.
+; (11.11) Behind its left wall: a secret room (h = the way in - looks like wall, a crack shows on it only up
+;   close). The old desk where the creators sat the night the system went dark: machines, crates, a little gold
+;   and the Broken Bulb (a lore item - the Foreman knows it). Always in the Factory, once
+;   (cellar_map.py REQUIRED_FACTORY_STRUCTURES).
 
- ########
- #mm__mm#
- #______#
- #m_I__m#
- #______#
- ####___#
+###############
+#km_m#mm____mm#
+#_I__h_______m#
+#m__$#m__I___m#
+#kk_m#________#
+#########___###

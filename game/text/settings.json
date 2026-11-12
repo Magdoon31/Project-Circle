@@ -1,13 +1,13 @@
 {
-    "master_volume": 0.7866004962779156,
-    "music_volume": 0.2531017369727047,
-    "sfx_volume": 0.8583333333333333,
-    "dialogue_volume": 1.0,
+    "master_volume": 0.49379652605459057,
+    "music_volume": 0.18362282878411912,
+    "sfx_volume": 1.0,
+    "dialogue_volume": 0.6178660049627791,
     "fullscreen": true,
     "flashes": true,
     "weather": true,
     "shadow_quality": "high",
-    "motion_blur": "light",
+    "motion_blur": "off",
     "blur_where": "both",
     "move_keys": "wasd",
     "key_map": 109,
@@ -20,5 +20,5 @@
     "text_speed": "normal",
     "autosave": "bosses",
     "pause_on_phase": false,
-    "short_tooltips": true
+    "short_tooltips": false
 }

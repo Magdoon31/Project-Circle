@@ -8,8 +8,10 @@ import random
 import pygame
 
 from game.combat.song.emitters import bullet
+from game import difficulty as DIFF
 
 EVERY = 150                       # frames between two turrets coming up
+HARD_EVERY = 100                  # (12.11) hard mode: more of them
 RISE = 36                         # frames it comes up (you see it coming) ...
 HIDE = 24                         # ... and goes down after its shot
 SIZE = 26                         # px: half its width
@@ -25,9 +27,9 @@ PATTERNS = {
 
 
 class Turret:
-    def __init__(self, island, pattern):
+    def __init__(self, island, pattern, spec):
         self.x, self.y = island
-        self.pattern = pattern
+        self.pattern, self.spec = pattern, spec                   # its name ("line" aims) and PATTERNS[name]
         self.stage, self.left = "rise", RISE
         self.angle = random.uniform(0, math.tau)
 
@@ -47,12 +49,12 @@ class Turret:
         self.left -= 1
         shots = self.fire(target, info, arena_size) if self.stage == "shoot" else []
         if self.left <= 0:
-            self.stage, self.left = {"rise": ("shoot", PATTERNS[self.pattern]["frames"]),
+            self.stage, self.left = {"rise": ("shoot", self.spec["frames"]),
                                      "shoot": ("hide", HIDE), "hide": ("gone", 0)}[self.stage]
         return shots
 
     def fire(self, target, info, arena_size):
-        p = PATTERNS[self.pattern]
+        p = self.spec
         if self.left % p["step"]:
             return []
         if self.pattern == "line":
@@ -77,18 +79,21 @@ class Turret:
 class Turrets:
     """F5's turrets: one comes up out of a random outer island every EVERY frames."""
 
-    def __init__(self, bullet_info, arena_size):
+    def __init__(self, bullet_info, arena_size, hard=False, easy=False):
         self.info, self.arena_size = bullet_info, arena_size
+        self.patterns = {name: easy_pattern(p) for name, p in PATTERNS.items()} if easy else PATTERNS
+        self.every = HARD_EVERY if hard else EVERY
         self.timer = 0
         self.up = []
 
     def update(self, islands, target):
         """islands: [(x, y, r)] the outer ones. -> new bullets"""
         self.timer += 1
-        if self.timer % EVERY == 0 and islands:
+        if self.timer % self.every == 0 and islands:
             free = [i for i in islands if all(math.dist(i[:2], (t.x, t.y)) > 1 for t in self.up)]
             x, y, _ = random.choice(free or islands)
-            self.up.append(Turret((x, y), random.choice(list(PATTERNS))))
+            name = random.choice(list(self.patterns))
+            self.up.append(Turret((x, y), name, self.patterns[name]))
         out = []
         for turret in self.up:
             out += turret.update(target, self.info, self.arena_size)
@@ -98,3 +103,10 @@ class Turrets:
     def draw(self, screen):
         for turret in self.up:
             turret.draw(screen)
+
+
+def easy_pattern(p):
+    """(12.11) "I Have a Job": fewer arms - or, with one arm, fewer shots (a longer step between them)."""
+    if p["arms"] > 1:
+        return dict(p, arms=DIFF.fewer(p["arms"]))
+    return dict(p, step=round(p["step"] / DIFF.EASY_BULLETS))

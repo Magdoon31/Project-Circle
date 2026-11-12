@@ -25,7 +25,7 @@ class ItemDatabase:
 
             "Simple Pistol": Weapon("Simple Pistol",
                                     "Starter weapon made by the starter itself,\nI think he knows",
-                                    "weapon",2.4,0.25,{},"Short range, more damage",5500,10,10,["normal_red"],
+                                    "weapon",2.8,0.25,{},"Short range, more damage",5500,10,10,["normal_red"],
                                     self.load_img("weapon/simple_pistol.png"),recoil=5),
                                     # 12 DPS -1R              |   11p   |   weight 10
             "Simple Blaster": Weapon("Simple Blaster",
@@ -53,7 +53,7 @@ class ItemDatabase:
 
             "Water Hose": Weapon("Water Hose",
                                     "It's just a hose. Right?",
-                                    "weapon",1.0,0.04,{"bubble" : [0.4]},"Automatic",8800,16,16,["water"],
+                                    "weapon",1.0,0.04,{"bubble" : [0.4]},"Automatic",9200,16,16,["water"],
                                     self.load_img("weapon/hose1.png"),True,10),
                                     # 25 DPS +2Auto             |   27p   |   weight 25
             "Rifle A2": Weapon("Rifle A2",
@@ -129,8 +129,8 @@ class ItemDatabase:
                                     # 47 DPS +28R                   |   75p   |   weight 389
             "Nail Gun": Weapon("Nail Gun",
                                     "Definitely a construction tool.\nMaybe it was used for the project...",
-                                    "weapon",150,0.35,{"binded":[108,0.20]},"20% chance to bind an enemy",8800,16,14,["nail"],
-                                    self.load_img("weapon/nail_gun.png"),recoil=20),
+                                    "weapon",160,0.33,{"binded":[108,0.20]},"20% chance to bind an enemy",8800,16,14,["nail"],
+                                    self.load_img("weapon/nail_gun.png"),recoil=10),
                                     # 77 DPS *0.9Recoil +1.6R + 8Bind   |   79p     |   weight 421
             "G-Launcher": Weapon("G-Launcher",
                                     "KABOOM... KABLAOW...",
@@ -262,7 +262,7 @@ class ItemDatabase:
                                     # 567 DPS *0.95Recoil + 50Glued         |   589p   |   weight 6124
             "Ghost Shotgun": Weapon("Ghost Shotgun",
                                     "The ectoplasma is really wierd in touch\nYou are holding it anyway.",
-                                    "weapon",1980,0.8,{"pierce":[2],"confusion":[40,0.85],"weakness":[120,0.2],"glued":[120,0.2],"shotgun":["s",7]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",8800,16,18,["ghost_bullet"],
+                                    "weapon",1980,0.8,{"pierce":[2],"confusion":[40,0.85],"weakness":[120,0.2],"glued":[120,0.2],"shotgun":["s",7]},"Pierces one enemy, confuses, weakens\nand glues enemies (ghost bullets)",8600,16,18,["ghost_bullet"],
                                     self.load_img("weapon/ghost_shotgun.png"),recoil=15),
                                     # 578 DPS *0.95Recoil +80Ghost          |  629p    |   weight 11372
             "Missile-3000": Weapon("Missile-3000",

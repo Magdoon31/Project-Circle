@@ -1,6 +1,7 @@
 # THE SHOP - its own screen, opened from anywhere on the map (key B or the "Shop" button; not before talking to Milo).
 #   left: the shopkeeper (no name) says a line - when you come in, when you buy, when you can't pay.
-#         Text only (no talk sound); a voice file assets/sfx/shop/<line id>.mp3/.wav/.ogg is played if it exists.
+#         Text only (no talk sound); a recording assets/sfx/voicelines/shopkeeper/<line id>.mp3/.wav/.ogg plays
+#         if it exists (lib/voicelines.py).
 #         Lines: game/shop/lines.json. His mood follows the story (for good): happy -> calm -> neutral.
 #         In the Void he isn't there - only a sign "BRB, or not." (the shelves still work).
 #   right: 6 shelves (game/shop/stock.py), a 7th item on the counter sometimes (the Foreman's Meter).
@@ -22,6 +23,7 @@ import pygame
 from game.shop import stock as S
 from game import controls as KEYS
 from game.menu import options as OPT
+from game.lib import voicelines as VOICES
 
 LINES_FILE = "game/shop/lines.json"
 IMG_DIR = "assets/img/shop"
@@ -32,8 +34,9 @@ KEEPER_HEIGHT = 0.5           # share of the screen height (his lower part is hi
 KEEPER_TOP = 0.32             # where his head starts (share of the screen height) - the counter starts at 0.8
 BOUNCE_FRAMES = 70            # after a purchase he bobs down and up a little, softer and softer, then stops
 BOUNCE_SIZE = 0.022           # share of the screen height (the first dip)
-VOICE_DIR = "assets/sfx/shop"
+VOICE_SPEAKERS = {"buy": "shopkeeper", "sell": "buyer"}   # (11.11) recordings: assets/sfx/voicelines/<speaker>/
 RARE_CHANCE = 0.08            # a rare (Pale World) line instead of a greeting
+BUYER_TWIN_CHANCE = 0.008     # (12.11) the buyer's very rare line (kind sell_twin) when you switch to the Sell page
 TYPE_SPEED = 1.5              # letters per frame
 NOTE_FRAMES = 120             # how long a small note ("Inventory full") stays
 BUY_COOLDOWN = 180            # frames (3 s) after buying before the next thing can be bought
@@ -62,15 +65,9 @@ def _load_image(name):
         return None
 
 
-def _load_voice(line_id):
-    for ext in (".mp3", ".wav", ".ogg"):
-        path = os.path.join(VOICE_DIR, line_id + ext)
-        if os.path.exists(path):
-            try:
-                return pygame.mixer.Sound(path)
-            except pygame.error:
-                return None
-    return None
+def speaker_of(line):
+    """(11.11) Who says a line: the buyer on the Sell page (kind sell_...), else the shopkeeper."""
+    return VOICE_SPEAKERS["sell" if line.get("kind", "").startswith("sell_") else "buy"]
 
 
 class Shop:
@@ -162,7 +159,7 @@ class Shop:
         self.line, self.shown = line, 0.0
         if self.voice:
             self.voice.stop()
-        self.voice = _load_voice(line["id"])
+        self.voice = VOICES.load(speaker_of(line), line["id"])
         if self.voice:
             channel = self.voice.play()
             if channel:
@@ -228,6 +225,8 @@ class Shop:
                 self.page = target[1]
                 self.line = None                          # the other person hasn't said anything yet
                 ctx["play_sfx"]("use")
+                if self.page == "sell" and random.random() < BUYER_TWIN_CHANCE:
+                    self.say(self.pick("sell_twin"))      # (12.11) the twins (shopkeeper's rare_5 is the other half)
             return None
         if isinstance(target, tuple) and target[0] == "inv":
             items = ctx["inventory"]()

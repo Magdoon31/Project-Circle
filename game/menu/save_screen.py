@@ -1,16 +1,19 @@
 # THE SAVE SCREEN (11.11): Play -> the 3 save slots as cards (the pictures: tools/make_menu_sprites.py).
-#   slots    - each card: its name, where you are, time played, gold, the world's seed; hard mode = a red card;
+#   slots    - each card: its name, where you are, time played, gold, the world's seed; hard mode = a red card,
+#              (12.11) "I Have a Job" (easy) = a green one;
 #              an empty slot = a faint card. Under a used card: Delete. A card lifts up under the mouse.
 #   slot     - a used slot: Continue / New Game (asks first: it starts over) / Back.
 #   confirm  - "Delete this save?" / "Start over on this slot?": Yes / No.
-#   new_save - a name and a seed (both typed; Tab or a click changes the field), then Normal / Hard Mode starts it.
-# handle() -> ("start_game", slot, hard mode) / ("back",) / None. ESC = Back.
+#   new_save - a name and a seed (both typed; Tab or a click changes the field), then I Have a Job / Normal / Hard
+#              Mode starts it (game/difficulty.py).
+# handle() -> ("start_game", slot, difficulty) / ("back",) / None. ESC = Back.
 
 import pygame
 
 from game.menu import fancy_text as FANCY
 from game.menu.sprite_button import SpriteButton, load, scaled
 from game.menu.save_manager import seed_from_text
+from game import difficulty as DIFF
 
 SLOTS = 3
 CARD_W = 0.22                     # share of the screen's width
@@ -22,7 +25,9 @@ EASE = 0.2
 BUTTON_H = 0.06                  # a button's height (share of the screen's height; the whole font height)
 SMALL_BUTTON_H = 0.042
 TITLE_H = 0.11
+STAR_SIZE, STAR_GAP, STAR_Y = 46, 10, 506     # (12.11) the ending stars, in the 480 x 620 card picture's px
 NAME_MAX, SEED_MAX = 20, 24
+DIFFICULTY_BUTTONS = {"btn_i_have_a_job": DIFF.EASY, "btn_normal": DIFF.NORMAL, "btn_hard_mode": DIFF.HARD}   # (12.11)
 FIELD_COLOUR, FIELD_EDGE, FIELD_FOCUS = (24, 16, 38), (120, 96, 160), (250, 246, 222)
 INFO_COLOUR, LABEL_COLOUR = (236, 228, 214), (170, 150, 200)
 
@@ -33,14 +38,15 @@ class SaveScreen:
         w, h = screen.get_size()
         self.card_size = (int(w * CARD_W), int(w * CARD_W * CARD_RATIO))
         self.cards = {kind: pygame.transform.smoothscale(load("saves/card_" + kind), self.card_size)
-                      for kind in ("normal", "hard", "empty")}
+                      for kind in DIFF.LEVELS + ("empty",)}
         self.titles = {name: scaled(load("saves/" + name), h * TITLE_H * (0.75 if name.startswith("title_sure") else 1))
                        for name in ("title_saves", "title_new_save", "title_sure_delete", "title_sure_overwrite")}
         self.labels = {name: scaled(load("saves/" + name), h * 0.05) for name in ("label_name", "label_seed")}
         self.buttons = {"btn_" + name: SpriteButton(name, h * BUTTON_H, "saves")
-                        for name in ("continue", "new_game", "yes", "no", "normal", "hard_mode")}
+                        for name in ("continue", "new_game", "yes", "no", "i_have_a_job", "normal", "hard_mode")}
         self.buttons["btn_back"] = SpriteButton("back", h * SMALL_BUTTON_H * 1.2)
         self.deletes = [SpriteButton("delete", h * SMALL_BUTTON_H, "saves") for _ in range(SLOTS)]
+        self.stars = {}                            # (12.11) the ending stars ("cream" / "red" / "green"), scaled to the cards
         self.lift = [0.0] * SLOTS
         self.hovered = None                       # what is under the mouse (for the hover sound)
         self.open()
@@ -62,7 +68,7 @@ class SaveScreen:
 
     # --- input ------------------------------------------------------------------------------------------------
     def handle(self, events, pos):
-        """-> ("start_game", slot, hard) / ("back",) / None"""
+        """-> ("start_game", slot, difficulty) / ("back",) / None"""
         self.hover_sound(pos)
         for event in events:
             if self.page == "new_save":
@@ -105,7 +111,7 @@ class SaveScreen:
 
     def click_slot(self, pos):
         if self.buttons["btn_continue"].rect.collidepoint(pos):
-            return ("start_game", self.slot, self.infos[self.slot - 1]["hard"])
+            return ("start_game", self.slot, self.infos[self.slot - 1]["difficulty"])
         if self.buttons["btn_new_game"].rect.collidepoint(pos):
             self.asking, self.page = "overwrite", "confirm"
         return None
@@ -125,18 +131,18 @@ class SaveScreen:
         for field, rect in self.field_rects().items():
             if rect.collidepoint(pos):
                 self.focus = field
-        for name, hard in (("btn_normal", False), ("btn_hard_mode", True)):
+        for name, difficulty in DIFFICULTY_BUTTONS.items():
             if self.buttons[name].rect.collidepoint(pos):
-                return self.start_new(hard)
+                return self.start_new(difficulty)
         return None
 
-    def start_new(self, hard):
+    def start_new(self, difficulty):
         self.saves.reset_data(self.slot)
         seed = self.seed_text.strip()
         self.saves.pending_seed = (seed_from_text(seed), seed)
         self.saves.pending_name = self.name_text.strip() or f"Save {self.slot}"
         self.leave_new_save()
-        return ("start_game", self.slot, hard)
+        return ("start_game", self.slot, difficulty)
 
     def type(self, event):
         """Typing into the name / the seed field."""
@@ -174,7 +180,7 @@ class SaveScreen:
 
     def page_buttons(self):
         return {"slot": ["btn_continue", "btn_new_game"], "confirm": ["btn_yes", "btn_no"],
-                "new_save": ["btn_normal", "btn_hard_mode"]}.get(self.page, [])
+                "new_save": list(DIFFICULTY_BUTTONS)}.get(self.page, [])
 
     # --- where things are ---------------------------------------------------------------------------------------
     def card_rect(self, i, lift=0.0):
@@ -218,14 +224,14 @@ class SaveScreen:
                             delete.rect.collidepoint(mouse))
 
     def draw_card(self, rect, info):
-        kind = "empty" if info is None else "hard" if info["hard"] else "normal"
+        kind = "empty" if info is None else info["difficulty"]
         self.screen.blit(self.cards[kind], rect)
         k = rect.width / 480                                    # the card picture is 480 px wide
         if info is None:
             self.blit_center(FANCY.fancy("Empty", int(44 * k), "pale"), rect.centerx, rect.y + int(260 * k))
             self.blit_center(FANCY.fancy("New Save", int(28 * k), "pale"), rect.centerx, rect.y + int(330 * k))
             return
-        style = "red" if info["hard"] else "cream"
+        style = DIFF.CARD_STYLE[info["difficulty"]]
         self.blit_center(FANCY.fancy(info["name"], int(fit_size(info["name"], 52) * k), style), rect.centerx,
                          rect.y + int(92 * k))
         self.blit_center(FANCY.fancy(info["place"], int(36 * k), style), rect.centerx, rect.y + int(212 * k))
@@ -235,14 +241,32 @@ class SaveScreen:
             y = rect.y + int((292 + n * 104) * k)
             self.blit_center(FANCY.font(int(25 * k)).render(label, True, LABEL_COLOUR), rect.centerx, y)
             self.blit_center(FANCY.fancy(value, int(44 * k), style), rect.centerx, y + int(44 * k))
+        self.draw_stars(rect, k, info["stars"], style)
         if info["seed"]:
             seed = FANCY.font(int(21 * k)).render(f"Seed: {info['seed']}", True, LABEL_COLOUR)
             self.blit_center(seed, rect.centerx, rect.bottom - int(52 * k))
 
+    def draw_stars(self, rect, k, reached, style):
+        """(12.11) A star at the bottom middle for every ending reached on this save (Main, Extra, Secret), in the
+        card's colours; none reached = nothing there at all."""
+        count = sum(reached)
+        if not count:
+            return
+        size, gap = int(STAR_SIZE * k), int(STAR_GAP * k)
+        star = self.star(style, size)
+        left = rect.centerx - (size * count + gap * (count - 1)) // 2
+        for n in range(count):
+            self.screen.blit(star, (left + n * (size + gap), rect.y + int(STAR_Y * k) - size // 2))
+
+    def star(self, style, size):
+        if style not in self.stars or self.stars[style].get_height() != size:
+            self.stars[style] = scaled(load("saves/star_" + style), size)
+        return self.stars[style]
+
     def draw_slot(self, mouse):
         w, h = self.screen.get_size()
         info = self.infos[self.slot - 1]
-        self.blit_center(FANCY.fancy(info["name"], int(h * 0.075), "red" if info["hard"] else "cream"),
+        self.blit_center(FANCY.fancy(info["name"], int(h * 0.075), DIFF.CARD_STYLE[info["difficulty"]]),
                          w // 2, int(h * 0.2))
         self.draw_buttons(mouse, 0.45)
 
