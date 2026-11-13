@@ -14,7 +14,7 @@ from game.menu import fancy_text as FANCY
 
 SHOW_FRAMES = 210                 # 3.5 s on the screen ...
 SLIDE_FRAMES = 18                 # ... of it sliding in / out
-CARD = (0.30, 0.095)              # share of the screen (width, height)
+CARD = (0.32, 0.095)              # share of the screen (width, height)
 BACK, EDGE = (24, 16, 38), (190, 160, 230)
 SOUND = "achievement"             # the old single sound (assets/sfx/UI/achievement.wav) if none of these is there:
 SOUND_DIR = os.path.join("assets", "sfx", "achievements")
@@ -26,6 +26,7 @@ class AchievementPopup:
     def __init__(self, sfx=None):
         self.sfx = sfx
         self.current, self.frames = None, 0
+        self.name_cache = None
         self.sounds = self.load_sounds(SOUNDS)
         self.secret_sounds = self.load_sounds([SECRET_SOUND])
 
@@ -66,6 +67,11 @@ class AchievementPopup:
         if name:
             self.sfx.play(name)
 
+    def name_picture(self, width, size):
+        if self.name_cache is None or self.name_cache[0] != (self.current, width, size):
+            self.name_cache = ((self.current, width, size), fitted(BY_ID[self.current]["name"], width, size))
+        return self.name_cache[1]
+
     def draw(self, screen):
         sw, sh = screen.get_size()
         w, h = int(sw * CARD[0]), int(sh * CARD[1])
@@ -79,9 +85,17 @@ class AchievementPopup:
         screen.blit(picture, picture.get_rect(midleft=(card.left + int(h * 0.12), card.centery)))
         left = card.left + int(h * 0.12) + size + int(h * 0.15)
         title = FANCY.font(int(h * 0.22)).render("Achievement unlocked", True, (190, 175, 215))
-        name = FANCY.fancy(BY_ID[self.current]["name"], int(h * 0.34))
+        name = self.name_picture(card.right - left - int(h * 0.15), int(h * 0.34))
         screen.blit(title, (left, card.top + int(h * 0.14)))
         screen.blit(name, (left, card.top + int(h * 0.42)))
+
+
+def fitted(text, width, size):
+    """(13.11) The name in the menus' letters, as big as `size` but no wider than `width`."""
+    picture = FANCY.fancy(text, size)
+    if picture.get_width() > width:
+        picture = FANCY.fancy(text, max(8, int(size * width / picture.get_width())))
+    return picture
 
 
 def ease(t):

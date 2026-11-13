@@ -20,6 +20,7 @@ SPAWNS = {
     "the_core": [[3,6], {"skeleton": 1, "fly": 1, "guard": 3, "generator": 4, "liche": 5}],
     "the_void": [[2,6], {"voidling": 3, "blue_crystal": 4, "red_crystal": 5, "purple_crystal": 5}],
 }
+RARE_SPAWNS = {"firefly_queen": 0.15}   # (13.11) when picked for a fight, it stays only this often (else another)
 MAX_ENEMIES = 15                # = spawn points around the player
 SPAWN_RING = (0.42, 0.40)       # the ring of spawn points: share of the screen width / height from the centre
 
@@ -201,7 +202,7 @@ class EnemyDB:
             # Firefly Queen (7.11): like the sun in ETG - glows, 3 dashes at you, then a full ring of light;
             # when she dies she bursts: pushes everyone away (no damage to enemies), the player takes a hit
             "firefly_queen": [0,0,1940,26,"enemy",2.6,950,85,25,"animal","random_normal",
-                {"dash": {"cooldown": 3.0, "last_used": 0, "dashes": 3, "windup": 24, "distance": 350, "dash_frames": 12, "type": ["normal_yellow"],
+                {"dash": {"cooldown": 3.0, "last_used": 0, "dashes": 3, "windup": 24, "distance": 300, "dash_frames": 12, "type": ["normal_yellow"],
                           "spiral": {"bullets": 16, "damage": 600, "speed": 8, "width": 13, "range": 3500, "effects": {}}},
                  "death_blast": {"radius": 180, "damage": 810, "push": 140}}],
 
@@ -567,6 +568,8 @@ class EnemyDB:
         provoked_enemies = []
         while points > 0 and spawnpoints:
             name = random.choice(list(weights))
+            while name in RARE_SPAWNS and random.random() > RARE_SPAWNS[name]:
+                name = random.choice(list(weights))           # (13.11) a rare one: usually picked again
             points -= weights[name]
             enemy = self.get_enemy(name)
             enemy.x, enemy.y = spawnpoints.pop()

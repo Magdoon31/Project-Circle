@@ -672,6 +672,15 @@ def globe(d, k):
         box(d, k, C - half, y - 2.5, C + half, y + 2.5, fill=0)
 
 
+def book(d, k):
+    """An open book (Know Thy Enemy)."""
+    poly(d, k, [(C - 4, 58), (C - 4, 156), (32, 142), (32, 46)])
+    poly(d, k, [(C + 4, 58), (C + 4, 156), (160, 142), (160, 46)])
+    for y in (78, 96, 114):
+        line(d, k, [(46, y - 6), (82, y + 4)], 4, fill=0)
+        line(d, k, [(110, y + 4), (146, y - 6)], 4, fill=0)
+
+
 SYMBOLS = {
     "new_in_town": house, "royal_flush": crown, "shattered_expectations": prism, "mother_knows_less": mushroom,
     "chill_out": snowflake, "quality_control": gear, "lights_out": flower, "showtime": note, "every_beat": heart,
@@ -683,7 +692,7 @@ SYMBOLS = {
     "memory_like_an_elephant": cards, "number_cruncher": grid, "the_big_one": pearl, "gamble_addict": wheel,
     "sudoku_addict": starred(small_grid), "encore": starred(note, cx=150, cy=150, r=24),
     "untouchable": shield, "close_shave": heart_outline, "pest_control": skull,
-    "is_this_your_job_now": number_plate("10K"), "dragon_hoard": banknote, "shopaholic": bag, "pacifist": no_gun,
+    "is_this_your_job_now": number_plate("10K"), "dragon_hoard": banknote, "know_thy_enemy": book, "shopaholic": bag, "pacifist": no_gun,
     "old_faithful": pistol,
     "slippery": crown, "light_footed": prism, "allergy_free": mushroom, "ice_skater": snowflake,
     "zero_defects": gear, "sixth_sense": flower, "perfect_pitch": note, "heartless": broken_heart,

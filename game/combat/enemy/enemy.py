@@ -1,4 +1,5 @@
 import pygame, math, random, copy
+from game.combat import sprites as FIGHT_SPRITES
 from game import difficulty as DIFF
 from game.combat.projectile import projectile as prjt
 
@@ -155,6 +156,8 @@ class Enemy:
 
         self.sfx = sfx
         self.name = ""   # database key, set by EnemyDB (used for item drops)
+        self.phase_no = 1        # (13.11) which phase (sprites: <boss>_f2.png ...)
+        self.face_left = False   # (13.11) its sprite is mirrored when it goes left
         self.aiming = None   # the attack being aimed right now (fast shots with a "telegraph" line)
         self.glow = 0        # frames of glowing before a dash (Firefly Queen)
         self.screen_size = None   # set in move() - a dash stays on the screen
@@ -187,7 +190,9 @@ class Enemy:
         if self.casts_shadow:                                     # (8.11) the tell of the real Night Bloom
             self.draw_shadow(screen)
         if not (self.invuln and (self.invuln // 5) % 2):          # blinking while changing phase
-            if self.shape == "square":                            # (8.11) machines, crates, turrets
+            if FIGHT_SPRITES.draw_enemy(screen, self):            # (13.11) its picture, if drawn
+                pass
+            elif self.shape == "square":                            # (8.11) machines, crates, turrets
                 box = pygame.Rect(0, 0, self.width * 2, self.width * 2)
                 box.center = (self.x, self.y)
                 pygame.draw.rect(screen, self.color, box, 0, 6)
@@ -302,6 +307,8 @@ class Enemy:
 
     def move(self, target_x, target_y, screen):
         self.screen_size = screen.get_size()
+        if abs(target_x - self.x) > 2:
+            self.face_left = target_x < self.x                # (13.11) its sprite looks where it goes
         if self.guard_chase and self.shielded():
             d = math.hypot(target_x - self.x, target_y - self.y)       # shielded: walks straight at you
             if d > 1:
@@ -931,6 +938,7 @@ class Enemy:
         if not self.phases or self.hp <= 0 or self.hp > self.max_hp * self.phases[0]["at"]:
             return
         phase = self.phases.pop(0)
+        self.phase_no += 1                                         # (13.11) <boss>_f2.png, _f3 ...
         if "attacks" in phase:
             self.attacks = copy.deepcopy(phase["attacks"])
             self.start_cooldowns(self.attacks)

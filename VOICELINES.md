@@ -7,7 +7,7 @@ after writing new lines (new lines get IDs, old ones keep theirs).
 
 **×N** = the same line is said in N places - one recording is used for all of them.
 
-Total: 755 lines.
+Total: 756 lines.
 
 | Who | Folder | Lines |
 |---|---|---|
@@ -17,7 +17,7 @@ Total: 755 lines.
 | Angler | `assets/sfx/voicelines/angler/` | 25 |
 | Mayor Bramble | `assets/sfx/voicelines/bramble/` | 22 |
 | Dot | `assets/sfx/voicelines/dot/` | 22 |
-| Ferris | `assets/sfx/voicelines/ferris/` | 4 |
+| Ferris | `assets/sfx/voicelines/ferris/` | 5 |
 | Foreman | `assets/sfx/voicelines/foreman/` | 56 |
 | Gardener | `assets/sfx/voicelines/gardener/` | 35 |
 | Gus | `assets/sfx/voicelines/gus/` | 43 |
@@ -380,6 +380,7 @@ Total: 755 lines.
 | ferris_02 | Show me where you've been and I'll take you back there. Places I haven't seen, I don't do. | ferris → first |  |
 | ferris_03 | Where to? | ferris → again |  |
 | ferris_04 | Back again? The road misses you. | ferris → again |  |
+| ferris_05 | Shortcuts cost. Come back richer. | ferris → poor |  |
 
 ## Foreman — `assets/sfx/voicelines/foreman/`
 

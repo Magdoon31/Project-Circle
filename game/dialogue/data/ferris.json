@@ -55,6 +55,17 @@
                     }
                 }
             ]
+        },
+        "poor": {
+            "_comment": "Not a talk: the world map's box shows this line (world_map.py say_too_poor plays its voice).",
+            "lines": [
+                {
+                    "id": "ferris_05",
+                    "who": "ferris",
+                    "pose": "neutral",
+                    "text": "Shortcuts cost. Come back richer."
+                }
+            ]
         }
     }
 }

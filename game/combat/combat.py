@@ -13,6 +13,7 @@ from game.menu import options as OPT
 from game import controls as KEYS
 from game.lib import snow_overlay as SNOW
 from game.combat import rooms as ROOMS
+from game.combat import sprites as FIGHT_SPRITES
 from game.combat import wall_tactics as TACTICS
 from game.combat.darkness import Darkness
 from game.combat.song import fight as SONG
@@ -1014,12 +1015,25 @@ class Combat:
                 if hasattr(body, "slide_x"):
                     body.slide_x = body.slide_y = 0.0
 
+    def draw_ice_wall_sprite(self, wall):
+        """The Frost Golem's ice wall as a picture (cracked after half its hits); False = no picture."""
+        cracked = wall["max"] and wall["hits"] <= wall["max"] / 2
+        name = "ice_wall_cracked" if cracked and FIGHT_SPRITES.object_picture("ice_wall_cracked", (1, 1)) else "ice_wall"
+        picture = FIGHT_SPRITES.object_picture(name, wall["rect"].size)
+        if picture is None:
+            return False
+        picture.set_alpha(int(255 * min(1.0, wall["life"] / 40)))     # melts away at the end
+        self.screen.blit(picture, wall["rect"].topleft)
+        return True
+
     def draw_walls(self):
         for wall in getattr(self, "walls", []):
             if wall.get("theme"):                          # (8.11) room obstacles in the biome's look
                 ROOMS.draw_obstacle(self.screen, wall)
                 continue
             r = wall["rect"]
+            if self.draw_ice_wall_sprite(wall):            # (13.11) combat/objects/ice_wall(.png / _cracked.png)
+                continue
             fade = min(1.0, wall["life"] / 40)
             colour = (int(150 + 60 * (1 - fade)), int(205 + 30 * (1 - fade)), 245)
             pygame.draw.rect(self.screen, colour, r, 0, 6)
@@ -1171,7 +1185,7 @@ class Combat:
             floor = SONG.FLOOR
         if self.void:
             self.void.draw_world(self.screen)               # (11.11) the islands over the abyss (no floor under them)
-        else:
+        elif not FIGHT_SPRITES.draw_floor(self.screen, FIGHT_SPRITES.floor_name(self)):     # (13.11) its picture
             self.screen.fill(floor if not getattr(self, "arena", {}).get("ice") else (214, 236, 248))
         self.draw_belts()
         self.draw_cracks()

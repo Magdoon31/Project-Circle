@@ -1,4 +1,5 @@
 import pygame, math, random, copy
+from game.combat import sprites as FIGHT_SPRITES
 from game.combat.projectile import projectile as prjt
 from game.inventory import sigils as SG
 from game import controls as KEYS
@@ -17,6 +18,9 @@ class Shooter :
         self.x = x
         self.y = y
         self.width = 25
+        self.facing = FIGHT_SPRITES.START_DIRECTION   # (13.11) sprite: which of the 8 directions it last walked
+        self.walking = False
+        self.walk_timer = 0
         self.hp = 50 + (active_items["armor"].bonus_hp if active_items["armor"] else 0)
         self.max_hp = self.hp
         self.defence = (active_items["armor"].defense if active_items["armor"] else 0)
@@ -232,11 +236,9 @@ class Shooter :
 
 
     def draw(self, screen):
-        if self.imm_frames > 0:
-            if (self.imm_frames//5)%2 == 0:
+        if self.imm_frames <= 0 or (self.imm_frames//5)%2 == 0:          # blinking after a hit
+            if not FIGHT_SPRITES.draw_player(screen, self):                 # (13.11) the sprite, if drawn
                 pygame.draw.circle(screen, (200, 50, 50), (self.x, self.y), self.width)
-        else:
-            pygame.draw.circle(screen, (200, 50, 50), (self.x, self.y), self.width)
         self.draw_effects(screen)
         self.hp_bar(screen)
         die = self.handle_effects()[1]
@@ -463,6 +465,9 @@ class Shooter :
         if confusion:
             vx, vy = -vx, -vy
 
+        self.facing = FIGHT_SPRITES.direction(vx, vy, self.facing)
+        self.walking = bool(vx or vy)                    # (13.11) the sprite's direction and its step frames
+        self.walk_timer = self.walk_timer + 1 if self.walking else 0
         length = math.sqrt(vx*vx + vy*vy)
 
         if length != 0:

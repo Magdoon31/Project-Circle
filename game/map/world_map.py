@@ -3,8 +3,13 @@
 # Tab / Q / E or clicking a tab at the top: look at another level you have been to (Surface, Cellar, Core, Void)
 # TEST: right click = teleport to that place (DEBUG_CLICK_TELEPORT)
 
+import os
 import pygame
 from game.map.map import MAP_SHOWS, QUEST_MARK_COLOUR
+from game.dialogue.speakers import SPEAKERS, SOUND_DIR
+from game.lib import voicelines as VOICES
+from game.lib.loudness import louder
+from game.menu import options as OPT
 from game import controls as KEYS
 
 MIN_ZOOM_FACTOR = 1.0     # 1.0 = the whole world fits on the screen
@@ -158,6 +163,8 @@ class WorldMap:
                 button = next((sc for rect, sc in self.buttons if rect.collidepoint(event.pos)), None)
                 if button:
                     self.confirm = button
+                    if self.ferris and not button["owned"] and self.get_money() < button["price"]:
+                        say_too_poor()                      # (13.11) "Shortcuts cost. Come back richer." - with his voice
                     continue
                 self.dragging = True
                 self.drag_from = event.pos
@@ -396,3 +403,23 @@ class WorldMap:
                 pygame.draw.circle(self.screen, (255, 230, 60), (rect.left + 9, rect.centery), 4)
             self.tabs.append((rect, name))
             x = rect.left - 10
+
+
+FERRIS_POOR_LINE = "ferris_05"   # (13.11) ferris.json "poor": the box's "Shortcuts cost. Come back richer."
+FERRIS_CHATTER_REPEATS = 2       # without a recording: his talk sound this many extra times (a short mumble)
+TALK_GAIN = 2.0                  # as in dialogue.py
+
+
+def say_too_poor():
+    """Ferris's voice for the "come back richer" box: the line's recording, or else his talk sound."""
+    voice = VOICES.load("ferris", FERRIS_POOR_LINE)
+    loops = 0
+    if voice is None:
+        loops = FERRIS_CHATTER_REPEATS
+        try:
+            voice = pygame.mixer.Sound(os.path.join(SOUND_DIR, SPEAKERS["ferris"]["sound"]))
+        except (pygame.error, FileNotFoundError):
+            return
+    voice = louder(voice, TALK_GAIN)
+    voice.set_volume(OPT.volume("dialogue"))
+    voice.play(loops=loops)

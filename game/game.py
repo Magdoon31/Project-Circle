@@ -25,6 +25,8 @@ from game import controls as KEYS
 from game.lib.motion_blur import MotionBlur
 from game.lib import restart as RESTART
 from game.lib.small_window import SmallWindow
+from game.lib import sprites as SPRITES
+from game.combat import sprites as FIGHT_SPRITES
 from game.menu.save_manager import SaveManager
 from game.combat.enemy.enemy_database import EnemyDB, SPAWNS
 from game.combat.bullet_types import BulletTypes
@@ -53,6 +55,14 @@ from game.inventory import sigils as SG
 from game import difficulty as DIFF
 from game.achievements.tracker import AchievementTracker
 from game.achievements.popup import AchievementPopup
+from game.bestiary.progress import BestiaryProgress
+from game.stats.tracker import StatsTracker
+from game.stats.screen import StatsScreen
+from game.achievements.data import ACHIEVEMENTS
+from game.inventory.sigils import ALL_SIGILS as SIGIL_LIST
+from game.bestiary.data import ENTRIES as BESTIARY_ENTRIES
+from game.achievements.book import BOOK as ACH_BOOK
+from game.bestiary.screen import BestiaryScreen
 
 ESCAPE_GRACE_FRAMES = 180   # after running away: no random fight for the next 3 s of walking
 
@@ -118,6 +128,7 @@ SIGIL_POPUP_FRAMES = 180    # "New Sigil" on the screen for 3 s
 MINIGAME_FADE_MS = 800      # the music fades out this long before a minigame's countdown (then the minigame music)
 # TEST ONLY: key F starts a normal fight right away (enemies of the biome you stand in)
 DEBUG_FIGHT_KEY = pygame.K_f
+RELOAD_SPRITES_KEY = pygame.K_F5        # (13.11) read the sprites again (new files show up without a restart)
 DEBUG_NEXT_PHASE_KEY = pygame.K_F9      # (11.11, test) in a boss fight: the boss loses just enough HP for its next phase
 PEACE_GUN = "Peace Gun"
 BOSS_TALKS = {"Milo": "milo_core_fight"}   # (10.11) bosses you talk to first; the talk ends with "open": "boss_fight"
@@ -210,6 +221,11 @@ class Game:
         self.achievements = AchievementTracker(self)      # (13.11) when an achievement is reached
         self.achievement_popup = AchievementPopup(self.sfx)
         self.map_ui.achievements_progress = self.achievements.progress
+        self.bestiary = BestiaryProgress(lambda: self.counters)           # (13.11) what this save knows
+        self.stats = StatsTracker(lambda: self.counters)                  # (13.11) ESC -> Stats
+        self.map_ui.make_stats = lambda: StatsScreen(self.screen, self.stats_cards())
+        self.map_ui.make_bestiary = lambda: BestiaryScreen(self.screen, self.enemy_db, self.bestiary,
+                                                           lambda name: self.inventory.ItemDB.get_item(name).img, self.sfx)
         self.sigil_queue = []          # more sigils found at once (shown one after another)
 
         self.sfx.load_sfx("use", "assets/sfx/UI/use.wav")
@@ -245,6 +261,8 @@ class Game:
             self.timer += 1
             self.music.update()            # crossfades (e.g. into the shop and back)
             self.counters["sigils"] = self.sigils.to_dict()     # sigils are saved with the game (counters)
+            if self.state != GameState.MENU:
+                self.stats.follow_money(self.player.money)               # (13.11) gold earned / spent
             keys = pygame.key.get_pressed()
             events = pygame.event.get()
             mouse_pos = pygame.mouse.get_pos()
@@ -254,6 +272,8 @@ class Game:
                     self.running = False
                     self.settings.settings_data_save()
                     self.save_manager.save_game(self.save, self.difficulty)
+                if event.type == pygame.KEYDOWN and event.key == RELOAD_SPRITES_KEY:
+                    self.reload_sprites()
 
             if self.state == GameState.MENU:
                 self.update_menu(events, keys, mouse_pos)
@@ -287,6 +307,7 @@ class Game:
             pygame.display.flip()
 
             self.save_manager.load_game(save_nr, self)
+            self.stats.forget_money()                                     # (13.11) its money wasn't earned now
             self.inventory.active_weapon = self.inventory.active_items["weapon"]
             self.inventory.active_armor = self.inventory.active_items["armor"]
             self.inventory.active_trinket = self.inventory.active_items["trinket"]
@@ -471,6 +492,7 @@ class Game:
             event = self.player.move(keys)
             if self.map.tile_at(self.player.x, self.player.y) != tile_before:
                 self.achievements.on_step(self.map.level)
+                self.stats.add("steps")
             if self.map.glitch_hit and self.map.orb_on and self.map.glitch_hit == getattr(self, "glitch_tile", None):
                 self.glitch_push += 1
             else:
@@ -619,6 +641,14 @@ class Game:
         self.menu.page = "main"
         self.map_ui.page = "map"
 
+    def reload_sprites(self):
+        """(13.11) F5: forget every loaded picture - the next frame reads the files again."""
+        SPRITES.clear()
+        FIGHT_SPRITES.clear()
+        for wall in getattr(getattr(self, "combat", None), "walls", []) or []:
+            wall.pop("img", None)                       # room obstacles drawn again too
+        print("Sprites reloaded")
+
     def plain_map_view(self):
         """Only the world on the screen (no talk, menu, world map, shop or minigame over it)."""
         return (self.map_ui.page == "map" and not self.dialogue and not self.minigame
@@ -673,6 +703,10 @@ class Game:
         if self.combat.finished and not getattr(self.combat, "achievements_done", False):
             self.combat.achievements_done = True
             self.achievements.on_fight_end(self.combat, self.combat.win)     # (13.11)
+            self.bestiary.on_fight_end(self.combat)
+            self.stats.on_fight_end(self.combat)
+            if self.bestiary.complete():
+                ACH_BOOK.unlock("know_thy_enemy")
         if self.combat.finished and self.combat.escaped:
             # ran away: straight back to the map, no reward, no penalty, a short break from random fights
             self.music.stop()
@@ -756,6 +790,35 @@ class Game:
             self.show_ending("secret" if self.secret_ending_ready() else "extra")
         elif gate["cells"]:
             self.map_ui.show_message("The passage is open!")
+
+    def stats_cards(self):
+        """(13.11) ESC -> Stats: [(card title, [(label, value)])] for this save."""
+        s, c, ach = self.stats, self.counters, self.counters.get("ach", {})
+        seconds = int(self.player.play_time)
+        explored = ach.get("explored", {})
+        world = sum(explored.values()) / len(explored) if explored else self.map.explored_fraction()
+        plays = sum(v for k, v in c.items() if k.endswith("_plays") and isinstance(v, int))
+        wins = sum(v for k, v in c.items() if k.endswith("_wins") and isinstance(v, int))
+        unlocked = sum(ACH_BOOK.has(a["id"]) for a in ACHIEVEMENTS)
+        return [
+            ("General", [("Time played", f"{seconds // 3600}:{seconds // 60 % 60:02d}"),
+                         ("Difficulty", DIFF.NAMES[self.difficulty]),
+                         ("Seed", str(self.save_manager.seed_text or self.map.seed)[:14]),
+                         ("World explored", f"{world:.0%}"), ("Tiles walked", f"{s.get('steps'):,}")]),
+            ("Fights", [("Won", f"{s.get('fights_won'):,}"), ("Lost", f"{s.get('fights_lost'):,}"),
+                        ("Ran away", f"{s.get('fights_escaped'):,}"), ("Enemies defeated", f"{ach.get('kills', 0):,}"),
+                        ("Bosses beaten", f"{s.get('bosses_beaten'):,}"), ("Hits taken", f"{s.get('hits_taken'):,}"),
+                        ("Shots fired", f"{s.get('shots_fired'):,}")]),
+            ("Gold & items", [("Gold now", f"{self.player.money:,}$"), ("Gold earned", f"{s.get('gold_earned'):,}$"),
+                              ("Gold spent", f"{s.get('gold_spent'):,}$"), ("Things bought", f"{ach.get('purchases', 0):,}"),
+                              ("Things sold", f"{s.get('items_sold'):,}"), ("Items found", f"{s.get('items_found'):,}"),
+                              ("Sigils", f"{len(self.sigils.owned)} / {len(SIGIL_LIST)}")]),
+            ("Minigames & more", [("Minigames played", f"{plays:,}"), ("Minigames won", f"{wins:,}"),
+                                  ("Wheel spins", f"{c.get('wheel_plays', 0):,}"), ("Fish caught", f"{c.get('fishing_wins', 0):,}"),
+                                  ("Talks", f"{sum(ach.get('talks', {}).values()):,}"),
+                                  ("Achievements", f"{unlocked} / {len(ACHIEVEMENTS)}"),
+                                  ("Bestiary", f"{self.bestiary.discovered()} / {len(BESTIARY_ENTRIES)}")]),
+        ]
 
     def secret_ending_ready(self):
         # the 3 lore items must be USED at NPCs during the game (author's idea, not made yet).
@@ -1082,6 +1145,7 @@ class Game:
         return S.round10(S.price_of(name, biome) * SELL_SHARE)
 
     def sell_item(self, item, price):
+        self.stats.add("items_sold")                                     # (13.11)
         self.inventory.remove_item(item)
         if self.inventory.selected_item is item:
             self.inventory.selected_item = None
@@ -1227,6 +1291,7 @@ class Game:
             if item is None:
                 continue
             money = self.inventory.give_item(item)
+            self.stats.add("items_found")                                # (13.11)
             if money:
                 self.player.money += money
                 messages.append(f"Inventory full - {item.name} turned into {money}$")
@@ -1260,7 +1325,8 @@ class Game:
         self.enemy_db.dropped_now = set()
         self.enemy_db.luck = self.luck()
         self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.difficulty, self.sfx, assets=self.combat_assets)
-        self.combat.floor = self.map.floor_color(self.player.biome)     # (8.11) the fight floor = the biome's ground
+        self.combat.floor = self.map.floor_color(self.player.biome)
+        self.combat.floor_biome = self.player.biome                      # (13.11) combat/floors/<biome>.png     # (8.11) the fight floor = the biome's ground
         enemies, money = self.enemy_db.provoke_enemies(self.player.biome, self.difficulty, self.screen)
         self.combat.enemies.extend(enemies)
         self.combat.money = money
@@ -1336,6 +1402,7 @@ class Game:
         self.combat.money += boss.money
         self.prepare_reward()
         self.combat.floor = self.map.floor_color(self.player.biome)
+        self.combat.floor_biome = self.player.biome                      # (13.11) combat/floors/<biome>.png
         self.player_in_combat.y = self.screen.get_height() * BOSS_FIGHT_PLAYER_Y     # (13.11) lower, away from it
         if boss_name == "milo":
             self.start_core_fight(boss)

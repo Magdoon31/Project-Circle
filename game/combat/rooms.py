@@ -23,6 +23,8 @@ import random
 
 import pygame
 
+from game.combat import sprites as FIGHT_SPRITES
+
 ROOM_GROW = 0.15              # + area per enemy above ROOM_FREE
 ROOM_FREE = 3                 # this many enemies still fit on the screen
 ROOM_MAX = 2.0                # the biggest room = 2x the screen's area
@@ -227,9 +229,12 @@ def draw_obstacle(screen, wall):
     img = wall.get("img")
     hits = wall["hits"]
     if img is None or wall.get("img_hits") != hits:
-        img = wall["img"] = _render(wall)
+        drawn = None if wall.get("cover") else FIGHT_SPRITES.obstacle_picture(wall["theme"], wall["rect"])   # (13.11)
+        img, wall["img_offset"] = drawn or (_render(wall), (0, 0))
+        wall["img"] = img
         wall["img_hits"] = hits
-    screen.blit(img, wall["rect"].topleft)
+    offset = wall.get("img_offset", (0, 0))
+    screen.blit(img, (wall["rect"].x + offset[0], wall["rect"].y + offset[1]))
 
 
 def _render(wall):

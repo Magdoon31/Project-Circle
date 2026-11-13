@@ -47,7 +47,8 @@
                 {
                     "who": "player",
                     "pose": "serious",
-                    "text": "What is this place?"
+                    "text": "What is this place?",
+                    "horror": true
                 },
                 {
                     "id": "milo_island_05",

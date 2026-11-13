@@ -6,6 +6,8 @@
 #   hidden: shown as "???" until reached (the weird ones)
 #   goal:   (counter, number) - the screen shows the progress on this save (e.g. 312 / 1000)
 
+from game.inventory.sigils import ALL_SIGILS
+
 ACHIEVEMENTS = [
     # --- the story ---------------------------------------------------------------------------------------------
     {"id": "new_in_town", "name": "New in Town", "group": "story", "text": "Talk to Milo for the first time."},
@@ -30,8 +32,8 @@ ACHIEVEMENTS = [
     {"id": "peacekeeper", "name": "Peacekeeper", "group": "world", "text": "Find the Peace Gun."},
     {"id": "behind_the_wall", "name": "Behind the Wall", "group": "world", "text": "Find the hidden hall in the Factory."},
     {"id": "keeper_of_memories", "name": "Keeper of Memories", "group": "world", "text": "Carry all 3 lore items at once."},
-    {"id": "sticker_album", "name": "Sticker Album", "group": "world", "text": "Collect all 13 sigils.",
-     "goal": ("sigils", 13)},
+    {"id": "sticker_album", "name": "Sticker Album", "group": "world", "text": "Collect every sigil.",
+     "goal": ("sigils", len(ALL_SIGILS))},
     {"id": "cartographer", "name": "Cartographer", "group": "world", "text": "Explore 100% of the Underground Garden."},
     {"id": "mind_the_gap", "name": "Mind the Gap", "group": "world", "text": "Explore 100% of the Void."},
     {"id": "tourist", "name": "Tourist", "group": "world", "text": "Explore 100% of the Surface."},
@@ -58,6 +60,8 @@ ACHIEVEMENTS = [
     {"id": "shopaholic", "name": "Shopaholic", "group": "combat", "text": "Buy 50 things in the shop.",
      "goal": ("purchases", 50)},
     {"id": "pacifist", "name": "Pacifist (Mostly)", "group": "combat", "text": "Win a fight without firing a shot."},
+    {"id": "know_thy_enemy", "name": "Know Thy Enemy", "group": "combat",
+     "text": "Fill the whole Bestiary (everything about every enemy and boss)."},
     {"id": "old_faithful", "name": "Old Faithful", "group": "combat", "text": "Defeat the Prism with the Simple Blaster or the Simple Pistol."},
     # --- no hit, hard mode -----------------------------------------------------------------------------------
     {"id": "slippery", "name": "Slippery", "group": "nohit", "text": "Defeat the Slime King on Hard without being hit."},

@@ -3,6 +3,7 @@
 # achievements themselves are global (book.py).
 
 from game.achievements.book import BOOK
+from game.inventory.sigils import ALL_SIGILS
 
 BOSS_WINS = {"slime_king": "royal_flush", "prism": "shattered_expectations", "shroom_mother": "mother_knows_less",
              "frost_golem": "chill_out", "assembly_line": "quality_control", "night_bloom": "lights_out",
@@ -19,7 +20,6 @@ COUNTED = {"kills": [(1000, "pest_control"), (10000, "is_this_your_job_now")], "
            "escapes": [(100, "tactical_retreat")], "falls": [(10, "fell_for_it")],
            "surface_steps": [(20000, "touch_grass")], "small_fish": [(10, "small_fry")]}
 LORE_ITEMS = ("Broken Bulb", "Cassette Tape", "Old Note")
-ALL_SIGILS = 13
 RICH = 50000
 STARTER_WEAPONS = ("Simple Blaster", "Simple Pistol")             # (Old Faithful)
 CLOSE_SHAVE = 0.05
@@ -78,7 +78,7 @@ class AchievementTracker:
             self.on_ending_reached()
         if game.player.money >= RICH:
             BOOK.unlock("dragon_hoard")
-        if len(game.sigils.owned) >= ALL_SIGILS:
+        if len(game.sigils.owned) >= len(ALL_SIGILS):
             BOOK.unlock("sticker_album")
         self.timer += 1
         if self.timer % 30 == 0:                       # (items: a set of names - not needed every frame)
