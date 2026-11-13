@@ -27,6 +27,8 @@ RUN_CHANCE = 0.006            # per frame of holding R (~1.4 s on average)
 RUN_CHANCE_HARD_MODE = 0.004  # ~2 s on average
 HARD_ENEMY_DAMAGE = 1.15      # (12.11) hard mode: enemies (and bosses) hit 15% harder ...
 HARD_GOLD = 0.88              # ... and every fight gives 12% less gold
+FROST_RING_WIDTH = 3           # (13.11) the Frost armour's ring (px)
+HELPERS_STAY = {"slime_king"}   # (13.11) the small slimes it called stay after it dies - you finish them off
 NO_GOLD_BOSSES = {"milo", "void_boss"}   # (12.11) the last two bosses give no gold (nothing to buy after them)
 HARD_BOSS_REACH = 10000       # (12.11) hard mode: a boss's bullets live this long (ms) - they go off the map
 SHORT_REACH = 2000            # ... not the ones meant to vanish soon (shorter range) ...
@@ -418,6 +420,8 @@ class Combat:
     
             target = self.target()
             projectile.update([target])
+            if getattr(projectile, "edge_bounces", 0):
+                projectile.bounce_off_edges()               # (13.11) e.g. Prism's row fired backwards
             if self.left_room(projectile):                  # (11.11) gone out of the room for good: forget it
                 self.enemy_projectiles.remove(projectile)
                 continue
@@ -546,7 +550,7 @@ class Combat:
                 if enemy.type == "boss":                    # (8.11) its machines and products go with it
                     for other in self.enemies:
                         if getattr(other, "machine", False) or getattr(other, "ride_off", False) or other in enemy.guards \
-                                or getattr(other, "owner", None) is enemy:
+                                or (getattr(other, "owner", None) is enemy and enemy.name not in HELPERS_STAY):
                             other.remove_me = True
         self.hold_anchored()
         gone = [e for e in self.enemies if getattr(e, "remove_me", False)]
@@ -1176,20 +1180,14 @@ class Combat:
             self.song.draw_world(self.screen)
         if self.core:
             self.core.draw_world(self.screen, self.core_layer())
-        for projectile in self.player_projectiles:
-            projectile.draw(self.screen)
-        for projectile in self.enemy_projectiles:
-            if self.void and self.void.pale:
-                self.void.draw_bullet_outline(self.screen, projectile)   # (11.11) the Pale World: outlines only
-            else:
-                projectile.draw(self.screen)
         if self.decoy:
             self.decoy.draw(self.screen, self.timer)
         for frames, _, pos, size, *blast in self.pending_bullets:  # warning before a death attack
             pulse = 1 + 0.25 * math.sin(frames * 0.9)
             pygame.draw.circle(self.screen, (255, 60, 60), pos, int((size + 6) * pulse), 3)
         if "frost" in self.player.armor_effect:
-            pygame.draw.circle(self.screen,(40,120,220),(self.player.x,self.player.y),self.player.armor_effect["frost"][0],8)
+            pygame.draw.circle(self.screen, (40, 120, 220), (self.player.x, self.player.y),
+                               self.player.armor_effect["frost"][0], FROST_RING_WIDTH)     # (13.11) was 8 px
         if self.player.draw(self.screen):
             self.check_player_death()
         for enemy in self.enemies[:]:
@@ -1197,6 +1195,7 @@ class Combat:
                 continue
             if enemy.draw(self.screen):
                 self.kill_enemy(enemy)
+        self.draw_bullets()                                 # (13.11) over the enemies (and you)
         if OPT.get("damage_numbers"):
             self.damage_numbers.draw(self.screen)
         if self.song and OPT.get("flashes"):
@@ -1256,6 +1255,15 @@ class Combat:
         if getattr(self, "_core_layer", None) is None or self._core_layer.get_size() != self.screen.get_size():
             self._core_layer = pygame.Surface(self.screen.get_size(), pygame.SRCALPHA)
         return self._core_layer
+
+    def draw_bullets(self):
+        for projectile in self.player_projectiles:
+            projectile.draw(self.screen)
+        for projectile in self.enemy_projectiles:
+            if self.void and self.void.pale:
+                self.void.draw_bullet_outline(self.screen, projectile)   # (11.11) the Pale World: outlines only
+            else:
+                projectile.draw(self.screen)
 
     def draw_hud(self):
         if getattr(self, "phase_flash", 0) > 0:             # boss phase change: a white flash fading out

@@ -51,6 +51,8 @@ from game.shop import stock as S
 from game.inventory.sigils import Sigils, ALL_SIGILS, HAGGLER_PRICE, LUCKY_COIN_REROLL, LUCKY_COIN_GOLD
 from game.inventory import sigils as SG
 from game import difficulty as DIFF
+from game.achievements.tracker import AchievementTracker
+from game.achievements.popup import AchievementPopup
 
 ESCAPE_GRACE_FRAMES = 180   # after running away: no random fight for the next 3 s of walking
 
@@ -102,6 +104,7 @@ STORY_ITEMS = ["Peace Gun", "Broken Bulb", "Cassette Tape", "Old Note",
                "Meter"]   # Meter: the Foreman's part from the shop - TEST ONLY until the shop exists
 SECRET_HINTS = {"core_vault": "The gold is still lying on the ground",    # bumping into a closed secret way
                 "garden_backroom": "Something is still awake."}
+BOSS_FIGHT_PLAYER_Y = 0.78  # (13.11) a boss fight starts with you this low (share of the height; not the Void, Milo)
 HARD_BOSS_HP = 1.33         # hard mode: bosses have 33% more HP
 BOSS_MUSIC = {"night_bloom": "assets/music/bosses/garden/phase{}.mp3",
               "milo": "assets/music/bosses/core/phase{}.mp3"}   # (8.11) a track per phase ({} = 1, 2...)
@@ -109,6 +112,8 @@ PHASE_CROSSFADE_MS = 1500   # (8.11) how long a boss's music takes to fade into 
 GLITCH_PUSH_FRAMES = 90     # Pale World: push into a glitch stone this long (1.5 s) with the Pale Orb on
 NOT_YET_FRAMES = 150        # the "ultra secret" glitch: a black screen with "Not yet." (the world isn't made yet)
 SELL_SHARE = 0.25           # the buyer pays 25% of the shop price
+SELLABLE_START_ITEMS = {"Simple Pistol"}   # (13.11) a start item the buyer takes after all
+FIXED_SELL_PRICES = {"Simple Pistol": 20, "Simple Blaster": 20}   # (13.11) the start weapons are worth little
 SIGIL_POPUP_FRAMES = 180    # "New Sigil" on the screen for 3 s
 MINIGAME_FADE_MS = 800      # the music fades out this long before a minigame's countdown (then the minigame music)
 # TEST ONLY: key F starts a normal fight right away (enemies of the biome you stand in)
@@ -202,6 +207,9 @@ class Game:
         self.last_boss = None          # boss touched last frame - a fight starts only when you walk INTO a boss
         self.trinket_effects = {}
         self.sigil_popup = None        # [sigil id, frames left] - "New Sigil" in the middle of the map screen
+        self.achievements = AchievementTracker(self)      # (13.11) when an achievement is reached
+        self.achievement_popup = AchievementPopup(self.sfx)
+        self.map_ui.achievements_progress = self.achievements.progress
         self.sigil_queue = []          # more sigils found at once (shown one after another)
 
         self.sfx.load_sfx("use", "assets/sfx/UI/use.wav")
@@ -209,7 +217,8 @@ class Game:
                            ("buy_minigame", "assets/sfx/minigames/buy_minigame.wav"),
                            ("bonus1", "assets/sfx/map/bonus1.wav"), ("bonus2", "assets/sfx/map/bonus2.wav"),
                            ("new_item", "assets/sfx/UI/new_item.wav"),
-                           ("sigil_pickup", "assets/sfx/map/sigil_pickup.wav")):
+                           ("sigil_pickup", "assets/sfx/map/sigil_pickup.wav"),
+                           ("achievement", "assets/sfx/UI/achievement.wav")):           # (13.11) tools/make_achievement_sound.py
             try:
                 self.sfx.load_sfx(name, path)
             except (pygame.error, FileNotFoundError):
@@ -329,6 +338,7 @@ class Game:
                     self.minigame_music = "done"
             if self.minigame.finished:
                 won = self.minigame.won
+                finished_game = self.minigame
                 reward = getattr(self.minigame, "reward", 0)     # minigames that pay out themselves (fishing)
                 if getattr(self.minigame, "won_sigil", None):     # Lucky's wheel: the "?" field
                     self.award_sigil(self.minigame.won_sigil)
@@ -340,6 +350,7 @@ class Game:
                     self.current_music = self.player.biome
                 if won:
                     self.counters[f"{family}_wins"] = self.counters.get(f"{family}_wins", 0) + 1
+                self.achievements.on_minigame_end(family, finished_game, won)      # (13.11)
                 if reward:                                    # e.g. the wheel's x0.5 pays back even when "lost"
                     self.player.money += reward
                     self.sfx.play("coin_pickup")
@@ -348,10 +359,12 @@ class Game:
             return
         # a conversation is running: it takes all input, the world is paused
         if self.dialogue and self.dialogue.pending_minigame:
+            pygame.mouse.set_visible(True)                    # (sudoku is clicked)
             self.start_minigame(self.dialogue.pending_minigame)
             return
         if self.dialogue:
             self.dialogue.handle_events(events)
+            pygame.mouse.set_visible(self.dialogue.finished or self.dialogue.choices is None)   # (13.11) answers: keys only
             horror = self.dialogue.horror and not self.dialogue.finished
             if horror != getattr(self, "music_muted", False):
                 self.music.mute(horror)
@@ -454,7 +467,10 @@ class Game:
                 return
             if "boss:garden" in self.map.flags:
                 self.map.flags.add(PALE.BACKROOM_FLAG)     # Spare Pocket's room behind the Garden boss opens
+            tile_before = self.map.tile_at(self.player.x, self.player.y)
             event = self.player.move(keys)
+            if self.map.tile_at(self.player.x, self.player.y) != tile_before:
+                self.achievements.on_step(self.map.level)
             if self.map.glitch_hit and self.map.orb_on and self.map.glitch_hit == getattr(self, "glitch_tile", None):
                 self.glitch_push += 1
             else:
@@ -499,6 +515,12 @@ class Game:
 
         self.map_ui.draw()
         self.draw_sigil_popup()
+        if on_map:
+            self.achievements.on_map_frame()                # (13.11)
+            if PALE.is_pale(self.map.level):
+                self.achievements.on_pale_world()
+            if not self.dialogue:
+                self.achievement_popup.update_and_draw(self.screen)
 
         if self.dialogue:
             pass                                         # a talk just started - no fight this frame
@@ -648,6 +670,9 @@ class Game:
         self.player.play_time += 1 / 60          # fights count as play time too (e.g. minigame breaks)
         self.combat.draw()
 
+        if self.combat.finished and not getattr(self.combat, "achievements_done", False):
+            self.combat.achievements_done = True
+            self.achievements.on_fight_end(self.combat, self.combat.win)     # (13.11)
         if self.combat.finished and self.combat.escaped:
             # ran away: straight back to the map, no reward, no penalty, a short break from random fights
             self.music.stop()
@@ -741,6 +766,7 @@ class Game:
         """(12.11) An ending (main / extra / secret): the voice ???, then the credits (story/ending.py), then the
         main menu."""
         self.map.flags.update(ENDING_FLAGS[kind])                 # (12.11) the save card's stars (saved below)
+        self.achievements.on_map_frame()                          # (13.11) the ending's achievements (shown in the menu)
         finished = EndingScene(self.screen, self.clock, self.music, OPT.volume("dialogue"), kind).run()
         if not finished:                                          # the window was closed during it
             self.running = False
@@ -775,6 +801,7 @@ class Game:
             self.map_ui.show_message("...", 90)            # this NPC has nothing to say yet
             return
         self.player.vx = self.player.vy = 0.0
+        self.achievements.on_talk(npc.get("id", dialogue_id))       # (13.11)
         self.map_ui.draw()                               # the dimmed background includes the UI as it is now
         context = DialogueContext(
             has_flag=lambda f: f in self.map.flags, set_flag=self.map.flags.add, clear_flag=self.map.flags.discard,
@@ -1048,8 +1075,10 @@ class Game:
     def sell_price(self, name):
         """What the buyer pays (None = he won't take it: story / quest items, things with no biome)."""
         biome = next((b for b, items in loot.ITEMS_BY_BIOME.items() if name in items), None)
-        if biome is None or name in loot.NOT_RANDOM:
+        if biome is None or (name in loot.NOT_RANDOM and name not in SELLABLE_START_ITEMS):
             return None
+        if name in FIXED_SELL_PRICES:
+            return FIXED_SELL_PRICES[name]
         return S.round10(S.price_of(name, biome) * SELL_SHARE)
 
     def sell_item(self, item, price):
@@ -1067,6 +1096,7 @@ class Game:
         self.player.vx = self.player.vy = 0.0
         self.shop_stock = ShopStock(self.counters.get("shop"))
         self.shop.volume = self.sfx.sfx_volume
+        self.achievements.on_shop_open()                                  # (13.11)
         self.shop.open(self.shop_stock, {
             "flags": self.map.flags, "owned": set(self.owned_item_names()), "active_quests": set(self.quests.active),
             "level": self.map.level, "get_money": lambda: self.player.money,
@@ -1076,8 +1106,9 @@ class Game:
             "price_mult": HAGGLER_PRICE if self.sigils.on("haggler") else 1.0,              # Haggler sigil
             "reroll_mult": LUCKY_COIN_REROLL if self.sigils.on("lucky_coin") else 1.0,       # Lucky Coin sigil
             "luck": self.luck(), "wins": self.counters.get("biome_wins", {}),
-            "can_sell": "boss:rainbow_fields" in self.map.flags,                 # the Sell page (7.11)
-            "inventory": lambda: list(self.inventory.items), "sell_price": self.sell_price, "sell": self.sell_item})
+            "can_sell": True,                                  # the Sell page (7.11; 13.11 from the start)
+            "inventory": lambda: list(self.inventory.items), "sell_price": self.sell_price, "sell": self.sell_item,
+            "on_buy": self.achievements.on_buy, "on_reroll": self.achievements.on_reroll})
         self.counters["shop"] = self.shop_stock.to_dict()
         self.music.fade_to("shop")
 
@@ -1305,6 +1336,7 @@ class Game:
         self.combat.money += boss.money
         self.prepare_reward()
         self.combat.floor = self.map.floor_color(self.player.biome)
+        self.player_in_combat.y = self.screen.get_height() * BOSS_FIGHT_PLAYER_Y     # (13.11) lower, away from it
         if boss_name == "milo":
             self.start_core_fight(boss)
         self.state = GameState.COMBAT

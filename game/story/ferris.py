@@ -11,7 +11,7 @@ from game.shop.stock import FIGHT_GOLD, round10
 from game.world.tiles import TILES
 
 APPEARS_AFTER = "boss:rainbow_fields"
-SHORTCUT_FIGHTS = 15
+SHORTCUT_FIGHTS = 13.5                     # (13.11) was 15 - 1.5 fights cheaper
 SHORTCUTS = [
     # id, name on the map, level, where (("gate", from, to) = just behind that gate | ("arrival", key) |
     # ("centre", zone, (from, to)) = the middle of the zone, reachable from that gate | ("before_boss",) = the factory

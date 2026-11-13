@@ -3,7 +3,7 @@
 #   "speed" - many numbers given, short time limit, every MISTAKE costs 15 s
 # A mistake = writing a number that is not the solution of that cell (the cell turns red and is cleared).
 # Controls: mouse click or arrows / WASD = pick a cell, 1-9 = write, Backspace / Delete = erase,
-#           Esc = give up (counts as a loss).
+#           Esc = give up (counts as a loss) - (13.11) asks first: Y / Enter = yes, N / Esc = no (the clock goes on).
 # Numbers that break a rule (same number twice in a row / column / box) are shown red.
 
 import random
@@ -15,6 +15,8 @@ MODES = {
     "speed": {"givens": 50, "time": 150, "name": "Speed", "max_mistakes": None, "mistake_seconds": 15},
 }
 WRONG_FLASH = 30            # frames a wrong number stays red before it is cleared
+GIVE_UP_YES = (pygame.K_y, pygame.K_RETURN, pygame.K_KP_ENTER)
+GIVE_UP_NO = (pygame.K_n, pygame.K_ESCAPE)
 
 
 def _full_grid(rnd):
@@ -101,6 +103,7 @@ class Sudoku(Minigame):
         self.cell_rects = {}
         self.mistakes = 0
         self.wrong = {}                     # cell -> frames left of the red flash
+        self.asking = False                 # (13.11) "Give up?" on the screen
 
     def lose_text(self):
         if self.frames_left is not None and self.frames_left <= 0:
@@ -110,6 +113,9 @@ class Sudoku(Minigame):
         return "You gave up."
 
     def on_events(self, events):
+        if self.asking:
+            self.answer_give_up(events)
+            return
         for e in events:
             if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
                 for cell, rect in self.cell_rects.items():
@@ -126,7 +132,8 @@ class Sudoku(Minigame):
                 elif e.key in (pygame.K_DOWN, pygame.K_s):
                     r = (r + 1) % 9
                 elif e.key == pygame.K_ESCAPE:
-                    self.end(False)
+                    self.asking = True
+                    return
                 elif self.puzzle[r][c] == 0:
                     digit = None
                     if pygame.K_1 <= e.key <= pygame.K_9:
@@ -144,6 +151,17 @@ class Sudoku(Minigame):
                         if self.grid == self.solution:
                             self.end(True)
                 self.cursor = (r, c)
+
+    def answer_give_up(self, events):
+        for e in events:
+            if e.type != pygame.KEYDOWN:
+                continue
+            if e.key in GIVE_UP_YES:
+                self.asking = False
+                self.end(False)
+            elif e.key in GIVE_UP_NO:
+                self.asking = False
+            return
 
     def mistake(self, cell):
         self.mistakes += 1
@@ -209,3 +227,16 @@ class Sudoku(Minigame):
             w = 4 if k % 3 == 0 else 1
             pygame.draw.line(self.screen, (20, 20, 25), (left + k * size, top), (left + k * size, top + 9 * size), w)
             pygame.draw.line(self.screen, (20, 20, 25), (left, top + k * size), (left + 9 * size, top + k * size), w)
+        if self.asking:
+            self.draw_give_up(board)
+
+    def draw_give_up(self, board):
+        """(13.11) The "Give up?" question over the board."""
+        title = self.font_big.render("Give up?", True, (255, 110, 110))
+        hint = self.font_small.render("Y / Enter - yes      N / Esc - no", True, (220, 220, 220))
+        plate = pygame.Rect(0, 0, max(title.get_width(), hint.get_width()) + 80, title.get_height() + hint.get_height() + 50)
+        plate.center = board.center
+        pygame.draw.rect(self.screen, (0, 0, 0), plate, 0, 14)
+        pygame.draw.rect(self.screen, (255, 255, 255), plate, 4, 14)
+        self.screen.blit(title, title.get_rect(midtop=(plate.centerx, plate.top + 18)))
+        self.screen.blit(hint, hint.get_rect(midbottom=(plate.centerx, plate.bottom - 16)))

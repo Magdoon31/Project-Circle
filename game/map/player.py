@@ -8,6 +8,7 @@ CONVEYOR_SPEED = 0.55   # how strongly conveyor belts push the player (x player 
 # smooth movement: the velocity eases towards the wanted one instead of jumping to it
 ACCELERATION = 0.25   # 0..1 per frame, how fast the player speeds up / turns (lower = more slide)
 FRICTION = 0.1       # 0..1 per frame, how fast the player stops after releasing the keys
+PATH_SPEED = 1.1     # (13.11) 10% faster on paths
 
 
 class Player:
@@ -49,8 +50,9 @@ class Player:
         else:
             ease = FRICTION
         # move the velocity a part of the way towards the wanted velocity -> smooth start, turn, stop
-        self.vx += (vx * self.speed - self.vx) * ease
-        self.vy += (vy * self.speed - self.vy) * ease
+        speed = self.speed * (PATH_SPEED if self.map.on_path(self.x, self.y) else 1.0)
+        self.vx += (vx * speed - self.vx) * ease
+        self.vy += (vy * speed - self.vy) * ease
         if abs(self.vx) < 0.05:
             self.vx = 0.0
         if abs(self.vy) < 0.05:

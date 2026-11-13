@@ -25,6 +25,8 @@ class Shooter :
         self.og_speed = self.speed
         self.ice = False                   # slippery floor (set by Combat from the boss arena)
         self.ice_grip = ICE_GRIP           # (12.11) ... how slippery (hard mode: HARD_ICE_GRIP)
+        self.hits_taken = 0                # (13.11) for the achievements: hits in this fight ...
+        self.shots_fired = 0               # ... and shots
         self.hurt_mult = 1.0               # (12.11) every hit on you x this (hard mode: Combat sets HARD_ENEMY_DAMAGE)
         self.slide_x = self.slide_y = 0.0  # your sliding speed (a little everywhere, a lot on ice)
         self.rate_of_fire = (active_items["weapon"].rate_of_fire if active_items["weapon"] else 99999)
@@ -277,6 +279,7 @@ class Shooter :
                 if amount < 1:
                     amount = 1
                 self.hp -= amount
+                self.hits_taken += 1
                 if "thorns" in self.trinket_effect:
                     self.thorns_pending = True              # Rose
                 if "speed_on_hit" in self.trinket_effect:   # Cotton Candy: any hit makes you faster for a moment
@@ -504,6 +507,7 @@ class Shooter :
         elif now - self.last_shot_time < self.rate_of_fire * 1000:
             return False, None
         self.last_shot_time = now
+        self.shots_fired += 1
         projectiles = self.make_projectiles()
         if self.double_every and now - self.last_double >= self.double_every:
             # D20: the same shot again, a bit to the side (two bullets next to each other)

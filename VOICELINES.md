@@ -7,7 +7,7 @@ after writing new lines (new lines get IDs, old ones keep theirs).
 
 **×N** = the same line is said in N places - one recording is used for all of them.
 
-Total: 765 lines.
+Total: 755 lines.
 
 | Who | Folder | Lines |
 |---|---|---|
@@ -20,7 +20,7 @@ Total: 765 lines.
 | Ferris | `assets/sfx/voicelines/ferris/` | 4 |
 | Foreman | `assets/sfx/voicelines/foreman/` | 56 |
 | Gardener | `assets/sfx/voicelines/gardener/` | 35 |
-| Gus | `assets/sfx/voicelines/gus/` | 53 |
+| Gus | `assets/sfx/voicelines/gus/` | 43 |
 | Hal | `assets/sfx/voicelines/hal/` | 31 |
 | Lucky | `assets/sfx/voicelines/lucky/` | 30 |
 | narrator (???) | `assets/sfx/voicelines/narrator/` | 55 |
@@ -491,28 +491,18 @@ Total: 765 lines.
 | gus_03 | Today? Ah. Today the shelves are... resting. Fresh batch tomorrow! Come back tomorrow, my friend. | gus → visit1 |  |
 | gus_04 | My friend! You came back! A customer who comes back - that's the best kind of customer. | gus → visit2 |  |
 | gus_05 | The batch? Ah. Not ready. Sugar's a moody thing. You can't rush sugar. | gus → visit2 |  |
-| gus_06 | But when it's ready - oh, you'll be the first to know. First in line. Very important customer. | gus → visit2 |  |
-| gus_07 | Hello again, my friend. Welcome to Gus's Sweets. | gus → visit3 |  |
-| gus_08 | Nothing today, no. The oven's being difficult. Ovens have feelings too, you know. | gus → visit3 |  |
-| gus_09 | You've got a sweet tooth, I can tell. Strong teeth. Customer's teeth. | gus → visit3 |  |
-| gus_10 | Ah. You. Hello, my... friend. | gus → visit4 |  |
-| gus_11 | Still no candy. Still no batch. Still the finest candy in all of Sugarwood, though. In theory. | gus → visit4 |  |
-| gus_12 | Welcome to Gus's... you know what this is. | gus → visit5 |  |
-| gus_13 | Do you ever buy anything, friend? Anywhere? Or do you just walk around and talk to people? | gus → visit5 |  |
-| gus_14 | Mhm. Great. Wonderful business model. | gus → visit5 |  |
-| gus_15 | Friend. Buddy. Pal. You're here again. | gus → visit6 |  |
-| gus_16 | The other candy makers smile all day, you know. All day. Even when nobody's looking. I don't know how they do it. | gus → visit6 |  |
-| gus_17 | My face hurts after an hour. | gus → visit6 |  |
-| gus_18 | ...Hi. | gus → visit7 |  |
-| gus_19 | I'll be honest with you, friend. There's no batch. There was never going to be a batch tomorrow. | gus → visit7 |  |
-| gus_20 | I just like saying 'tomorrow'. It sounds good. Sounds like business. | gus → visit7 |  |
-| gus_21 | You again. | gus → visit8 |  |
-| gus_22 | You know how many customers I had this year? One. You. And you don't buy. | gus → visit8 |  |
-| gus_23 | I'm not angry. I'm a salesman. Salesmen don't get angry. We get... motivated. | gus → visit8 |  |
-| gus_24 | Don't. Don't say anything. Let me guess. You're just looking. | gus → visit9 |  |
-| gus_25 | Of course you are. | gus → visit9 |  |
+| gus_54 | Keep coming back, my friend. Good things happen to customers who keep coming back. That's a rule. I think. | gus → visit2 |  |
+| gus_12 | Welcome to Gus's... you know what this is. | gus → visit3 |  |
+| gus_13 | Do you ever buy anything, friend? Anywhere? Or do you just walk around and talk to people? | gus → visit3 |  |
+| gus_14 | Mhm. Great. Wonderful business model. | gus → visit3 |  |
+| gus_55 | Come back again anyway. Maybe something will change. Maybe it'll be me. | gus → visit3 |  |
+| gus_19 | I'll be honest with you, friend. There's no batch. There was never going to be a batch tomorrow. | gus → visit4 |  |
+| gus_20 | I just like saying 'tomorrow'. It sounds good. Sounds like business. | gus → visit4 |  |
+| gus_22 | You know how many customers I had this year? One. You. And you don't buy. | gus → visit4 |  |
+| gus_23 | I'm not angry. I'm a salesman. Salesmen don't get angry. We get... motivated. | gus → visit4 |  |
+| gus_56 | One more visit, friend. Just one more. Let's see what happens. | gus → visit4 |  |
 | gus_26 | Okay. That's it. Smile's off. Shop's closed. | gus → snap |  |
-| gus_27 | Ten times. Ten times you came here, and not one gumdrop. Do you know what that does to a man? | gus → snap |  |
+| gus_27 | Five times. Five times you came here, and not one gumdrop. Do you know what that does to a man? | gus → snap |  |
 | gus_28 | No more 'my friend'. You want to stand at my counter? Then you're going to be useful. | gus → snap |  |
 | gus_29 | The sugar casters out in the grove - those little show-offs throwing sugar bombs around. Sometimes one of them carries a Sugar Crystal. | gus → snap |  |
 | gus_30 | Pure stuff. The real thing. With one of those I could make an actual batch. A real one. Not a 'tomorrow' one. | gus → snap |  |

@@ -1,5 +1,5 @@
 {
-    "_comment": "Gus - candy maker in Sugarwood Grove, at the gingerbread hut. A tired salesman: every visit is a new short talk (counter 'gus_talks') and the sales smile gets more forced. On the 10th visit he loses his patience and gives the quest 'gus': bring a Sugar Crystal (5% drop from sugar casters, only while the quest is active) -> Glue Gun. Sells nothing yet (shop UI later).",
+    "_comment": "Gus - candy maker in Sugarwood Grove, at the gingerbread hut. A tired salesman: every visit is a new short talk (counter 'gus_talks') and the sales smile gets more forced. On the 5th visit (13.11; was 10th - and from the 2nd visit on he hints that coming back pays off) he loses his patience and gives the quest 'gus': bring a Sugar Crystal (5% drop from sugar casters, only while the quest is active) -> Glue Gun. Sells nothing yet (shop UI later).",
     "partner": "gus",
     "start": [
         {
@@ -31,55 +31,10 @@
             "if": {
                 "counter_at_least": [
                     "gus_talks",
-                    9
-                ]
-            },
-            "goto": "snap"
-        },
-        {
-            "if": {
-                "counter_at_least": [
-                    "gus_talks",
-                    8
-                ]
-            },
-            "goto": "visit9"
-        },
-        {
-            "if": {
-                "counter_at_least": [
-                    "gus_talks",
-                    7
-                ]
-            },
-            "goto": "visit8"
-        },
-        {
-            "if": {
-                "counter_at_least": [
-                    "gus_talks",
-                    6
-                ]
-            },
-            "goto": "visit7"
-        },
-        {
-            "if": {
-                "counter_at_least": [
-                    "gus_talks",
-                    5
-                ]
-            },
-            "goto": "visit6"
-        },
-        {
-            "if": {
-                "counter_at_least": [
-                    "gus_talks",
                     4
                 ]
             },
-            "goto": "visit5"
+            "goto": "snap"
         },
         {
             "if": {
@@ -159,58 +114,14 @@
                     "text": "The batch? Ah. Not ready. Sugar's a moody thing. You can't rush sugar."
                 },
                 {
-                    "id": "gus_06",
+                    "id": "gus_54",
                     "who": "gus",
                     "pose": "grin",
-                    "text": "But when it's ready - oh, you'll be the first to know. First in line. Very important customer."
+                    "text": "Keep coming back, my friend. Good things happen to customers who keep coming back. That's a rule. I think."
                 }
             ]
         },
         "visit3": {
-            "do": {
-                "count": "gus_talks"
-            },
-            "lines": [
-                {
-                    "id": "gus_07",
-                    "who": "gus",
-                    "pose": "smile",
-                    "text": "Hello again, my friend. Welcome to Gus's Sweets."
-                },
-                {
-                    "id": "gus_08",
-                    "who": "gus",
-                    "pose": "thinking",
-                    "text": "Nothing today, no. The oven's being difficult. Ovens have feelings too, you know."
-                },
-                {
-                    "id": "gus_09",
-                    "who": "gus",
-                    "pose": "smile",
-                    "text": "You've got a sweet tooth, I can tell. Strong teeth. Customer's teeth."
-                }
-            ]
-        },
-        "visit4": {
-            "do": {
-                "count": "gus_talks"
-            },
-            "lines": [
-                {
-                    "id": "gus_10",
-                    "who": "gus",
-                    "pose": "tired",
-                    "text": "Ah. You. Hello, my... friend."
-                },
-                {
-                    "id": "gus_11",
-                    "who": "gus",
-                    "pose": "tired",
-                    "text": "Still no candy. Still no batch. Still the finest candy in all of Sugarwood, though. In theory."
-                }
-            ]
-        },
-        "visit5": {
             "do": {
                 "count": "gus_talks"
             },
@@ -237,45 +148,20 @@
                     "who": "gus",
                     "pose": "tired",
                     "text": "Mhm. Great. Wonderful business model."
-                }
-            ]
-        },
-        "visit6": {
-            "do": {
-                "count": "gus_talks"
-            },
-            "lines": [
-                {
-                    "id": "gus_15",
-                    "who": "gus",
-                    "pose": "tired",
-                    "text": "Friend. Buddy. Pal. You're here again."
                 },
                 {
-                    "id": "gus_16",
+                    "id": "gus_55",
                     "who": "gus",
                     "pose": "thinking",
-                    "text": "The other candy makers smile all day, you know. All day. Even when nobody's looking. I don't know how they do it."
-                },
-                {
-                    "id": "gus_17",
-                    "who": "gus",
-                    "pose": "tired",
-                    "text": "My face hurts after an hour."
+                    "text": "Come back again anyway. Maybe something will change. Maybe it'll be me."
                 }
             ]
         },
-        "visit7": {
+        "visit4": {
             "do": {
                 "count": "gus_talks"
             },
             "lines": [
-                {
-                    "id": "gus_18",
-                    "who": "gus",
-                    "pose": "neutral",
-                    "text": "...Hi."
-                },
                 {
                     "id": "gus_19",
                     "who": "gus",
@@ -287,19 +173,6 @@
                     "who": "gus",
                     "pose": "tired",
                     "text": "I just like saying 'tomorrow'. It sounds good. Sounds like business."
-                }
-            ]
-        },
-        "visit8": {
-            "do": {
-                "count": "gus_talks"
-            },
-            "lines": [
-                {
-                    "id": "gus_21",
-                    "who": "gus",
-                    "pose": "neutral",
-                    "text": "You again."
                 },
                 {
                     "id": "gus_22",
@@ -312,25 +185,12 @@
                     "who": "gus",
                     "pose": "angry",
                     "text": "I'm not angry. I'm a salesman. Salesmen don't get angry. We get... motivated."
-                }
-            ]
-        },
-        "visit9": {
-            "do": {
-                "count": "gus_talks"
-            },
-            "lines": [
-                {
-                    "id": "gus_24",
-                    "who": "gus",
-                    "pose": "angry",
-                    "text": "Don't. Don't say anything. Let me guess. You're just looking."
                 },
                 {
-                    "id": "gus_25",
+                    "id": "gus_56",
                     "who": "gus",
-                    "pose": "tired",
-                    "text": "Of course you are."
+                    "pose": "neutral",
+                    "text": "One more visit, friend. Just one more. Let's see what happens."
                 }
             ]
         },
@@ -350,7 +210,7 @@
                     "id": "gus_27",
                     "who": "gus",
                     "pose": "angry",
-                    "text": "Ten times. Ten times you came here, and not one gumdrop. Do you know what that does to a man?"
+                    "text": "Five times. Five times you came here, and not one gumdrop. Do you know what that does to a man?"
                 },
                 {
                     "id": "gus_28",

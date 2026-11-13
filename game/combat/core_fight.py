@@ -77,6 +77,7 @@ class CoreFight:
         self.milo = milo
         self.hard = getattr(milo, "hard", False)
         self.easy = False
+        self.rewinds = 0                  # (13.11) how many times time ran back in this fight
         self.heart_enemy = heart_enemy
         self.arena = arena
         self.centre = (arena[0] / 2, arena[1] / 2)
@@ -328,6 +329,7 @@ class CoreFight:
             self.rewind_warned = self.heart.beat
         elif self.heart.beat - self.rewind_warned >= REWIND_WARN_BEATS:
             self.rewind.start()
+            self.rewinds += 1                             # (13.11) the Deja Vu achievement
             self.rewind_warned = None
             self.rewind_at = self.phase_frames + REWIND_EVERY[self.phase]
 

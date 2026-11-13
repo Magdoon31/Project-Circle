@@ -84,6 +84,19 @@ class projectile:
         if m and m.get("kind") == "wave":                    # a wave line turns its middle line too
             self.base_x, self.base_y = px, py
 
+    def bounce_off_edges(self):
+        """(13.11) A bullet with edge_bounces left turns back at the arena's edges (edge_bounds = (w, h))."""
+        w, h = self.edge_bounds
+        if not 0 <= self.x <= w:
+            self.vx, self.dir_x, self.target_x = -self.vx, -self.dir_x, 2 * self.x - self.target_x
+            self.x = min(w, max(0, self.x))
+        elif not 0 <= self.y <= h:
+            self.vy, self.dir_y, self.target_y = -self.vy, -self.dir_y, 2 * self.y - self.target_y
+            self.y = min(h, max(0, self.y))
+        else:
+            return
+        self.edge_bounces -= 1
+
     def set_velocity(self):
         dx = self.target_x - self.x
         dy = self.target_y - self.y

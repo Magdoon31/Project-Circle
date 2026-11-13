@@ -31,6 +31,7 @@ KEEPER_DIR = "assets/img/shopkeeper"     # the shopkeeper's pictures (7.11): sho
 # his picture follows the LINE he is saying: "pose" in lines.json = normal / happy -> shopkeeper_<pose>.png
 # (a missing file -> shopkeeper_normal.png; nothing said yet -> normal)
 KEEPER_HEIGHT = 0.5           # share of the screen height (his lower part is hidden behind the counter)
+COUNTER_ITEM_BOTTOM = 0.815   # (13.11) an item on the counter stands on its top (was half hidden in it)
 KEEPER_TOP = 0.32             # where his head starts (share of the screen height) - the counter starts at 0.8
 BOUNCE_FRAMES = 70            # after a purchase he bobs down and up a little, softer and softer, then stops
 BOUNCE_SIZE = 0.022           # share of the screen height (the first dip)
@@ -189,6 +190,7 @@ class Shop:
         ctx["pay"](price)
         ctx["give"](item_name)
         ctx["owned"].add(item_name)
+        ctx.get("on_buy", ignore)(ctx["get_money"]())          # (13.11) achievements
         if mark_sold:
             mark_sold()
         ctx["play_sfx"]("buy", BUY_SOUND_VOLUME)
@@ -242,6 +244,7 @@ class Shop:
             else:
                 ctx["pay"](price)
                 self.stock.reroll(ctx["flags"], ctx["owned"], ctx.get("luck", 0), ctx.get("wins"))
+                ctx.get("on_reroll", ignore)(self.stock.used)
                 ctx["play_sfx"]("use")
             return None
         if isinstance(target, tuple) and target[0] == "shelf":
@@ -507,7 +510,7 @@ class Shop:
         size = int(sh * 0.1)
         for i, entry in enumerate(items):
             rect = pygame.Rect(0, 0, size, size)
-            rect.center = (int(sw * (0.33 - i * 0.08)), int(sh * 0.86))
+            rect.midbottom = (int(sw * (0.33 - i * 0.08)), int(sh * COUNTER_ITEM_BOTTOM))   # (13.11) stands on it
             self.rects[("counter", i)] = rect.inflate(20, 50)
             pic = self.item_picture(entry["item"], (size, size))
             if pic:
@@ -629,3 +632,7 @@ def short_rows(item, bold, font):
     elif item.type == "armor":
         rows.append((f"Bonus HP: {item.bonus_hp}   DEF: {item.defense}", font, (140, 170, 255)))
     return rows
+
+
+def ignore(*_):
+    """(13.11) An optional ctx hook nobody set."""

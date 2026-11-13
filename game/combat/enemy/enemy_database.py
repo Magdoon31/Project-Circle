@@ -38,6 +38,9 @@ def fight_points(biome, difficulty, rnd=random):
 BELTS = [[0.30, 0.40, 1], [0.52, 0.62, -1], [0.74, 0.84, 1]]     # (8.11) Assembly Line's conveyor belts (share of the height)
 GLUE_FRAMES = 150                 # (11.11) Assembly Line: how long its rows and bottom vents glue you (was 90)
 MACHINES = {"assembly_machine_1", "assembly_machine_2", "assembly_machine_3"}   # stand still - belts don't move them
+ENEMY_HARD = {    # (13.11) small enemies' hard-mode changes (Enemy.apply_hard) - when their boss is in hard mode
+    "belt_turret": {"hard_tweaks": {"line": {"bullets": 3}}},      # (Assembly Line's dark grey turrets: 1 shot, hard 3)
+}
 BELT_RIDERS = {"belt_turret", "bomb_crate"}   # only ride the belts; gone when carried off the far end
 SQUARE = MACHINES | BELT_RIDERS                # drawn as boxes
 ANCHORED = MACHINES | {"assembly_line", "milo", "milo_core"}    # (Milo is moved by core_fight.py only)
@@ -98,7 +101,7 @@ class EnemyDB:
                 {"basic": {"damage": 120, "cooldown": 1.6, "last_used": 0, "width": 13, "speed": 16, "range": 1800, "effects": {"glued":[60,0.25]}, "type":["normal_green"]}}],
 
             "candy_shroom": [0,0,490,24,"enemy",0.8,59,20,25,"plant","random_normal",
-                {"sprinkler": {"damage": 44, "cooldown": 2.0, "last_used": 0, "width": 12, "speed": 7, "range": 3500, "streams": 3, "duration": 2.0, "every": 8, "turn": 9, "effects": {"poison":[185,15]}, "type":["spore"], "stop_move":[20,10]}}],
+                {"sprinkler": {"damage": 44, "cooldown": 2.0, "last_used": 0, "width": 12, "speed": 7, "range": 3500, "streams": 3, "duration": 2.0, "every": 16, "turn": 9, "effects": {"poison":[185,15]}, "type":["spore"], "stop_move":[20,10]}}],   # (13.11) every 16 (was 8)
 
             "toffee_runner": [0,0,86,18,"enemy",3.8,88,10,25,"animal","to_player_zigzag",{}],
 
@@ -147,7 +150,7 @@ class EnemyDB:
                 {"basic": {"damage": 270, "cooldown": 2.6, "last_used": -60, "width": 14, "speed": 12, "range": 3000, "effects": {}, "type": ["bullet_red"]}}],
             "line_beetle": [0,0,180,12,"enemy",4.6,200,0,0,"mechanical","to_player_normal", {}],
             "belt_turret": [0,0,600,24,"enemy",0,100,0,0,"mechanical","random_normal",
-                {"line": {"damage": 250, "cooldown": 2.4, "last_used": -40, "width": 12, "speed": 13, "range": 4000, "bullets": 3, "every": 5, "effects": {}, "type": ["bullet_red"]}}],
+                {"line": {"damage": 250, "cooldown": 2.4, "last_used": -40, "width": 12, "speed": 13, "range": 4000, "bullets": 1, "every": 5, "effects": {}, "type": ["bullet_red"]}}],
             "bomb_crate": [0,0,300,22,"enemy",0,60,0,0,"mechanical","random_normal",
                 {"fuse": {"cooldown": 4.0, "last_used": 0},
                  "death_spiral": {"damage": 250, "cooldown": 0, "last_used": 0, "width": 13, "speed": 7, "range": 3000, "bullets": 12, "effects": {}, "type": ["normal_red"]}}],
@@ -274,12 +277,13 @@ class EnemyDB:
         # + boss_info below (name over the big HP bar, the later phases). Which boss stands where: BOSS_OF_ZONE.
         # Fight length grows with the stage (village ~45 s at the biome's 1.0x weapon DPS: 12 -> ~500 HP).
         self.bosses = {
-            # SLIME KING (village, 3 phases: 100-80%, 80-40%, 40-0%): 1) hops at you (aimed, with a short wind-up,
+            # SLIME KING (village, 3 phases: 100-80%, 80-40%, 40-0%; 13.11: its hops are 300 px; when it dies, the
+            # small slimes it called stay - the fight ends when they are dead too): 1) hops at you (aimed, with a short wind-up,
             # no warning) and leaves a small ring where it lands, 5-bullet shotgun. 2) slower, lobs slime that
             # bursts into a ring, calls 2 small slimes. 3) a triple hop (like the Firefly Queen, no landing ring, 0.35 s
             # between hops) with a ring after the 1st and 2nd hop + the shotgun + 1 small slime.
             "slime_king": [960, 300, 600, 90, "boss", 2.4, 14, 40, 0, "mystical", "to_player",
-                {"dash": {"cooldown": 2.6, "last_used": -60, "dashes": 1, "windup": 40, "distance": 380, "dash_frames": 20,
+                {"dash": {"cooldown": 2.6, "last_used": -60, "dashes": 1, "windup": 40, "distance": 300, "dash_frames": 20,
                           "type": ["normal_green"],
                           "spiral": {"bullets": 8, "damage": 8, "speed": 6, "width": 14, "range": 3000, "effects": {}}},
                  "shotgun": {"damage": 10, "cooldown": 3.4, "last_used": 0, "width": 14, "speed": 9, "range": 3000,
@@ -298,8 +302,9 @@ class EnemyDB:
             # slowing down - like the mushroom in ETG) + leaps (up off the screen, a shadow, down somewhere else -
             # hurts you under it - and bursts there). 2) two shroom guards in random corners (2 spinning streams, don't
             # move; 1 or 2 at random); while one of them lives she can't be hurt; she walks at you the whole phase
-            # (hurts by touch); new ones at most every 19 s, once the old ones are dead. 3) leaps + bursts
-            # faster + two DNA lines (at you and straight back) that bounce off the walls. Guards that are still alive stay. Drops the Flavoured
+            # (hurts by touch); (13.11) like the Assembly Line: guards broken -> open for 16.5% of her HP, then sealed
+            # 2 s, then new guards (2 rounds in the phase). 3) leaps + bursts faster + a DNA line at you that bounces
+            # off the walls (hard mode: and one straight back). Guards that are still alive stay. Drops the Flavoured
             # Candy (10%). 6000 HP = ~55 s of hitting at the Sugarwood 1.0x weapon (108 DPS) + killing the guards.
             "shroom_mother": [960, 400, 6000, 80, "boss", 1.0, 90, 220, 0, "mystical", "random_normal",
                 {"burst": {**{"bullets": 48, "speed": [5, 11], "decay": 0.988, "min_speed": 1.5, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 3.5, "last_used": -120},
@@ -382,11 +387,11 @@ class EnemyDB:
             "night_bloom": {"name": "Night Bloom",
                             "hard": {"throw": {"radius": 100, "recoil": 260, "damage": 500, "width": 18, "exp_type": "", "cooldown": 4.2, "last_used": -120, "fly_time": 1.0, "light": 230, "effects": {}, "type": ["flower_orange"]}},
                             "arena": {"darkness": {"light": 130, "fog": 0.75, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "phases": [
-                {"at": 0.9, "color": [200, 150, 230], "hard_tweaks": {"edge_rain": {"gaps": 1}}, "arena": {"darkness": {"light": 130, "fog": 0.8, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
+                {"at": 0.9, "color": [200, 150, 230], "hard_tweaks": {"edge_rain": {"gaps": 1}}, "arena": {"darkness": {"light": 130, "fog": 0.86, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
                     "edge_rain": {"warn": 45, "cooldown": 5.5, "last_used": -120, "sides": ["left", "right"], "spacing": 64, "gaps": 2, "gap": 190, "speed": 4, "damage": 500, "width": 13, "range": 6000, "effects": {}, "type": ["flower_white"]},
                     "sprinkler": {"damage": 450, "cooldown": 5.5, "last_used": -200, "width": 13, "speed": 7, "range": 5000, "streams": 4, "duration": 1.67, "every": 6, "turn": 12, "effects": {}, "type": ["flower_pink"]},
                     "throw": {"radius": 100, "recoil": 260, "damage": 500, "width": 18, "exp_type": "", "cooldown": 3.8, "last_used": -90, "fly_time": 1.0, "light": 230, "effects": {}, "type": ["flower_orange"]}}},
-                {"at": 0.62, "color": [170, 210, 240], "hard_set": {"shadow_alpha": 110}, "arena": {"darkness": {"light": 130, "fog": 0.85, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
+                {"at": 0.62, "color": [170, 210, 240], "hard_set": {"shadow_alpha": 110}, "arena": {"darkness": {"light": 130, "fog": 0.92, "seed": {"every": 300, "life": 600, "time": 420, "player": 360, "boss": 220, "spots": 4, "spot_r": 180}, "storm": {"every": 300, "flicker": [4, 3, 6], "fade": 24}}}, "attacks": {
                     "spiral": {"damage": 600, "cooldown": 2.6, "last_used": -60, "width": 13, "speed": 5, "range": 5000, "bullets": 16, "effects": {}, "type": ["spore"]},
                     "basic": {"damage": 650, "cooldown": 1.8, "last_used": -30, "width": 14, "speed": 9, "range": 5000, "repeat": [3, 0.2], "effects": {}, "type": ["flower_white"]},
                     "decoys": {"copies": 3, "copy": "bloom_copy", "keep_away": 360, "cooldown": 8.0, "last_used": -30}}},
@@ -428,12 +433,12 @@ class EnemyDB:
                  "hard": {"sprinkler": {"damage": 70, "cooldown": 6.0, "last_used": -120, "width": 13, "speed": 6, "range": 6000,
                                         "streams": 3, "duration": 2.0, "every": 7, "turn": 9, "effects": {}, "type": ["spore"]}}, "attacks": {
                     "spawn": {"enemy_name": "shroom_guard", "amount": [1, 2], "corners": True, "guards": True, "color": [230, 120, 170],
-                              "cooldown": 19.0, "last_used": -1140}}},
-                {"at": 0.47, "speed": 1.4, "color": [255, 120, 190], "hard_tweaks": {"burst": {"bullets": 20, "repeat": [3, 0.35]}}, "attacks": {
+                              "open_damage": 0.165, "rebuild": 2.0, "cooldown": 1.0, "last_used": -60}}},   # (13.11) 2 rounds, like the Assembly Line
+                {"at": 0.47, "speed": 1.4, "color": [255, 120, 190], "hard_tweaks": {"wave": {"opposite": True}}, "attacks": {
                     "burst": {**{"bullets": 32, "speed": [6, 13], "decay": 0.975, "min_speed": 2.0, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}, "cooldown": 2.6, "last_used": -60},
                     "leap": {"cooldown": 4.5, "last_used": 0, "up": 24, "air": 55, "land_damage": 120, "burst": {"bullets": 32, "speed": [6, 13], "decay": 0.8, "min_speed": 2.0, "damage": 70, "width": 13, "range": 6000, "effects": {}, "type": ["spore"]}},
                     "wave": {"damage": 70, "cooldown": 3.0, "last_used": -90, "width": 13, "speed": 12, "range": 6000,
-                             "bullets": 10, "every": 4, "amp": 30, "period": 36, "double": True, "bounce": 2, "opposite": True,
+                             "bullets": 10, "every": 4, "amp": 30, "period": 36, "double": True, "bounce": 2,
                              "effects": {}, "type": ["normal_red"]}}}]},
             "prism": {"name": "Prism", "hard_tweaks": {"line": {"opposite": True}}, "phases": [
                 {"at": 0.8, "speed": 2.0, "color": [230, 200, 255], "attacks": {
@@ -456,7 +461,7 @@ class EnemyDB:
                               "ring": {"bullets": 8, "speed": 6, "damage": 8, "width": 12}},
                     "spawn": {"enemy_name": "slime_small", "amount": 2, "cooldown": 6.0, "last_used": -120}}},
                 {"at": 0.4, "speed": 2.4, "color": [90, 200, 110],
-                 "hard_tweaks": {"dash": {"windup": 15, "distance": 330, "cooldown": 2.8}}, "attacks": {
+                 "hard_tweaks": {"dash": {"windup": 15, "cooldown": 2.8}}, "attacks": {
                     "dash": {"cooldown": 3.2, "last_used": -60, "dashes": 3, "windup": 21, "spiral_on": [1, 2],
                              "distance": 300, "dash_frames": 16, "type": ["normal_green"],
                              "spiral": {"bullets": 8, "damage": 8, "speed": 6, "width": 14, "range": 3000, "effects": {}}},
@@ -517,6 +522,7 @@ class EnemyDB:
         e = self.enemies[name]
         enemy = Enemy(*e[:-1],copy.deepcopy(e[-1]),self.sfx, self.bullet_type_info)
         enemy.name = name   # needed for drops
+        enemy.first_hard = ENEMY_HARD.get(name, {})
         if name in SQUARE:                                     # (8.11) Assembly Line's machines and products
             enemy.shape = "square"
         enemy.machine = name in MACHINES

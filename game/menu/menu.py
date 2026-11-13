@@ -1,15 +1,28 @@
 import math
 
 import pygame
-from game.menu.achivements import Achievements
+from game.achievements.popup import AchievementPopup
+from game.achievements.screen import AchievementsScreen
+from game.menu import title_shadow as TITLE
 from game.menu.save_screen import SaveScreen
 from game.menu.sprite_button import SpriteButton
 
+LAYERS = [("assets/img/menu/background/background_1.png", 30, False),     # (13.11) parallax: (file, px it moves,
+          ("assets/img/menu/background/foreground_1.png", 70, True)]      #   has transparency) - back to front
+BACK_DEPTH = 30
+LAYER_SCALE = 1.1                 # a layer is this much bigger than the screen (room to move)
+MENU_BLUR = 15                    # the other pages (saves, settings...): the background blurred
+OLD_BACKGROUND = "assets/img/menu/main/background.png"
+SHADOW_ALPHA = 200                # (13.11) the soft shadow right under the title's and buttons' letters: how dark,
+SHADOW_BLUR = 0.006               #   how soft (share of the screen's height),
+SHADOW_GROW = 0.004               #   how far past the letters,
+SHADOW_DROP = 0.04                #   and how far down (share of the picture's height)
 MAIN_BUTTON_H = 0.065             # (11.11) the main menu's buttons: share of the screen's height (the whole font height)
 
 class Menu:
     def __init__(self, screen, sfx, music, save_manager, settings_screen):
-        self.achievements = Achievements()
+        self.achievements = AchievementsScreen(screen, sfx)        # (13.11) no save open: no progress shown
+        self.achievement_popup = AchievementPopup(sfx)           # (13.11) e.g. the ending's ones, after the credits
         self.sfx = sfx
         self.music = music
         self.screen = screen
@@ -24,16 +37,17 @@ class Menu:
                             "big" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",48),
                             "large" : pygame.font.Font("assets/font/Nexa-Heavy.ttf",64)}
         self.page = "main"
-        self.img = {"title": pygame.image.load("assets/img/menu/main/game_title.png").convert_alpha()}
+        self.img = {"title": load_title()}                         # (13.11) with its shadow baked in
         self.settings_screen = settings_screen      # (11.11) Settings (settings_screen.py) - the same one as under ESC
         self.title_timer = 0.0
         # (11.11) the same style as every other menu button (tools/make_menu_sprites.py)
         self.btn_img = {name: SpriteButton(name, self.screen.get_height() * MAIN_BUTTON_H, "main").img
                         for name in ("play", "achievements", "settings", "quit")}
         self.back_button = SpriteButton("back", self.screen.get_height() * 0.05)
-        self.background = pygame.transform.scale(pygame.image.load("assets/img/menu/main/background.png"),(self.screen.get_width()*1.1,self.screen.get_height()*1.1))
-        self.blur_background = pygame.transform.gaussian_blur(self.background, 15)
+        self.layers = self.load_layers()           # (13.11) the background and the foreground, a parallax
         self.btn_scales = [1.0, 1.0, 1.0, 1.0]
+        h = self.screen.get_height()
+        self.btn_shadows = {name: letter_shadow(img, h) for name, img in self.btn_img.items()}
         self.save_manager = save_manager
 
         self.difficulty = 0
@@ -50,19 +64,15 @@ class Menu:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         screen_width, screen_height = self.screen.get_size()
         
-        intensity = 30 
-        
-        shift_x = ((mouse_x / screen_width) - 0.5) * intensity
-        shift_y = ((mouse_y / screen_height) - 0.5) * intensity
-
-        pos_x = -shift_x - (self.background.get_width() - screen_width) / 2 - 50
-        pos_y = -shift_y - (self.background.get_height() - screen_height) / 2 - 50
-
-        if self.page != "main": 
-            self.screen.blit(self.blur_background, (pos_x, pos_y))
+        blurred = self.page != "main"
+        for sharp, blur, depth in self.layers:            # (13.11) the nearer the layer, the more it moves
+            layer = blur if blurred else sharp
+            shift_x = ((mouse_x / screen_width) - 0.5) * depth
+            shift_y = ((mouse_y / screen_height) - 0.5) * depth
+            self.screen.blit(layer, ((screen_width - layer.get_width()) / 2 - shift_x,
+                                     (screen_height - layer.get_height()) / 2 - shift_y))
+        if blurred:
             self.draw_blurred_overlay(self.screen)
-        else:
-            self.screen.blit(self.background, (pos_x, pos_y))
 
         if self.page == "main":
     # title
@@ -77,7 +87,10 @@ class Menu:
 
             angle = math.sin(self.title_timer * 0.7) * 0
 
-            scaled_title = pygame.transform.smoothscale(self.img["title"], (current_w, current_h))
+            title, pad = self.img["title"]
+            pad_x = int(pad * current_w / (title.get_width() - 2 * pad))            # the shadow's room round it
+            pad_y = int(pad * current_h / (title.get_height() - 2 * pad))
+            scaled_title = pygame.transform.smoothscale(title, (current_w + 2 * pad_x, current_h + 2 * pad_y))
 
             rotated_title = pygame.transform.rotate(scaled_title, angle)
 
@@ -90,7 +103,7 @@ class Menu:
                 desired_y - (current_h - target_h) // 2
             )
 
-            self.screen.blit(rotated_title, title_rect.topleft)
+            self.screen.blit(rotated_title, (title_rect.x - pad_x, title_rect.y - pad_y))
 
     # buttons
             
@@ -118,6 +131,7 @@ class Menu:
                 self.buttons.append(button_rect)
                 
                 animated_img = pygame.transform.smoothscale(base_img, (scaled_w, scaled_h))
+                self.blit_shadow(self.btn_shadows[option], button_rect)
                 self.screen.blit(animated_img, (button_x, button_y - offset_y))
                 
                 current_y += base_height + GAP
@@ -125,21 +139,7 @@ class Menu:
 
 
         elif self.page == "achievements":
-
-            slot_width = self.screen.get_height() // 6
-            slot_height = self.screen.get_height() // 6
-            slot_x_start = self.screen.get_width() // 9
-            slot_y_start = self.screen.get_height() // 6
-
-            for i, achievement in enumerate(self.achievements.achievements.values()):
-                slot_x = slot_x_start + (i % 7) * (slot_width*1.2)
-                slot_y = slot_y_start + (i // 7) * (slot_height*1.2)
-                slot_rect = pygame.Rect(slot_x, slot_y, slot_width, slot_height)
-                self.buttons.append(slot_rect)
-                if achievement["completed"]:
-                    pygame.draw.rect(self.screen, (0, 255, 0), slot_rect, 0, 10)
-                else:
-                    pygame.draw.rect(self.screen, (170, 170, 170), slot_rect, 0, 10)
+            self.achievements.draw()                   # (13.11)
 
         elif self.page == "options":
             self.settings_screen.draw()
@@ -147,12 +147,7 @@ class Menu:
         elif self.page == "save_load":
             self.save_screen.draw()
 
-        if self.page == "achievements":
-
-            w, h = self.screen.get_size()
-            self.back_button.draw(self.screen, (w - w // 10, h - h // 14))      # (11.11) as on the save screen
-            self.buttons.append(self.back_button.rect)
-            
+        self.achievement_popup.update_and_draw(self.screen)
 
     def handle_click(self, pos, events):
         if self.page == "save_load":                     # (11.11) the save screen has its own input
@@ -164,6 +159,10 @@ class Menu:
             return "", 0, False
         if self.page == "options":
             if self.settings_screen.handle(events, pos) == "back":
+                self.page = "main"
+            return "", 0, False
+        if self.page == "achievements":                  # (13.11) its own screen (Back / Esc)
+            if self.achievements.handle(events, pos) == "back":
                 self.page = "main"
             return "", 0, False
         for event in events:
@@ -186,9 +185,6 @@ class Menu:
                             elif i == 3:
                                 return "quit", 0, False        
                                           
-                        if page_on_click == "achievements":
-                            if i == len(self.buttons) - 1:
-                                self.page = "main"
                     self.selected_btn = i
             if self.selected_btn in range(len(self.buttons)) and not self.buttons[self.selected_btn].collidepoint(pos):
                 self.selected_btn = -1
@@ -196,8 +192,57 @@ class Menu:
 
         return "", 0, False
 
+    def blit_shadow(self, shadow, rect):
+        """The shadow (letter_shadow) scaled to where its picture is drawn now (it grows with the hover / pulse)."""
+        picture, pad = shadow
+        k = rect.width / (picture.get_width() - 2 * pad)
+        if abs(k - 1) > 0.01:
+            picture = pygame.transform.smoothscale_by(picture, k)
+        offset = int(rect.height * SHADOW_DROP)
+        self.screen.blit(picture, (rect.x - int(pad * k), rect.y - int(pad * k) + offset))
+
+    def load_layers(self):
+        """(13.11) [(picture, its blurred copy, how far it moves with the mouse)] - back to front. The pictures are
+        assets/img/menu/background/background_1.png and foreground_1.png (the old single background if missing)."""
+        w, h = self.screen.get_size()
+        layers = []
+        for path, depth, alpha in LAYERS:
+            try:
+                raw = pygame.image.load(path)
+            except (pygame.error, FileNotFoundError):
+                continue
+            raw = raw.convert_alpha() if alpha else raw.convert()
+            picture = pygame.transform.smoothscale(raw, (int(w * LAYER_SCALE), int(h * LAYER_SCALE)))
+            layers.append((picture, pygame.transform.gaussian_blur(picture, MENU_BLUR), depth))
+        if not layers:
+            picture = pygame.transform.smoothscale(pygame.image.load(OLD_BACKGROUND).convert(),
+                                                   (int(w * LAYER_SCALE), int(h * LAYER_SCALE)))
+            layers.append((picture, pygame.transform.gaussian_blur(picture, MENU_BLUR), BACK_DEPTH))
+        return layers
+
     def draw_blurred_overlay(self,screen):
 
         overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 128))
-        screen.blit(overlay, (0, 0))
+        screen.blit(overlay, (0, 0))
+
+
+def letter_shadow(img, screen_h):
+    """(13.11) (a dark, soft copy of a picture's shape, its padding px) - drawn just under the picture."""
+    blur, grow = max(1, int(screen_h * SHADOW_BLUR)), max(1, int(screen_h * SHADOW_GROW))
+    pad = 2 * blur + grow
+    shape = pygame.Surface((img.get_width() + 2 * pad, img.get_height() + 2 * pad), pygame.SRCALPHA)
+    mask = pygame.mask.from_surface(img, 40)
+    dark = mask.to_surface(setcolor=(0, 0, 0, SHADOW_ALPHA), unsetcolor=(0, 0, 0, 0))
+    for dx in range(-grow, grow + 1, max(1, grow)):
+        for dy in range(-grow, grow + 1, max(1, grow)):
+            shape.blit(dark, (pad + dx, pad + dy))
+    return pygame.transform.gaussian_blur(shape, blur), pad
+
+
+def load_title():
+    """(13.11) (the title picture, its shadow's padding px): the one with the shadow if it is there."""
+    try:
+        return pygame.image.load(TITLE.OUT).convert_alpha(), TITLE.PAD
+    except (pygame.error, FileNotFoundError):
+        return pygame.image.load(TITLE.SOURCE).convert_alpha(), 0

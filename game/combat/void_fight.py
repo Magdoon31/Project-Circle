@@ -107,10 +107,16 @@ class VoidFight:
         self.finished = False
         self.dead = False                         # "Game Over" on the screen, waiting for a click
         self.falling = None                       # (where, frames left) while you sink into the abyss
+        self.falls = 0                            # (13.11) for the achievements: falls into the abyss ...
         self.prepare_boss(boss)
         self.hide_boss()
 
     # --- what Combat asks ------------------------------------------------------------------------------------
+    @property
+    def lives_lost(self):
+        """(13.11) ... and lives lost in this fight."""
+        return LIVES - self.lives
+
     @property
     def allows_shooting(self):
         """In the end too - your bullets fly through it (nothing you do hurts it there)."""
@@ -279,6 +285,7 @@ class VoidFight:
         if p.imm_frames > 0 and not self.arena.collapsing:
             return                                         # (an island falling away takes you with it, always)
         self.falling = ((p.x, p.y), FALL_FRAMES)
+        self.falls += 1                                    # (13.11) the Fell for It achievement
         p.base_width = p.width
 
     def keep_on_ground(self, player):

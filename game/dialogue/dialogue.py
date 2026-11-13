@@ -16,6 +16,7 @@ from game.dialogue.speakers import SPEAKERS, SOUND_DIR, IMAGE_DIR, DEFAULT_POSE,
 from game import controls as KEYS
 from game.menu import options as OPT
 from game.lib import voicelines as VOICES
+from game.lib.loudness import louder
 
 DATA_DIR = os.path.join("game", "dialogue", "data")
 
@@ -26,6 +27,7 @@ PUNCTUATION_PAUSE = {".": 12, "!": 12, "?": 12, ",": 5, ";": 7, ":": 7}   # extr
 LINE_END_DELAY = 8          # frames after a line is fully typed before it can be closed
 CHOICE_DELAY = 40           # frames before the answers react (spamming Space doesn't pick one by accident)
 DIM_ALPHA = 175             # how dark the map behind gets
+TALK_GAIN = 2.0             # (13.11) talk sounds and voices x this (lib/loudness.py): the Dialogue slider goes higher
 TALK_CHANNEL = 0            # mixer channel reserved for talk sounds (see reserve_talk_channel)
 
 MAX_CHOICES = 6             # answers shown at once: up to 3 in a column, 2 columns
@@ -281,7 +283,7 @@ class Dialogue:
         self.typed_since_sound = SOUND_EVERY   # the first letter makes a sound at once
         self.sound = self._sound(who, line.get("voice"))
         # (11.11) VOICE LINE: a recording of this line (assets/sfx/voicelines/<who>/<id>) plays instead of the talk sound
-        self.voiceover = VOICES.load(who, line.get("id"))
+        self.voiceover = louder(VOICES.load(who, line.get("id")), TALK_GAIN)
         if self.voiceover:
             channel = pygame.mixer.Channel(TALK_CHANNEL)
             channel.set_volume(self.sfx_volume)
@@ -305,7 +307,7 @@ class Dialogue:
             return None
         if name not in self.sounds:
             try:
-                self.sounds[name] = pygame.mixer.Sound(os.path.join(SOUND_DIR, name))
+                self.sounds[name] = louder(pygame.mixer.Sound(os.path.join(SOUND_DIR, name)), TALK_GAIN)
             except (pygame.error, FileNotFoundError):
                 self.sounds[name] = None
         return self.sounds[name]

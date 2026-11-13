@@ -1,8 +1,10 @@
 import pygame
 
 from game.menu.sprite_button import SpriteButton, load, scaled
+from game.achievements.screen import AchievementsScreen
 
-MENU_OPTIONS = ["return", "save", "settings", "stats", "main menu", "quit game"]
+MENU_OPTIONS = ["return", "save", "settings", "stats", "achievements", "main menu", "quit game"]
+MENU_FILES = {"settings": "btn_settings_esc", "achievements": "btn_achievements_esc"}   # (pictures shared with others)
 MENU_BUTTON_H = 0.055             # (11.11) the menu's buttons are word pictures (game/menu/sprite_button.py), all as tall
 
 # bright biomes: the text on the map (money, biome, quests) is drawn black there so it stays readable
@@ -32,8 +34,9 @@ class MapUI:
         self.saved_text = ""     # small autosave note in the bottom-left corner
         self.saved_timer = 0
         h = screen.get_height()
-        self.menu_buttons = [SpriteButton(name, h * MENU_BUTTON_H, "esc", "btn_settings_esc" if name == "settings" else None)
-                             for name in MENU_OPTIONS]
+        self.menu_buttons = [SpriteButton(name, h * MENU_BUTTON_H, "esc", MENU_FILES.get(name)) for name in MENU_OPTIONS]
+        self.achievements_progress = None   # (13.11) Game: counter -> this save's number
+        self.achievements_screen = None
         self.settings_screen = None   # (11.11) Game's Settings screen (the same as in the main menu)
         self.back_button = SpriteButton("back", h * 0.05)
         self.menu_titles = {"menu": scaled(load("esc/title_paused"), h * 0.1),
@@ -115,6 +118,8 @@ class MapUI:
             self.draw_menu_page()
         elif self.page == "settings":
             self.settings_screen.draw()
+        elif self.page == "achievements":
+            self.achievements_view().draw()
 
     def draw_menu_page(self):
         """(11.11) ESC / the Menu button: the options as word pictures (Stats: only Back)."""
@@ -173,16 +178,25 @@ class MapUI:
 
     def toggle_menu(self):
         """(11.11) ESC on the map: the map -> the menu -> the map; from Stats back to the menu (Settings: its own)."""
-        self.page = {"map": "menu", "menu": "map", "stats": "menu"}.get(self.page, self.page)
+        self.page = {"map": "menu", "menu": "map", "stats": "menu"}.get(self.page, self.page)   # (achievements: its own Esc)
         self.selected_btn = -1
 
     def show_message(self, text, frames=180):
         self.message = text
         self.message_timer = frames
 
+    def achievements_view(self):
+        if self.achievements_screen is None:
+            self.achievements_screen = AchievementsScreen(self.screen, self.sfx, self.achievements_progress)
+        return self.achievements_screen
+
     def handle_click(self,pos,events):
         if self.page == "settings":
             if self.settings_screen.handle(events, pos) == "back":
+                self.page = "menu"
+            return None
+        if self.page == "achievements":                  # (13.11)
+            if self.achievements_view().handle(events, pos) == "back":
                 self.page = "menu"
             return None
         for event in events:
@@ -208,8 +222,10 @@ class MapUI:
                             elif i == 3:
                                 self.page = "stats"
                             elif i == 4:
-                                return "menu"
+                                self.page = "achievements"
                             elif i == 5:
+                                return "menu"
+                            elif i == 6:
                                 return "quit"
                         elif self.page == "stats":
                             if i == 0:

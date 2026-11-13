@@ -23,6 +23,7 @@ from game.lib import snow_overlay as SNOW
 from game.menu import options as OPT
 from game.world import surface_layout as L
 
+FAST_TILES = {"path"}           # (13.11) the player walks PATH_SPEED faster on these (game/map/player.py)
 TILES_ON_SCREEN_Y = 13          # start screen shows the fenced square + ~2 tiles (author's decision)
 BOSS_NAME = "boss1"             # TEMPORARY: boss spots without a real boss yet use boss1
 BOSS_OF_ZONE = {"village": "slime_king", "rainbow_fields": "prism", "candy": "shroom_mother", "tundra": "frost_golem",
@@ -196,6 +197,16 @@ class Map:
                         queue.append((nx, ny))
         return mask
 
+    def biome_explored(self, biome):
+        """(13.11) The explored share of one biome's reachable tiles on this level (the Cartographer achievement)."""
+        lvl, world = self.levels[self.level], self.world
+        total = seen = 0
+        for i, reach in enumerate(lvl["reach"]):
+            if reach and world.biome_at(i % world.width, i // world.width) == biome:
+                total += 1
+                seen += bool(lvl["explored"][i])
+        return seen / total if total else 0.0
+
     def explored_fraction(self):
         lvl = self.levels[self.level]
         return lvl["explored_count"] / max(1, lvl["land_tiles"])
@@ -309,6 +320,11 @@ class Map:
         if 0 <= tx < self.world.width and 0 <= ty < self.world.height:
             return TILES[self.world.tiles[ty][tx]].get("push")
         return None
+
+    def on_path(self, x, y):
+        """(13.11) Standing on a path (the player walks faster there)."""
+        tx, ty = self.tile_at(x, y)
+        return TILES[self.world.tiles[ty][tx]]["name"] in FAST_TILES
 
     def encounter_allowed(self, x, y):
         if getattr(self.world, "pale", False):

@@ -130,7 +130,8 @@ class Enemy:
         self.anchored = False          # (8.11) stays where it was put (Assembly Line's core and machines)
         self.anchor = None             # where that is (Combat notes it on the first frame)
         self.casts_shadow = False      # (8.11) Night Bloom: the real one has a shadow, its copies don't
-        self.hard = False              # (12.11) hard mode (Game: become_hard)
+        self.hard = False              # (12.11) hard mode (Game: become_hard; 13.11 a boss's helpers too)
+        self.first_hard = {}           # (12.11) its hard-mode changes (EnemyDB: boss_info / ENEMY_HARD)
         self.easy = False              # (12.11) "I Have a Job": fewer bullets (Combat: make_easy)
         self.shadow_alpha = 255        # (12.11) ... how dark it is (hard mode: fainter - boss_info "hard_set")
         self.copies = []               # (8.11) its copies made by "split"
@@ -623,7 +624,11 @@ class Enemy:
                     projectiles += [self.shot(a + k * math.tau / streams, info) for k in range(streams)]
                     info["burst_angle"] += math.radians(info["turn"]) * info["burst_dir"]
                 elif name == "line":
-                    projectiles += [self.shot(d, info) for d in ((a, a + math.pi) if info.get("opposite") else (a,))]
+                    projectiles.append(self.shot(a, info))
+                    if info.get("opposite"):                   # (13.11) the row backwards bounces off the wall
+                        back = self.shot(a + math.pi, info)
+                        back.edge_bounces, back.edge_bounds = info.get("bounce", 1), self.screen_size or (1920, 1080)
+                        projectiles.append(back)
                 else:
                     for a, sign in [(d, s) for d in ((a, a + math.pi) if info.get("opposite") else (a,))
                                     for s in ((1, -1) if info.get("double") else (1,))]:
@@ -772,6 +777,8 @@ class Enemy:
                     enemy.color = tuple(info["color"])
                 if info.get("no_drops"):
                     enemy.no_drops = True                      # (8.11) a boss's helpers drop nothing
+                if getattr(self.owner or self, "hard", False):
+                    enemy.become_hard()                        # (13.11) e.g. the Assembly Line's turrets
                 enemies.append(enemy)
             if info.get("guards"):
                 self.guards = list(enemies)

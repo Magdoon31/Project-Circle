@@ -73,6 +73,8 @@ WORDS = {         # file name -> (text, letter size, palette, folder)
     "btn_back": ("Back", 72, "cream", SHARED),
     # (12.11) added last: the words before keep their look (each word's seed comes from its place in this list)
     "btn_i_have_a_job": ("I Have a Job", 84, "green", SAVES),
+    "title_achievements": ("Achievements", 110, "cream", SHARED),           # (13.11) both achievement screens
+    "btn_achievements_esc": ("Achievements", 84, "cream", ESC),             # (13.11) the map's menu
 }
 SAME_HEIGHT = "HQqgj"            # the tallest and lowest letters: the height every word gets
 SLIDER = (640, 44)                # px: the volume slider's track (the game scales it)
