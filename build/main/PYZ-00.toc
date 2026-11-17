@@ -713,6 +713,9 @@
   ('game.world.core_map',
    'C:\\Users\\Lukasz\\Desktop\\project-circle\\game\\world\\core_map.py',
    'PYMODULE'),
+  ('game.world.hash_room',
+   'C:\\Users\\Lukasz\\Desktop\\project-circle\\game\\world\\hash_room.py',
+   'PYMODULE'),
   ('game.world.loot',
    'C:\\Users\\Lukasz\\Desktop\\project-circle\\game\\world\\loot.py',
    'PYMODULE'),
@@ -1648,6 +1651,9 @@
   ('typing',
    'C:\\Program '
    'Files\\WindowsApps\\PythonSoftwareFoundation.Python.3.13_3.13.3824.0_x64__qbz5n2kfra8p0\\Lib\\typing.py',
+   'PYMODULE'),
+  ('typing_extensions',
+   'C:\\Users\\Lukasz\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python313\\site-packages\\typing_extensions.py',
    'PYMODULE'),
   ('unittest',
    'C:\\Program '

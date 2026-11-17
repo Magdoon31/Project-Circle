@@ -26,9 +26,6 @@ class BestiaryProgress:
         """Is this much of the entry open yet (STAGES: name / lore / drops)?"""
         return self.kills(entry_id) >= stages_for(entry_id)[stage]
 
-    def got_drop(self, entry_id, item):
-        return item in self.data["drops"].get(entry_id, [])
-
     def complete(self):
         """(13.11) Everything about everything (the Know Thy Enemy achievement)."""
         return all(self.knows(entry_id, "drops") for entry_id in ENTRY)

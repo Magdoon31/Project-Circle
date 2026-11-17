@@ -196,7 +196,8 @@ class Combat:
         for e in self.enemies:
             if getattr(e, "hidden", False):
                 continue
-            ex, ey = e.x - cx, e.y - cy
+            tx, ty = getattr(e, "leap_target", None) or (e.x, e.y)              # (14.11) up in a leap: where it comes down
+            ex, ey = tx - cx, ty - cy
             if -e.width < ex < sw + e.width and -e.width < ey < sh + e.width:
                 continue
             a = math.atan2(ey - sh / 2, ex - sw / 2)

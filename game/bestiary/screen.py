@@ -299,17 +299,16 @@ class BestiaryScreen:
         size = int(h * 0.055)
         for n, (item, chance) in enumerate(drops):
             cell = pygame.Rect(x + (n % 2) * (width // 2), y + (n // 2) * (size + int(h * 0.01)), width // 2, size)
-            got = self.progress.got_drop(entry_id, item)
             icon_rect = pygame.Rect(cell.left, cell.top, size, size)
             pygame.draw.rect(self.screen, (34, 26, 50), icon_rect, 0, 8)
             pygame.draw.rect(self.screen, (70, 58, 96), icon_rect, 1, 8)
-            icon = self.icon(item) if got else None
+            icon = self.icon(item)               # (13.11) shown at once (15 defeats / a boss: 1), dropped or not
             if icon:
                 self.screen.blit(icon, icon.get_rect(center=icon_rect.center))
             else:
                 mark = FANCY.font(int(size * 0.5)).render("?", True, DIM)
                 self.screen.blit(mark, mark.get_rect(center=icon_rect.center))
-            label = FANCY.font(int(h * 0.022)).render(item if got else "???", True, TEXT if got else DIM)
+            label = FANCY.font(int(h * 0.022)).render(item, True, TEXT)
             odds = FANCY.font(int(h * 0.018)).render(f"{chance * 100:g}%", True, MUTED)
             self.screen.blit(label, (icon_rect.right + 10, cell.top + 2))
             self.screen.blit(odds, (icon_rect.right + 10, cell.top + 4 + label.get_height()))

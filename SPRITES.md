@@ -366,6 +366,16 @@ Pastelowy lunapark: róż, krem, biel, niebieskie i żółte akcenty, wesoło al
 | `tree.png` | `grass` (przezroczyste tło) | `tree.png`, `tree_2.png`, `tree_3.png` | Przystrzyżone, okrągłe drzewko (miętowe). |
 | `crate.png` | `grass` (przezroczyste tło) | – | Drewniana skrzynka z balonami / nagrodami. |
 
+#### hash – `map/tiles/hash/`
+
+### – dno labiryntu Pale World (folder `hash`, bo biom nazywa się „###”). Prawie czarno, bez koloru, cisza. Pod podłogą śpi serce Core – czerwone światło pulsujące na podłodze rysuje gra, nie kafel.
+
+| plik | pod spodem | warianty | jak ma wyglądać |
+|---|---|---|---|
+| `floor.png` | pełny kafel | `floor.png`, `floor_2.png`, `floor_3.png` | Prawie czarna podłoga (gładki kamień / pustka), ledwo widoczne pęknięcia; bardzo ciemny szary, bez koloru. |
+| `mountain.png` | pełny kafel | `mountain.png`, `mountain_2.png` | Lita czerń dookoła sali – ma wyglądać jak brak świata, nie jak skała. |
+| `glitch_stone.png` | pełny kafel | – | Glitch stone – zepsuty kamień przejścia (ten sam co w Pale World), w ### ciemniejszy. |
+
 #### outside – `map/tiles/outside/`
 
 Teren poza biomami (nie do przejścia).

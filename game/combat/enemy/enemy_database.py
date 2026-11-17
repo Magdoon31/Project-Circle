@@ -492,6 +492,7 @@ class EnemyDB:
             "portable_factory": [("Rifle A4", 0.06)],
             "frozen_orb": [("Liquidator Hose", 0.04), ("Frost Armor", 0.04)],
             "ice_shooter": [("Frozen Ring", 0.07), ("Ice Mix", 0.05), ("Golden Chestplate", 0.04)],
+            "tundra_watcher": [("Eyeballs", 0.05)],       # (13.11) its only source (one big eye)
             "inferno_flower": [("RPG", 0.05)],
             "frost_flower": [("Ultra Blaster", 0.04)],
             "poison_skeleton": [("Laser Cannon 2.0", 0.04), ("Plate Armor", 0.04)],

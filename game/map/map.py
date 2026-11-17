@@ -19,6 +19,7 @@ from game.world.void_map import VoidMap
 from game.world.lunapark_map import LunaparkMap
 from game.world.tiles import TILES, tile_color, pale_color
 from game.world import pale_world as PALE
+from game.world import hash_room as HEART
 from game.lib import snow_overlay as SNOW
 from game.menu import options as OPT
 from game.world import surface_layout as L
@@ -768,7 +769,10 @@ class Map:
             return (pos[0] + 0.5) * ts - cam_x, (pos[1] + 0.5) * ts - cam_y
 
         self.draw_secret_cracks(hidden, visible, centre)
-        for pos, text in getattr(world, "floor_text", []):          # e.g. "Not yet." in ### (pale_world.py)
+        if getattr(world, "heart", None):                            # (13.11) ###: the sleeping heart's light
+            HEART.draw_glow(self.screen, centre(world.heart), ts, pygame.time.get_ticks(),
+                            (self.player.x / ts, self.player.y / ts))
+        for pos, text in getattr(world, "floor_text", []):          # e.g. "Not yet." in ### (hash_room.py)
             if visible(pos):
                 if not hasattr(self, "floor_font"):
                     self.floor_font = pygame.font.Font(None, int(ts * 0.9))

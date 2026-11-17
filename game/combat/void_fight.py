@@ -6,6 +6,7 @@
 #   everything) -> the interlude (no fighting: its few words) -> the end (only dodging, not on the HP bar; at the
 #   peak of the music YOU shoot by yourself and it is over) -> it falls apart -> Game: the ending.
 # - the music: every part loops; a new phase's part comes in on the next 8-beat line (lib/music_sequence.py)
+# - before the boss comes (silence, its entrance) you can't leave the island you start on (14.11)
 # - off the islands = the abyss (only when all of you is off, and never while you can't be hurt): you sink for a
 #   moment, then a hit (FALL_HIT of your max HP), back onto the nearest island and twice your usual immunity
 # - the boss never goes out past the ring of the outer islands (it would be too hard to hit there)
@@ -171,8 +172,8 @@ class VoidFight:
             self.arena.keep_inside_ring(self.boss)
         if self.state in ("fight", "interlude", "final"):
             self.check_fall(combat)
-        elif self.state == "falling_apart":
-            self.keep_on_ground(combat.player)        # (12.11) while it dies: an invisible wall at the island's edge
+        elif self.state in ("silence", "enter", "falling_apart"):
+            self.keep_on_ground(combat.player)        # (12.11) while it dies / (14.11) before it comes: an invisible wall
         self.arena.push_bullets(combat.enemy_projectiles)
 
     def start_state(self, state):

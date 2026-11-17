@@ -47,6 +47,7 @@ from game.story.foreman import foreman_npcs
 from game.story.ending import EndingScene
 from game.story import ferris as FERRIS
 from game.world import pale_world as PALE
+from game.world import hash_room as HASH_ROOM
 from game.shop.shop import Shop
 from game.shop.stock import ShopStock
 from game.shop import stock as S
@@ -128,6 +129,7 @@ SIGIL_POPUP_FRAMES = 180    # "New Sigil" on the screen for 3 s
 MINIGAME_FADE_MS = 800      # the music fades out this long before a minigame's countdown (then the minigame music)
 # TEST ONLY: key F starts a normal fight right away (enemies of the biome you stand in)
 DEBUG_FIGHT_KEY = pygame.K_f
+FULL_INVENTORY_MESSAGE = "Inventory full - make room to pick it up"   # (14.11) items on the ground wait for you
 RELOAD_SPRITES_KEY = pygame.K_F5        # (13.11) read the sprites again (new files show up without a restart)
 DEBUG_NEXT_PHASE_KEY = pygame.K_F9      # (11.11, test) in a boss fight: the boss loses just enough HP for its next phase
 PEACE_GUN = "Peace Gun"
@@ -222,6 +224,7 @@ class Game:
         self.achievement_popup = AchievementPopup(self.sfx)
         self.map_ui.achievements_progress = self.achievements.progress
         self.bestiary = BestiaryProgress(lambda: self.counters)           # (13.11) what this save knows
+        self.hash_heart = HASH_ROOM.Heart()                                # (13.11) ###: the sleeping heart
         self.stats = StatsTracker(lambda: self.counters)                  # (13.11) ESC -> Stats
         self.map_ui.make_stats = lambda: StatsScreen(self.screen, self.stats_cards())
         self.map_ui.make_bestiary = lambda: BestiaryScreen(self.screen, self.enemy_db, self.bestiary,
@@ -529,6 +532,7 @@ class Game:
                     self.sfx.play("pale_orb")
                 self.map_ui.show_message("Something pale appears on the stone.", 150)
             # music follows the biome of the tile the player stands on (the Pale World: its own)
+            self.update_hash_heart()                      # (13.11) ###: the sleeping heart's beat
             music = PALE.music_for(self.map.level, self.player.biome)
             if music != self.current_music:
                 self.current_music = music
@@ -1028,6 +1032,21 @@ class Game:
         self.place_at_tile(target, to)
         self.map.pale_return = back
         self.player.vx = self.player.vy = 0.0
+        if target == PALE.HASH:
+            self.enter_hash()
+
+    def enter_hash(self):
+        """(13.11) Down in ###: one more visit - the floor says the next of its lines."""
+        visit = self.counters.get(HASH_ROOM.VISITS, 0) + 1
+        self.counters[HASH_ROOM.VISITS] = visit
+        self.map.world.floor_text = [(HASH_ROOM.TEXT_TILE, HASH_ROOM.line_for(visit))]
+
+    def update_hash_heart(self):
+        if self.map.level != PALE.HASH:
+            self.hash_heart.leave()
+            return
+        ts = self.map.tile_size
+        self.hash_heart.update((self.player.x / ts, self.player.y / ts), pygame.time.get_ticks())
 
     def leave_pale(self):
         back = self.map.pale_return
@@ -1478,6 +1497,9 @@ class Game:
         self.map.active_quests = set(self.quests.active)          # quest items (e.g. the Foreman's Gear) show up
         self.map.discover_secrets()                                # secret places show up when you step in
         for pickup in self.map.pickups_at(self.player.x, self.player.y, self.player.radius):
+            if pickup["type"] == "item" and self.inventory.is_full():
+                self.map_ui.show_message(FULL_INVENTORY_MESSAGE, 60)   # (14.11) it stays on the ground
+                continue
             self.map.collected.add(pickup["pos"])
             if pickup["type"] == "sigil":                          # a shrine / secret pedestal
                 self.award_sigil(pickup["sigil"])

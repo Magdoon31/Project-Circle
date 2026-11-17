@@ -19,7 +19,7 @@
 #              GARDEN* (a long hidden clearing in the forest; you arrive next to its stone) -> back up into B ->
 #              B also leads out to the normal Garden (looks like a dead end).
 #              But GARDEN* has a second stone at its far end, off the screen -> pale pocket D -> NOWHERE 2 ->
-#              the only stone down: ### (no music, "Not yet.", the Peace Gun). Out of ###: take the Orb off.
+#              the only stone down: ### (no music, the sleeping heart, the Peace Gun). Out of ###: take the Orb off.
 #              Nowhere also has stones back up into other pockets (loops).
 # Everything here uses its own random generators, so the rest of a seed's world doesn't change (old saves too).
 
@@ -27,6 +27,7 @@ import math, random
 from collections import deque
 from game.world import loot
 from game.world.tiles import TILES
+from game.world import hash_room as HEART
 
 PALE_PREFIX = "pale_"
 NOWHERE, NOWHERE2, HASH = "pale_nowhere", "pale_nowhere2", "pale_hash"    # the levels below the pale Garden
@@ -711,8 +712,9 @@ class NowhereMap:
 
 
 class HashMap:
-    """### - the bottom. No music, nearly black, "Not yet." on the floor and the Peace Gun. No stone back:
-    taking the Pale Orb off is the only way out."""
+    """### - the bottom. No music, nearly black, the Peace Gun, and (13.11) the Core's heart asleep under the floor
+    (hash_room.py: its beat and light; the words on the floor change every visit). No stone back: taking the Pale
+    Orb off is the only way out."""
     W, H = 30, 22
     ARRIVAL = (15, 15)
 
@@ -728,7 +730,8 @@ class HashMap:
         self.gates, self.portals, self.npcs, self.structures = [], [], [], []
         self.pickups = [{"pos": (15, 9), "type": "item", "item": "Peace Gun"}]
         self.hidden, self.locked, self.arrivals, self.glitches = {}, {}, {}, []
-        self.floor_text = [((15, 12), "Not yet.")]
+        self.floor_text = [(HEART.TEXT_TILE, HEART.line_for(1))]      # Game changes it on every visit
+        self.heart = HEART.HEART_TILE
         self.player_start = self.ARRIVAL
 
     def biome_at(self, x, y):

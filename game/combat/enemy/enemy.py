@@ -138,6 +138,7 @@ class Enemy:
         self.copies = []               # (8.11) its copies made by "split"
         self.invuln = 0                # frames left of a phase change (no damage, no shots, blinking)
         self.airborne = False          # a "leap": up in the air (off the screen, can't be hit)
+        self.leap_target = None        # (14.11) ... and where it will come down (the edge arrows point there)
         self.leap_shadow = None        # (x, y, 0..1) where it will land
         self.guards = []               # enemies that shield this one while alive ("guards" spawn)
         self.arena = {}                # boss: what the arena does in this phase (see the top)
@@ -860,6 +861,7 @@ class Enemy:
                 info["leap_to"] = (random.uniform(m, w - m), random.uniform(m + 60, h - m))
                 info["leap_from"] = (self.x, self.y)
                 self.airborne = True
+                self.leap_target = info["leap_to"]
             t = info["leap_t"]
             info["leap_t"] = t + 1
             up, air = info["up"], info["air"]
@@ -875,6 +877,7 @@ class Enemy:
             self.x, self.y = info["leap_to"]                   # down
             self.leap_shadow = None
             self.airborne = False
+            self.leap_target = None
             p = getattr(self, "_player", None)
             if p is not None and math.dist((p.x, p.y), (self.x, self.y)) < self.width + p.width:
                 if p.take_damage(self.damage * info["land_damage"], {}):
@@ -966,7 +969,7 @@ class Enemy:
         self.open_left = self.sealed_at = None
         self.guard_chase = 0
         if self.airborne:                                   # (can't happen mid-air - no damage up there - but safe)
-            self.airborne, self.leap_shadow = False, None
+            self.airborne, self.leap_shadow, self.leap_target = False, None, None
         self.invuln = PHASE_INVULN
         self.phase_started = self.attack_timer
         self.phase_event = True
