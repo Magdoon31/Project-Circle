@@ -228,7 +228,6 @@ class BestiaryScreen:
             mark = FANCY.fancy("?", int(rect.height * 0.5), "pale")
             self.screen.blit(mark, mark.get_rect(center=rect.center))
         pygame.draw.circle(self.screen, colour if known else DIM, rect.center, rect.width // 2, 4)
-        pygame.draw.circle(self.screen, (255, 255, 255), rect.center, rect.width // 2 - 7, 1)
 
     def picture(self, entry_id, size, colour):
         key = (entry_id, size)

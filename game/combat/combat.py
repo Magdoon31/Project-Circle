@@ -1019,8 +1019,8 @@ class Combat:
     def draw_ice_wall_sprite(self, wall):
         """The Frost Golem's ice wall as a picture (cracked after half its hits); False = no picture."""
         cracked = wall["max"] and wall["hits"] <= wall["max"] / 2
-        name = "ice_wall_cracked" if cracked and FIGHT_SPRITES.object_picture("ice_wall_cracked", (1, 1)) else "ice_wall"
-        picture = FIGHT_SPRITES.object_picture(name, wall["rect"].size)
+        name = "ice_wall_cracked" if cracked and FIGHT_SPRITES.object_tiled("ice_wall_cracked", (1, 1)) else "ice_wall"
+        picture = FIGHT_SPRITES.object_tiled(name, wall["rect"].size)     # (19.11) its tile repeated, pixels x4
         if picture is None:
             return False
         picture.set_alpha(int(255 * min(1.0, wall["life"] / 40)))     # melts away at the end
@@ -1315,9 +1315,10 @@ class Combat:
 
         elif self.finished:
 
-            # died = Game Over; ran away = just "CLICK" to go on
-            end_text = self.font_heavy["giant"].render("Game Over" if getattr(self, "player_died", False) else "CLICK", True, (255,255,255))
-            self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
+            # died = Game Over; (19.11, Filip) ran away / an ending: nothing (the old "CLICK" flashed for a frame)
+            if getattr(self, "player_died", False):
+                end_text = self.font_heavy["giant"].render("Game Over", True, (255,255,255))
+                self.screen.blit(end_text, (self.screen.get_width()/2 - end_text.get_width()/2, self.screen.get_height()/2 - end_text.get_height()/2))
 
     def zap(self, effect, enemy_hit, reach=None):
         """A chain of lightning from enemy_hit: effect = [jumps, share of the damage, damage].

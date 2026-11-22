@@ -2,71 +2,73 @@
 
 Każdy folder ma też plik `_README.txt` z tą samą listą. Brakujący plik = gra rysuje jak dotąd (kształt/kolor), więc możesz wrzucać sprite'y pojedynczo. **F5** w grze wczytuje grafiki od nowa (bez restartu).
 
-**Co gra już wczytuje (13.11):** walka – gracz (8 kierunków + klatki chodu), przeciwnicy, bossowie (z fazami), podłogi (z wariantami), przeszkody (filary 3 rozmiary, ściany z kawałków), lodowa ściana Frost Golema; Bestiary bierze sprite z walki, gdy nie ma własnego obrazka. **Jeszcze nie:** mapa (kafle, gracz, NPC, obiekty, budynki) i reszta `combat/objects` (taśma, nasiona światła, lampion, wieżyczki i broń w Void, mina Milo), podłoga Voida.
+**Co gra już wczytuje (13.11):** walka – gracz (8 kierunków + klatki chodu), przeciwnicy, bossowie (z fazami), podłogi (z wariantami), przeszkody (filary 3 rozmiary, ściany z kawałków), lodowa ściana Frost Golema; Bestiary bierze sprite z walki, gdy nie ma własnego obrazka. **Jeszcze nie:** mapa (kafle, gracz, NPC, obiekty, budynki) i reszta `combat/objects` (taśma, nasiona światła, wieżyczki Voida, mina Milo).
 
 **Widok w walce: od góry po skosie (3/4)** – widać przód postaci. Postać stoi stopami na dole swojego koła (hitboxu), głowa może wystawać ponad nie. Przeciwnika gra sama odbija lewo/prawo, w stronę, w którą idzie (rysuj go patrzącego w prawo). Filar/ściana: kolizja to podstawa, górna część może wystawać w górę. Pociski i podłogi – czysto z góry.
 
-**Styl:** walka = pixel art (rysuj w skali 1:2, gra powiększy ×2 bez wygładzania), mapa = rysowany (gra zmniejsza z wygładzaniem). Wszystko PNG z przezroczystym tłem (oprócz podłóg i kafli ziemi).
+**Styl:** walka = pixel art (rysuj w skali **1:4**, gra powiększy ×4 bez wygładzania; 19.11). **W walce wszystko (oprócz pocisków) ma piksele tej samej wielkości: 1 piksel pliku = 4 px na ekranie**, tak jak podłogi i `village_wall_h`. Gra niczego nie rozciąga do rozmiaru przeszkody – rozmiar pliku = rozmiar na ekranie ÷ 4, mapa = rysowany (gra zmniejsza z wygładzaniem). Wszystko PNG z przezroczystym tłem (oprócz podłóg i kafli ziemi).
 
 ## WALKA – `assets/img/combat/`
 
-Rozmiar „na ekranie” = średnica hitboxa w 1080p. Plik pixel art = połowa (gra ×2). Rysunek może trochę wystawać poza okrąg (ok. ×1.2).
+Rozmiar „na ekranie” = średnica hitboxa w 1080p. Plik pixel art = **ćwierć** (gra ×4). Rysunek może trochę wystawać poza okrąg (ok. ×1.2).
 
 ### Gracz – `combat/player/`  (pixel art, 8 kierunków)
 
-Na ekranie ~50×50 px → plik **25×25** (albo 32×32 z marginesem). Pliki: `n.png`, `ne.png`, `e.png`, `se.png`, `s.png`, `sw.png`, `w.png`, `nw.png` – kierunek, w którym gracz idzie (n = w górę ekranu). Opcjonalnie animacja chodu: `<kierunek>_1.png`, `<kierunek>_2.png`…
+Na ekranie ~50×50 px → plik **13×13** (albo 16×16 z marginesem). Pliki: `n.png`, `ne.png`, `e.png`, `se.png`, `s.png`, `sw.png`, `w.png`, `nw.png` – kierunek, w którym gracz idzie (n = w górę ekranu). Opcjonalnie animacja chodu: `<kierunek>_1.png`, `<kierunek>_2.png`…
 
 ### Przeciwnicy – `combat/enemies/<id>.png`  (pixel art)
 
-| plik | gdzie | na ekranie | plik (1:2) | jak ma wyglądać |
+Skoczkowie (slimy, pixie…): opcjonalnie `<id>_jump.png` (przykucnięty: ~0,3 s przed skokiem i ~0,1 s po wybiciu) i `<id>_fly.png` (w locie, do lądowania); po zatrzymaniu wraca zwykły (21.11). Rysuj w tym samym rozmiarze co zwykły sprite, gra stawia go tak samo (na dole kółka).
+
+| plik | gdzie | na ekranie | plik (1:4) | jak ma wyglądać |
 |---|---|---|---|---|
-| `slime_small.png` | Village | 36×36 | 18×18 | Mały zielony glut, błyszczący, prosta buzia. Skacze na gracza. |
-| `slime_big.png` | Village | 72×72 | 36×36 | Duży zielony glut, w środku widać 2–3 małe gluty (po śmierci się rozpada). |
-| `shooter.png` | Village | 44×44 | 22×22 | Mały człowieczek z prostą procą/pistoletem, trzyma dystans. |
-| `rainbow_slime.png` | Rainbow Fields | 48×48 | 24×24 | Glut z tęczowymi pasami w środku, lekko przezroczysty. |
-| `flower_spitter.png` | Rainbow Fields | 46×46 | 23×23 | Kwiat z otwartą „paszczą” w środku, z której pluje nasionami; liście jak nóżki. |
-| `rainbow_guard.png` | Rainbow Fields | 60×60 | 30×30 | Strażnik w tęczowej zbroi/hełmie z krótką strzelbą. |
-| `gum_goblin.png` | Sugarwood Grove | 52×52 | 26×26 | Goblin z różowej gumy do żucia, nadmuchany balon gumy przy pysku. |
-| `candy_shroom.png` | Sugarwood Grove | 48×48 | 24×24 | Grzyb z cukierkowym kapeluszem w kropki (lukier), kręci się w miejscu. |
-| `toffee_runner.png` | Sugarwood Grove | 36×36 | 18×18 | Mały brązowy stworek z toffi, smukły, w biegu (rozmazane nóżki). |
-| `sugar_caster.png` | Sugarwood Grove | 50×50 | 25×25 | Mag w szacie z cukru/lukru, trzyma cukrową bombę; czasem kryształ cukru. |
-| `shroom_guard.png` | Sugarwood Grove | 60×60 | 30×30 | Duży grzyb-strażnik Shroom Mother, różowy z tarczą/hełmem z kapelusza. |
-| `toy_soldier.png` | Toy Factory | 40×40 | 20×20 | Ołowiany żołnierzyk z kluczykiem nakręcającym na plecach, karabinek. |
-| `portable_factory.png` | Toy Factory | 80×80 | 40×40 | Mała fabryka na nóżkach: komin, taśma, wyrzuca zabawki. |
-| `robo-tesla.png` | Toy Factory | 46×46 | 23×23 | Robot z cewką Tesli na głowie, iskry wokół. |
-| `robo-bomber.png` | Toy Factory | 46×46 | 23×23 | Robot z moździerzem/wyrzutnią bomb na plecach. |
-| `scrap_beetle.png` | Toy Factory | 28×28 | 14×14 | Żuk poskładany ze złomu (śrubki, blacha), zostawia miny. |
-| `line_soldier.png` | Toy Factory | 32×32 | 16×16 | Świeży żołnierzyk z taśmy Assembly Line – czerwony, błyszczący lakier. |
-| `line_beetle.png` | Toy Factory | 24×24 | 12×12 | Niedokończony żuk z taśmy: brakuje części pancerza, widać druty. |
-| `belt_turret.png` | Toy Factory | 48×48 | 24×24 | Ciemnoszara wieżyczka na podstawce jadąca po taśmie (rysowana jako kwadrat). |
-| `bomb_crate.png` | Toy Factory | 44×44 | 22×22 | Drewniana skrzynka z napisem FRAGILE i lontem (rysowana jako kwadrat). |
-| `frost_wolf.png` | Silverpine Tundra | 52×52 | 26×26 | Biały wilk ze szronem na sierści, lodowe oczy. |
-| `ice_shooter.png` | Silverpine Tundra | 52×52 | 26×26 | Postać w futrze z lodową kuszą. |
-| `frozen_orb.png` | Silverpine Tundra | 56×56 | 28×28 | Pulsująca kula lodu z kryształkami, lekko świeci. |
-| `tundra_watcher.png` | Silverpine Tundra | 70×70 | 35×35 | Wysoka postać w kapturze/wieżyczka obserwacyjna z jednym wielkim okiem. |
-| `pixie.png` | Underground Garden | 40×40 | 20×20 | Mała wróżka ze świecącymi skrzydełkami. |
-| `rainbow_pixie.png` | Underground Garden | 40×40 | 20×20 | Wróżka w tęczowych kolorach, trochę większe skrzydła. |
-| `poison_skeleton.png` | Underground Garden | 56×56 | 28×28 | Szkielet z zielonymi, trującymi plamami i kapiącą trucizną. |
-| `inferno_flower.png` | Underground Garden | 52×52 | 26×26 | Kwiat w kolorach ognia (czerwień/pomarańcz), płatki jak płomienie. |
-| `frost_flower.png` | Underground Garden | 52×52 | 26×26 | Kwiat z lodowymi płatkami (biel/błękit). |
-| `toxic_flower.png` | Underground Garden | 52×52 | 26×26 | Kwiat trujący (zieleń/fiolet), kapiący kwas. |
-| `firefly_queen.png` | Underground Garden | 52×52 | 26×26 | Duży świetlik z koroną, świecący odwłok (rzadka). |
-| `skeleton.png` | The Core | 42×42 | 21×21 | Zwykły szkielet, idzie prosto na gracza. |
-| `mecha-skeleton.png` | The Core | 70×70 | 35×35 | Szkielet z mechanicznymi częściami (ramię-działo, płyty pancerza). |
-| `liche.png` | The Core | 52×52 | 26×26 | Liczowaty mag-szkielet w szacie, z laską i fioletową poświatą. |
-| `guard.png` | The Core | 44×44 | 22×22 | Ciężki strażnik Core w pełnej zbroi, wolny i wytrzymały. |
-| `fly.png` | The Core | 36×36 | 18×18 | Duża mucha z trującym, zielonkawym odwłokiem. |
-| `generator.png` | The Core | 52×52 | 26×26 | Generator/akumulator z kablami, świecący rdzeń, kapiący klej. |
-| `voidling.png` | The Void | 28×28 | 14×14 | Mały stworek z czarnej pustki z fioletowymi oczami. |
-| `red_crystal.png` | The Void | 50×50 | 25×25 | Czerwony kryształ unoszący się w powietrzu, płonące krawędzie. |
-| `purple_crystal.png` | The Void | 50×50 | 25×25 | Fioletowy kryształ, pęknięty (rozpada się na mniejsze). |
-| `blue_crystal.png` | The Void | 60×60 | 30×30 | Niebieski, większy kryształ, zimna poświata. |
-| `void_soldier.png` | The Void | 40×40 | 20×20 | Toy Soldier „zapamiętany źle” przez Void: większy, fioletowo-czarny, zniekształcony. |
-| `void_beetle.png` | The Void | 28×28 | 14×14 | Scrap Beetle w wersji Void: ciemny, fioletowe żyłki. |
-| `assembly_machine_1.png` | Toy Factory (boss) | 84×84 | 42×42 | Maszyna Assembly Line – mała prasa produkująca zabawki (kwadrat). |
-| `assembly_machine_2.png` | Toy Factory (boss) | 84×84 | 42×42 | Maszyna Assembly Line – większa, robi wieżyczki i skrzynki (kwadrat). |
-| `assembly_machine_3.png` | Toy Factory (boss) | 84×84 | 42×42 | Maszyna Assembly Line – najszybsza, rozgrzana (kwadrat). |
-| `milo_core.png` | The Core (boss) | 160×160 | 80×80 | Serce Core: wielkie, bijące, czerwone serce-maszyna z kablami (pulsuje). |
+| `slime_small.png` | Village | 36×36 | 9×9 | Mały zielony glut, błyszczący, prosta buzia. Skacze na gracza. `slime_small_jump.png` = przykucnięty tuż przed skokiem (21.11). |
+| `slime_big.png` | Village | 72×72 | 18×18 | Duży zielony glut, w środku widać 2–3 małe gluty (po śmierci się rozpada). `slime_big_jump.png` = przed skokiem (21.11). |
+| `shooter.png` | Village | 44×44 | 11×11 | Mały człowieczek z prostą procą/pistoletem, trzyma dystans. |
+| `rainbow_slime.png` | Rainbow Fields | 48×48 | 12×12 | Glut z tęczowymi pasami w środku, lekko przezroczysty. |
+| `flower_spitter.png` | Rainbow Fields | 46×46 | 12×12 | Kwiat z otwartą „paszczą” w środku, z której pluje nasionami; liście jak nóżki. |
+| `rainbow_guard.png` | Rainbow Fields | 60×60 | 15×15 | Strażnik w tęczowej zbroi/hełmie z krótką strzelbą. |
+| `gum_goblin.png` | Sugarwood Grove | 52×52 | 13×13 | Goblin z różowej gumy do żucia, nadmuchany balon gumy przy pysku. |
+| `candy_shroom.png` | Sugarwood Grove | 48×48 | 12×12 | Grzyb z cukierkowym kapeluszem w kropki (lukier), kręci się w miejscu. |
+| `toffee_runner.png` | Sugarwood Grove | 36×36 | 9×9 | Mały brązowy stworek z toffi, smukły, w biegu (rozmazane nóżki). |
+| `sugar_caster.png` | Sugarwood Grove | 50×50 | 13×13 | Mag w szacie z cukru/lukru, trzyma cukrową bombę; czasem kryształ cukru. |
+| `shroom_guard.png` | Sugarwood Grove | 60×60 | 15×15 | Duży grzyb-strażnik Shroom Mother, różowy z tarczą/hełmem z kapelusza. |
+| `toy_soldier.png` | Toy Factory | 40×40 | 10×10 | Ołowiany żołnierzyk z kluczykiem nakręcającym na plecach, karabinek. |
+| `portable_factory.png` | Toy Factory | 80×80 | 20×20 | Mała fabryka na nóżkach: komin, taśma, wyrzuca zabawki. |
+| `robo-tesla.png` | Toy Factory | 46×46 | 12×12 | Robot z cewką Tesli na głowie, iskry wokół. |
+| `robo-bomber.png` | Toy Factory | 46×46 | 12×12 | Robot z moździerzem/wyrzutnią bomb na plecach. |
+| `scrap_beetle.png` | Toy Factory | 28×28 | 7×7 | Żuk poskładany ze złomu (śrubki, blacha), zostawia miny. |
+| `line_soldier.png` | Toy Factory | 32×32 | 8×8 | Świeży żołnierzyk z taśmy Assembly Line – czerwony, błyszczący lakier. |
+| `line_beetle.png` | Toy Factory | 24×24 | 6×6 | Niedokończony żuk z taśmy: brakuje części pancerza, widać druty. |
+| `belt_turret.png` | Toy Factory | 48×48 | 12×12 | Ciemnoszara wieżyczka na podstawce jadąca po taśmie (rysowana jako kwadrat). |
+| `bomb_crate.png` | Toy Factory | 44×44 | 11×11 | Drewniana skrzynka z napisem FRAGILE i lontem (rysowana jako kwadrat). |
+| `frost_wolf.png` | Silverpine Tundra | 52×52 | 13×13 | Biały wilk ze szronem na sierści, lodowe oczy. |
+| `ice_shooter.png` | Silverpine Tundra | 52×52 | 13×13 | Postać w futrze z lodową kuszą. |
+| `frozen_orb.png` | Silverpine Tundra | 56×56 | 14×14 | Pulsująca kula lodu z kryształkami, lekko świeci. |
+| `tundra_watcher.png` | Silverpine Tundra | 70×70 | 18×18 | Wysoka postać w kapturze/wieżyczka obserwacyjna z jednym wielkim okiem. |
+| `pixie.png` | Underground Garden | 40×40 | 10×10 | Mała wróżka ze świecącymi skrzydełkami. |
+| `rainbow_pixie.png` | Underground Garden | 40×40 | 10×10 | Wróżka w tęczowych kolorach, trochę większe skrzydła. |
+| `poison_skeleton.png` | Underground Garden | 56×56 | 14×14 | Szkielet z zielonymi, trującymi plamami i kapiącą trucizną. |
+| `inferno_flower.png` | Underground Garden | 52×52 | 13×13 | Kwiat w kolorach ognia (czerwień/pomarańcz), płatki jak płomienie. |
+| `frost_flower.png` | Underground Garden | 52×52 | 13×13 | Kwiat z lodowymi płatkami (biel/błękit). |
+| `toxic_flower.png` | Underground Garden | 52×52 | 13×13 | Kwiat trujący (zieleń/fiolet), kapiący kwas. |
+| `firefly_queen.png` | Underground Garden | 52×52 | 13×13 | Duży świetlik z koroną, świecący odwłok (rzadka). |
+| `skeleton.png` | The Core | 42×42 | 11×11 | Zwykły szkielet, idzie prosto na gracza. |
+| `mecha-skeleton.png` | The Core | 70×70 | 18×18 | Szkielet z mechanicznymi częściami (ramię-działo, płyty pancerza). |
+| `liche.png` | The Core | 52×52 | 13×13 | Liczowaty mag-szkielet w szacie, z laską i fioletową poświatą. |
+| `guard.png` | The Core | 44×44 | 11×11 | Ciężki strażnik Core w pełnej zbroi, wolny i wytrzymały. |
+| `fly.png` | The Core | 36×36 | 9×9 | Duża mucha z trującym, zielonkawym odwłokiem. |
+| `generator.png` | The Core | 52×52 | 13×13 | Generator/akumulator z kablami, świecący rdzeń, kapiący klej. |
+| `voidling.png` | The Void | 28×28 | 7×7 | Mały stworek z czarnej pustki z fioletowymi oczami. |
+| `red_crystal.png` | The Void | 50×50 | 13×13 | Czerwony kryształ unoszący się w powietrzu, płonące krawędzie. |
+| `purple_crystal.png` | The Void | 50×50 | 13×13 | Fioletowy kryształ, pęknięty (rozpada się na mniejsze). |
+| `blue_crystal.png` | The Void | 60×60 | 15×15 | Niebieski, większy kryształ, zimna poświata. |
+| `void_soldier.png` | The Void | 40×40 | 10×10 | Toy Soldier „zapamiętany źle” przez Void: większy, fioletowo-czarny, zniekształcony. |
+| `void_beetle.png` | The Void | 28×28 | 7×7 | Scrap Beetle w wersji Void: ciemny, fioletowe żyłki. |
+| `assembly_machine_1.png` | Toy Factory (boss) | 84×84 | 21×21 | Maszyna Assembly Line – mała prasa produkująca zabawki (kwadrat). |
+| `assembly_machine_2.png` | Toy Factory (boss) | 84×84 | 21×21 | Maszyna Assembly Line – większa, robi wieżyczki i skrzynki (kwadrat). |
+| `assembly_machine_3.png` | Toy Factory (boss) | 84×84 | 21×21 | Maszyna Assembly Line – najszybsza, rozgrzana (kwadrat). |
+| `milo_core.png` | The Core (boss) | 160×160 | 40×40 | Serce Core: wielkie, bijące, czerwone serce-maszyna z kablami (pulsuje). |
 
 Kopie Night Bloom i Voida używają sprite'a bossa (nie trzeba osobnych).
 
@@ -74,21 +76,21 @@ Kopie Night Bloom i Voida używają sprite'a bossa (nie trzeba osobnych).
 
 Opcjonalnie inne wyglądy faz: `<id>_f2.png`, `<id>_f3.png`… (bez nich gra użyje podstawowego i lekko przebarwi).
 
-| plik | na ekranie | plik (1:2) | jak ma wyglądać |
+| plik | na ekranie | plik (1:4) | jak ma wyglądać |
 |---|---|---|---|
-| `slime_king.png` | 180×180 | 90×90 | Ogromny zielony glut z koroną. Fazy: 2 – ciemniejsza zieleń, 3 – najciemniejsza. |
-| `prism.png` | 104×104 | 52×52 | Wiszący kryształ-pryzmat rozszczepiający światło (tęczowe odbicia). |
-| `shroom_mother.png` | 160×160 | 80×80 | Wielka matka-grzyb, różowy kapelusz w kropki, łagodna twarz; skacze i ląduje w chmurze zarodników. |
-| `frost_golem.png` | 170×170 | 85×85 | Golem z lodu i kamienia, ogromne pięści, szron; w fazie 3 śnieżyca. |
-| `assembly_line.png` | 140×140 | 70×70 | Rdzeń fabryki: maszyna na górze areny, ekran/oko, rury do taśm (rysowany jako kwadrat). |
-| `night_bloom.png` | 120×120 | 60×60 | Nocny kwiat świecący w ciemności (fiolet/róż), ma cień – kopie go nie mają. |
-| `mascot.png` | 140×140 | 70×70 | Maskotka lunaparku śpiewająca na scenie (piosenka). Może mieć 2–3 klatki „śpiewu”. |
-| `milo.png` | 64×64 | 32×32 | Milo – postać znana z dialogów (fiolet), w walce mały, ciepłe bursztynowe światło. |
-| `void_boss.png` | 140×140 | 70×70 | Void – „wszystko, co system wyciął, sklejone w jedno”: glitchowa, zmieniająca się postać (fiolet). |
+| `slime_king.png` | 180×180 | 45×45 | Ogromny zielony glut z koroną. Fazy: 2 – ciemniejsza zieleń, 3 – najciemniejsza. |
+| `prism.png` | 104×104 | 26×26 | Wiszący kryształ-pryzmat rozszczepiający światło (tęczowe odbicia). |
+| `shroom_mother.png` | 160×160 | 40×40 | Wielka matka-grzyb, różowy kapelusz w kropki, łagodna twarz; skacze i ląduje w chmurze zarodników. |
+| `frost_golem.png` | 170×170 | 43×43 | Golem z lodu i kamienia, ogromne pięści, szron; w fazie 3 śnieżyca. |
+| `assembly_line.png` | 140×140 | 35×35 | Rdzeń fabryki: maszyna na górze areny, ekran/oko, rury do taśm (rysowany jako kwadrat). |
+| `night_bloom.png` | 120×120 | 30×30 | Nocny kwiat świecący w ciemności (fiolet/róż), ma cień – kopie go nie mają. |
+| `mascot.png` | 140×140 | 35×35 | Maskotka lunaparku śpiewająca na scenie (piosenka). Może mieć 2–3 klatki „śpiewu”. |
+| `milo.png` | 64×64 | 16×16 | Milo – postać znana z dialogów (fiolet), w walce mały, ciepłe bursztynowe światło. |
+| `void_boss.png` | 140×140 | 35×35 | Void – „wszystko, co system wyciął, sklejone w jedno”: glitchowa, zmieniająca się postać (fiolet). |
 
 ### Podłogi – `combat/floors/<nazwa>.png`
 
-Kafel, który się powtarza (bez szwów), **64×64** pixel art – gra powiększy go **×4** (na ekranie 256×256) i ułoży. Opcjonalnie `<nazwa>_2.png`, `_3` jako warianty losowane.
+Kafel, który się powtarza (bez szwów), **64×64** pixel art (już 1:4) – gra powiększy go **×4** (na ekranie 256×256) i ułoży. Opcjonalnie `<nazwa>_2.png`, `_3` jako warianty losowane.
 
 | plik | jak ma wyglądać |
 |---|---|
@@ -102,27 +104,47 @@ Kafel, który się powtarza (bez szwów), **64×64** pixel art – gra powiększ
 | `the_void.png` | Fioletowa „podłoga” Void, lekko przezroczysta. |
 | `arena_ice.png` | Arena Frost Golema: śliski lód (faza z lodem). |
 | `arena_core.png` | Arena Milo wokół serca (koncentryczne pierścienie). |
-| `void_abyss.png` | Otchłań pod wyspami Voida (ciemna, gwiazdy/glitche). |
-| `void_island.png` | Wyspa Voida (okrągła, kamienna, widziana z góry). |
-| `void_bridge.png` | Most między wyspami (powtarzalny kawałek). |
+| `void_abyss.png` | Otchłań pod wyspami Voida (ciemna, gwiazdy/glitche). Kafel 64×64 jak inne podłogi, warianty `_2`, `_3`. |
 | `song_floor.png` | Scena walki z Maskotką (piosenka). |
+
+#### Arena Voida: wyspy i mosty (19.11), też w `combat/floors/`
+
+To **całe obrazki**, nie kafle. Pixel art w skali 1:4 (gra ×4, bez rozciągania – trzymaj się wymiarów z tabeli). Brak pliku = stary wygląd (kółka i paski).
+
+| plik | na ekranie | plik (1:4) | co to |
+|---|---|---|---|
+| `void_island_middle.png` | koło Ø 840 px | szer. 210 px | środkowa wyspa w największym rozmiarze (F5 i finał) |
+| `void_island_middle_small.png` | koło Ø 660 px | szer. 165 px | środkowa wyspa w F1–F4 (bez niej gra pomniejszy dużą – wtedy piksele będą mniejsze) |
+| `void_island_outer.png` | koło Ø 440 px | szer. 110 px | 8 zewnętrznych wysp, we wszystkich fazach ten sam rozmiar |
+| `void_bridge_short.png` | 287×120 px | 72×30 px | krótki most (6 mostów) |
+| `void_bridge_medium.png` | 600×120 px | 150×30 px | średni most (8 mostów) |
+| `void_bridge_long.png` | 848×120 px | 212×30 px | długi most (2 mosty, w lewo i w prawo od środka) |
+| `void_belt_short/medium/long.png` | ×190 px | ×48 px | F3: szerokie taśmociągi (te same długości); strzałki gra rysuje sama |
+
+- **Wyspa:** szerokość obrazka = średnica wyspy. Góra obrazka = góra koła, po którym się chodzi. Wszystko, co jest niżej niż koło (skała pod wyspą, widok 3/4), wisi w dół.
+- **Most:** rysuj **poziomo** (z lewej na prawą). Gra obraca go w stronę, w którą biegnie; mosty w lewo odbija lustrzanie, więc bok mostu zostaje na dole. Na obu końcach 24 px chowa się pod wyspami.
+- Mosty o podobnej długości mają jeden wspólny obrazek (np. 230 i 239 px → `short`), krótszy chowa resztę pod wyspami.
+- **Faza Pale:** opcjonalnie `<nazwa>_pale.png`. Bez tego ta faza zostaje przy białych kształtach.
 
 ### Przeszkody w walkach – `combat/obstacles/`
 
-Przeszkody w grze mają różne rozmiary (filary 70–150 px, ściany grube 40–50 px i długie 180–640 px, krótkie grube ściany do ~300×85 px). Dlatego na każdy biom jest kilka plików (pixel art, rysuj w połowie – gra ×2; dłuższą ścianę gra ułoży z kawałków):
+Przeszkody w grze mają różne rozmiary (filary 70–150 px, ściany grube 40–50 px i długie 180–640 px, krótkie grube ściany do ~300×85 px). Dlatego na każdy biom jest kilka plików (pixel art 1:4 – gra ×4, bez rozciągania). Ścianę gra układa z całych kawałków (ostatni środek przycina); filar i ściana stoją na dole swojej kolizji i mogą wystawać w górę (3/4):
 
-| plik | na ekranie | plik (1:2) | co to |
+| plik | na ekranie | plik (1:4) | co to |
 |---|---|---|---|
-| `<biom>_pillar_small.png` | 70–100 px | 40×40 px | mały filar / kamień |
-| `<biom>_pillar_medium.png` | 100–130 px | 56×56 px | średni filar |
-| `<biom>_pillar_large.png` | 130–150 px | 72×72 px | duży filar (sam na środku areny) |
-| `<biom>_wall_h.png` | grubość ~45 px | 32×24 px | środek ściany poziomej, powtarzalny w poziomie |
-| `<biom>_wall_h_end.png` | | 12×24 px | koniec ściany poziomej (lewy; prawy = odbicie) |
-| `<biom>_wall_v.png` | grubość ~45 px | 24×32 px | środek ściany pionowej, powtarzalny w pionie |
-| `<biom>_wall_v_end.png` | | 24×12 px | koniec ściany pionowej (górny; dolny = odbicie) |
-| `<biom>_wall_thick_h.png` | grubość ~85 px | 32×44 px | gruba krótka ściana (pozioma; pionową gra obróci) |
+| `<biom>_pillar_small.png` | 70–100 px | 20×20 px | mały filar / kamień |
+| `<biom>_pillar_medium.png` | 100–130 px | 28×28 px | średni filar |
+| `<biom>_pillar_large.png` | 130–150 px | 36×36 px | duży filar (sam na środku areny) |
+| `<biom>_wall_h.png` | grubość ~45 px | 16×12 px | środek ściany poziomej, powtarzalny w poziomie |
+| `<biom>_wall_h_end.png` | | 6×12 px | koniec ściany poziomej (lewy; prawy = odbicie) |
+| `<biom>_wall_v_top.png` | | 12×6 px | **góra** ściany pionowej (19.11, osobna od dołu; bez niej środek idzie do samej góry) |
+| `<biom>_wall_v.png` | grubość ~45 px | 12×16 px | środek ściany pionowej, powtarzalny w pionie |
+| `<biom>_wall_v_end.png` | | 12×6 px | **dół** ściany pionowej |
+| `<biom>_wall_thick_h.png` | grubość ~85 px | 16×22 px | środek grubej ściany poziomej, powtarzalny (jak `wall_h`) |
+| `<biom>_wall_thick_h_end.png` | | 6×22 px | koniec grubej ściany poziomej (lewy; prawy = odbicie) |
+| `<biom>_wall_thick_v_top.png`, `_wall_thick_v.png`, `_wall_thick_v_end.png` | grubość ~85 px | 22×6, 22×16, 22×6 px | (opcjonalnie) gruba ściana pionowa: góra + środek + dół; bez nich gra użyje `wall_v` |
 
-Opcjonalnie 2. wariant filara: `<biom>_pillar_medium_2.png` itd. Styl na biom:
+Warianty: filary (`<biom>_pillar_medium_2.png`) i środki ścian (`<biom>_wall_h_2.png`, `_wall_v_2`, `_wall_thick_h_2`…) – gra losuje je kawałek po kawałku. Filary małe i średnie stoją w losowych miejscach i mają losowy rozmiar (19.11), nie lustrzanie. Styl na biom:
 
 | biom | styl |
 |---|---|
@@ -137,17 +159,24 @@ Opcjonalnie 2. wariant filara: `<biom>_pillar_medium_2.png` itd. Styl na biom:
 
 ### Inne rzeczy w walce – `combat/objects/`
 
-| plik | jak ma wyglądać |
-|---|---|
-| `ice_wall.png` | Lodowa ściana Frost Golema (prostokąt, pęka po 5 trafieniach: można dać ice_wall_cracked.png). |
-| `crate.png` | Skrzynka-osłona (niszczalna). |
-| `belt.png` | Taśmociąg w walce z Assembly Line (powtarzalny kawałek, strzałki). |
-| `light_seed.png` | Nasiono światła w walce z Night Bloom (zbierane, świeci). |
-| `lantern.png` | Rzucany lampion Night Bloom. |
-| `void_turret.png` | Wieżyczka wyrastająca z wyspy w F5 Voida. |
-| `lost_weapon.png` | Wytrącona broń leżąca na wyspie Voida. |
-| `disarm_shot.png` | Pocisk Voida, który wytrąca broń. |
-| `milo_mine.png` | Mina Milo (Core), mruga przed wybuchem. |
+Pixel art 1:4 jak reszta walki (gra ×4). Wymiary wzięte z kodu (22.11). **Gra wczytuje na razie tylko `ice_wall`** – resztę podepnę, gdy pliki się pojawią (do tego czasu zostają stare kształty). Rzeczy, które się ruszają albo migają, rysuj jako osobne pliki – animację robi gra.
+
+| plik | na ekranie | plik (1:4) | co to i jak rysować |
+|---|---|---|---|
+| `ice_wall.png` | ściana dowolnej wielkości | 16×16 | Lodowa ściana Frost Golema – **powtarzalny kafel** (bez szwów z każdej strony), gra wypełnia nim ścianę. Pęknięta (po 5 trafieniach): `ice_wall_cracked.png`, ten sam rozmiar. |
+| `belt.png` | pas 1920×108, 3 pasy | 20×27 | **Sama taśma, bez strzałek**: kawałek powtarzalny w poziomie (żeberka/rolki), z krawędziami u góry i u dołu. Gra układa go na całą szerokość i **przesuwa** w stronę ruchu taśmy. |
+| `belt_arrow.png` | ok. 32×48 | 8×12 | **Strzałka osobno**, przezroczyste tło, skierowana **w prawo** (w lewo gra ją odbije). Gra stawia jedną co 80 px i przesuwa razem z taśmą. |
+| `belt_arrow_warn.png` | ok. 32×48 | 8×12 | (opcjonalnie) strzałka ostrzegawcza (pomarańczowa) – miga, zanim taśma zmieni kierunek (F3). Bez niej gra przebarwi zwykłą. |
+| `belt_nozzle.png` + `_hot.png` | 26×44 | 7×11 | Dysza w bocznej ścianie na początku każdej taśmy (lewa; prawą gra odbije). `_hot` = rozgrzana, chwilę przed strzałem. |
+| `belt_vent.png` + `_hot.png` | 52×24 | 13×6 | Kratka w dolnej krawędzi (fazy 2–3, strzela klejem). `_hot` = przed strzałem. |
+| `light_seed.png` | Ø 28 | 7×7 (albo 8×8) | Nasiono światła u Night Bloom: mała świecąca kulka/pestka. Pulsujący pierścień dookoła rysuje gra. |
+| `void_turret.png` | 52×52 | 13×13 | Wieżyczka wyrastająca z wyspy w F5 Voida (widok 3/4, może wystawać w górę). Wynurzanie i chowanie robi gra. |
+| `milo_mine.png` + `_blink.png` | Ø 32 | 8×8 | Mina Milo (Core). `_blink` = druga klatka mrugania (np. zapalona lampka); gra przełącza je coraz szybciej przed wybuchem. |
+
+**Nie trzeba rysować:**
+- `lost_weapon` – zamiast osobnego obrazka gra może pokazać ikonę wytrąconej broni z ekwipunku (ikony już są). Podepnę to.
+- `lantern` (lampion Night Bloom) i `disarm_shot` (pocisk Voida wytrącający broń) to **pociski**, a pociski mają obrazki i nie podlegają zasadzie ×4. Lampion używa teraz `flower_orange`. Jeśli chcesz osobny: lampion ok. 36×36, pocisk Voida ok. 40×40 na ekranie.
+- `crate` – skrzynki-osłony są wyłączone od 11.11 (`COVER_CHANCE = 0` w `rooms.py`).
 
 **Pociski:** wszystkie typy pocisków mają już obrazki (`combat/projectiles/`) – nic nie brakuje. Wybuchy (boom, nova_boom, frost_boom) i zap też są.
 

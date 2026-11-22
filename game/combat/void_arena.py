@@ -5,16 +5,22 @@
 # of reach, only stands for the turrets (void_turrets.py). Off the islands and bridges = the abyss (VoidFight: you
 # fall - a hit and back onto the nearest island).
 # Only the shape lives here (where the ground is, drawing it); the fight is void_fight.py.
+# (19.11) Sprites (void_sprites.py): the abyss, 2 island pictures (middle, outer) and 3 bridge sizes (short / medium /
+# long, measured from the bridges' free lengths - near ones share one picture). A missing file = the old shapes.
 
 import math
 import random
 
 import pygame
 
+from game.combat import void_sprites as VOID_SPRITES
+
 ROOM = (2, 2)                     # the arena in screens
 CENTRE_R = 330                    # px: the middle island
 OUTER = (1350, 780, 220)          # the 8 outer islands: how far across / down from the middle, their radius
 BRIDGE_WIDTH = 120
+BRIDGE_SIZES = [(400, "short"), (700, "medium"), (10 ** 9, "long")]   # (19.11) free length (px) -> picture size
+BRIDGE_TUCK = 24                  # (19.11) px a bridge picture reaches under the islands at each end
 DROP_WARN = 4 * 60                # F5: the outer islands blink this long before they fall ...
 DROP_FALL = 60                    # ... then fall away (shrink to nothing) over this long
 WARN_EDGE = (255, 90, 120)
@@ -35,8 +41,11 @@ LAYOUTS = [
     {"spokes": ALL, "ring": (0, 2, 4, 6), "outer": 1.0},          # F2
     {"spokes": ALL, "ring": (), "outer": 1.0, "belts": True, "width": 190},   # F3: the bridges are wide belts
     {"spokes": (1, 3, 5, 7), "ring": ALL, "outer": 1.0},          # F4
-    {"spokes": (), "ring": (), "outer": 0.75, "centre": 420, "near": (920, 700), "drop": True},   # F5, the interlude
+    {"spokes": (), "ring": (), "outer": 1.0, "centre": 420, "near": (975, 755), "drop": True},    # F5, the interlude
 ]                                                                 # and the end: no bridges, the outer ones out of reach
+# (19.11) F5's outer islands are as big as before (was 0.75: one picture for every outer island), set 55 px further
+# out (the radius they gained), so the gaps between them and the middle stay what they were.
+ALL_BRIDGES = [("spoke", n) for n in ALL] + [("ring", n) for n in ALL]
 
 
 class VoidArena:
@@ -52,6 +61,7 @@ class VoidArena:
         self.bridges = {}                 # key -> frames left of a change (0 = steady); key: ("spoke", n) / ("ring", n)
         self.leaving = {}                 # bridges crumbling away: key -> frames left
         self.place_outer(OUTER[:2])
+        self.bridge_sizes = self.measure_bridges()
         self.set_layout(0, instant=True)
 
     def place_outer(self, reach):
@@ -77,6 +87,27 @@ class VoidArena:
     def collapsing(self):
         """F5: the outer islands are falling right now (you fall with them, even when you can't be hurt)."""
         return bool(self.drop) and self.drop[0] == "fall"
+
+    def measure_bridges(self):
+        """(19.11) Each bridge's picture: (size, length). The size goes by its free length between the islands
+        (BRIDGE_SIZES); bridges of one size share one picture, which should be as long as the longest of them +
+        BRIDGE_TUCK at both ends (SPRITES.md gives these lengths; a shorter bridge hides the rest under its islands)."""
+        free = {key: self.free_length(key, CENTRE_R, OUTER[2]) for key in ALL_BRIDGES}
+        size_of = {key: next(name for limit, name in BRIDGE_SIZES if length < limit) for key, length in free.items()}
+        longest = {}
+        for key, name in size_of.items():
+            longest[name] = max(longest.get(name, 0), free[key])
+        return {key: (name, round(longest[name]) + 2 * BRIDGE_TUCK) for key, name in size_of.items()}
+
+    def free_length(self, key, centre_r, outer_r):
+        """A bridge's length between the islands' edges."""
+        a, b = self.ends(key)
+        return math.dist(a, b) - self.start_radius(key, centre_r, outer_r) - outer_r
+
+    @staticmethod
+    def start_radius(key, centre_r, outer_r):
+        """The radius of the island a bridge starts from (a spoke: the middle one)."""
+        return centre_r if key[0] == "spoke" else outer_r
 
     def ends(self, key):
         kind, n = key
@@ -212,28 +243,51 @@ class VoidArena:
     # --- drawing ------------------------------------------------------------------------------------------------
     def draw(self, screen, pale, timer):
         c = (lambda name: COLOURS["pale_" + name]) if pale else (lambda name: COLOURS[name])
-        screen.fill(c("abyss"))
+        if not VOID_SPRITES.draw_abyss(screen, pale):           # (19.11) its picture
+            screen.fill(c("abyss"))
         blink = self.warning and (timer // 8) % 2 == 0          # F5: about to fall
         for key, grow in self.bridges.items():
-            self.draw_bridge(screen, key, 1 - grow / CHANGE_FRAMES,
-                             WARN_EDGE if blink else BELT_COLOUR if self.belts else c("bridge"))
+            self.draw_standing_bridge(screen, key, 1 - grow / CHANGE_FRAMES, pale, blink, c("bridge"))
             if self.belts and not grow:
                 self.draw_chevrons(screen, key)
         for key, left in self.leaving.items():
-            if (timer // 6) % 2 == 0:                          # crumbling: it blinks
+            if (timer // 6) % 2 == 0 and not self.draw_bridge_picture(screen, key, 1.0, pale):   # crumbling: it blinks
                 self.draw_bridge(screen, key, 1.0, c("edge"))
         far = not self.outer_solid
         for x, y, r in self.outer_islands():
             if r >= 1:
-                self.draw_island(screen, (x, y, r), c("far_island" if far else "island"),
-                                 WARN_EDGE if blink else c("far_edge" if far else "edge"))
-        self.draw_island(screen, (*self.centre, self.centre_r), c("island"), c("edge"))
+                self.draw_island(screen, "outer", (x, y, r), pale, far, c("far_island" if far else "island"),
+                                 c("far_edge" if far else "edge"), warn=blink)
+        self.draw_island(screen, "middle", (*self.centre, self.centre_r), pale, False, c("island"), c("edge"))
 
     @staticmethod
-    def draw_island(screen, island, colour, edge):
+    def draw_island(screen, kind, island, pale, far, colour, edge, warn=False):
+        """Its picture (19.11) or the old circle; warn = F5's red blinking edge over it."""
         x, y, r = island
-        pygame.draw.circle(screen, colour, (int(x), int(y)), int(r))
-        pygame.draw.circle(screen, edge, (int(x), int(y)), int(r), 6)
+        drawn = VOID_SPRITES.draw_island(screen, kind, island, pale, far)
+        if not drawn:
+            pygame.draw.circle(screen, colour, (int(x), int(y)), int(r))
+        if warn or not drawn:
+            pygame.draw.circle(screen, WARN_EDGE if warn else edge, (int(x), int(y)), int(r), 6)
+
+    def draw_standing_bridge(self, screen, key, share, pale, blink, colour):
+        """A bridge that stands (or grows): red while F5 warns, else its picture (19.11), else the old strip."""
+        if blink:
+            self.draw_bridge(screen, key, share, WARN_EDGE)
+        elif not self.draw_bridge_picture(screen, key, share, pale):
+            self.draw_bridge(screen, key, share, BELT_COLOUR if self.belts else colour)
+
+    def draw_bridge_picture(self, screen, key, share, pale):
+        """(19.11) The bridge's picture (its own length), centred on its free part, grown `share` of the way from
+        its first end.
+        False = no picture."""
+        size = self.bridge_sizes[key][0]
+        a, b = self.ends(key)
+        outer_r = OUTER[2] * self.outer_share
+        start_r = self.start_radius(key, self.centre_r, outer_r)
+        middle = start_r + (math.dist(a, b) - start_r - outer_r) / 2
+        look = (size, self.belts, middle, share * math.dist(a, b))
+        return VOID_SPRITES.draw_bridge(screen, look, a, b, pale)
 
     def draw_bridge(self, screen, key, share, colour):
         (ax, ay), (bx, by) = self.ends(key)

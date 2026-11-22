@@ -1,4 +1,4 @@
-Gracz w walce - pixel art, 8 kierunków, ok. 25x25 (gra x2)
+Gracz w walce - pixel art, 8 kierunków, ok. 13x13 (gra x4)
 ==========================================================
 (pełny opis: SPRITES.md w folderze gry)
 

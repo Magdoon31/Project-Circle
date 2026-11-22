@@ -27,6 +27,7 @@ from game.lib import restart as RESTART
 from game.lib.small_window import SmallWindow
 from game.lib import sprites as SPRITES
 from game.combat import sprites as FIGHT_SPRITES
+from game.combat import void_sprites as VOID_SPRITES
 from game.menu.save_manager import SaveManager
 from game.combat.enemy.enemy_database import EnemyDB, SPAWNS
 from game.combat.bullet_types import BulletTypes
@@ -649,6 +650,7 @@ class Game:
         """(13.11) F5: forget every loaded picture - the next frame reads the files again."""
         SPRITES.clear()
         FIGHT_SPRITES.clear()
+        VOID_SPRITES.clear()                            # (19.11) the Void's islands and bridges
         for wall in getattr(getattr(self, "combat", None), "walls", []) or []:
             wall.pop("img", None)                       # room obstacles drawn again too
         print("Sprites reloaded")

@@ -3,10 +3,11 @@
 # - Size: up to 3 enemies the room is the screen. Every enemy above 3 adds ROOM_GROW of the area (max ROOM_MAX);
 #   the room gets a random shape (wider or taller), the camera follows the player (Combat).
 # - Obstacles (8.11 v2): in many normal fights (OBSTACLE_CHANCE per biome - more in the later biomes), always
-#   SYMMETRIC (mirrored left-right, up-down, both, or turned round the middle). Mostly small (LAYOUTS weights):
+#   SYMMETRIC (mirrored left-right, up-down, both, or turned round the middle) - except the loose pillars (19.11,
+#   Filip: small and medium ones stand at random spots, each its own size). Mostly small (LAYOUTS weights):
 #     center    one pillar in the middle of the room (you start next to it)
-#     pair      2 pillars / short walls, mirrored
-#     quad      4 pillars, one in each quarter
+#     pair      2-3 loose pillars, or 2 short walls mirrored
+#     quad      3-5 loose pillars
 #     walls     2 or 4 long walls, mirrored
 #     room      a small room in the middle (doors on opposite sides) - you start inside
 #     corridor  two parallel walls round the middle line, gaps mirrored - you start in it
@@ -33,6 +34,10 @@ GAP = 170                     # px of free space kept between obstacles (you alw
 COVER_HITS = 6                # shots to break a crate
 COVER_CHANCE = 0.0            # an obstacle room also gets (a mirrored pair of) crates - (11.11) none any more (Filip)
 FOREVER = 10 ** 9
+PAIR_PILLARS = 0.6            # "pair": how often it is loose pillars (else 2 mirrored short walls)
+SCATTER = {"pair": (2, 3), "quad": (3, 5)}      # (19.11) how many loose pillars (fewest, most)
+LOOSE_PILLAR = (70, 129)      # (19.11) px: a loose pillar's size - small (under 100) or medium (sprites.PILLAR_SIZES)
+SCATTER_TRIES = 60            # tries to find a free spot for one loose pillar
 
 OBSTACLE_CHANCE = {
     "village": 0.25, "lunapark": 0.30, "rainbow_fields": 0.30, "sugarwood_grove": 0.35,
@@ -155,9 +160,9 @@ def _center(w, h, rng, how):
 
 
 def _pair(w, h, rng, how):
+    if rng.random() < PAIR_PILLARS:
+        return _scatter(w, h, rng, *SCATTER["pair"])
     def one():
-        if rng.random() < 0.6:
-            return _square(w, h, rng, 70, 130)
         long, thick = rng.randint(180, 320), rng.randint(40, 50)
         ww, hh = (long, thick) if rng.random() < 0.5 else (thick, long)
         return pygame.Rect(rng.randint(90, max(91, w - 90 - ww)), rng.randint(90, max(91, h - 90 - hh)), ww, hh)
@@ -165,7 +170,20 @@ def _pair(w, h, rng, how):
 
 
 def _quad(w, h, rng, how):
-    return _mirrored(w, h, rng, lambda: _square(w, h, rng, 70, 120), hows="quad")
+    return _scatter(w, h, rng, *SCATTER["quad"])
+
+
+def _scatter(w, h, rng, fewest, most):
+    """(19.11, Filip) Loose pillars: each at a random spot with its own random size (small / medium), not mirrored;
+    still GAP apart, so you always fit between them. A pillar with no free spot is left out."""
+    placed = []
+    for _pillar in range(rng.randint(fewest, most)):
+        for _try in range(SCATTER_TRIES):
+            r = _square(w, h, rng, *LOOSE_PILLAR)
+            if _apart([r], placed):
+                placed.append(r)
+                break
+    return placed
 
 
 def _walls(w, h, rng, how):

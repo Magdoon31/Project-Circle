@@ -1,0 +1,246 @@
+{
+    "player": {
+        "x": 5174.086388381922,
+        "y": 10124.578390946353,
+        "money": 11926,
+        "playtime": 3448.966666682971,
+        "biome": "rainbow_fields"
+    },
+    "inventory": {
+        "active_items": [
+            "Laser SMG v2",
+            "Ghost Armor",
+            "Crown"
+        ],
+        "active_trinket2": null,
+        "items": [
+            "Simple Pistol",
+            "Broken Bulb",
+            "Cassette Tape",
+            "Old Note",
+            "Meter",
+            "Simple Blaster",
+            "Ghost Rifle",
+            "Toy Rifle",
+            "Rose",
+            "Peace Gun",
+            "Normal Blaster",
+            "Rifle A2"
+        ]
+    },
+    "map": {
+        "seed": 326670453,
+        "seed_text": "",
+        "level": "surface",
+        "levels": {
+            "surface": {
+                "collected": [],
+                "defeated": [
+                    [
+                        52,
+                        179
+                    ],
+                    [
+                        173,
+                        91
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4NEALq/fcQ=="
+            },
+            "cellar": {
+                "collected": [],
+                "defeated": [
+                    [
+                        144,
+                        192
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAODJAA9sLBA="
+            },
+            "core": {
+                "collected": [],
+                "defeated": [
+                    [
+                        57,
+                        120
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwTENAAAAw6DUv+nZ2AEUAAAAAAAAAAAAAAAAAAAAAAD8GCfkRxk="
+            },
+            "void": {
+                "collected": [
+                    [
+                        121,
+                        92
+                    ],
+                    [
+                        123,
+                        92
+                    ],
+                    [
+                        125,
+                        92
+                    ]
+                ],
+                "defeated": [
+                    [
+                        73,
+                        27
+                    ]
+                ],
+                "away": [],
+                "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8DCxlbaQ=="
+            }
+        },
+        "flags": [
+            "arrived:garden_tundra",
+            "boss:core",
+            "boss:garden",
+            "boss:rainbow_fields",
+            "boss:tundra",
+            "boss:void",
+            "ending:extra",
+            "open:garden_backroom",
+            "path:tundra",
+            "talked:milo_core_fight",
+            "talked:milo_village",
+            "visited:core",
+            "visited:garden",
+            "visited:separated",
+            "visited:void",
+            "visited:void_shrine",
+            "void_unlocked"
+        ]
+    },
+    "quests": {},
+    "counters": {
+        "sigils": {
+            "owned": [
+                "haggler",
+                "lucky_coin",
+                "lucky_charm",
+                "spare_pocket",
+                "steady_hands",
+                "overflow",
+                "headstart",
+                "bullet_time",
+                "close_call",
+                "vigor",
+                "might",
+                "swift"
+            ],
+            "active": {}
+        },
+        "shortcuts": [
+            "void",
+            "void_shrine"
+        ],
+        "ach": {
+            "surface_steps": 51,
+            "talks": {
+                "milo": 3
+            },
+            "shop_visits_empty": 1,
+            "explored": {
+                "surface": 1.0,
+                "cellar": 0.008451900615842004,
+                "core": 1.0,
+                "void": 1.0
+            },
+            "kills": 866,
+            "boss_losses": {
+                "frost_golem": 1,
+                "night_bloom": 1
+            },
+            "falls": 3,
+            "escapes": 3
+        },
+        "stats": {
+            "steps": 71,
+            "items_found": 12,
+            "hits_taken": 84,
+            "shots_fired": 3713,
+            "fights_won": 284,
+            "gold_earned": 11926,
+            "bosses_beaten": 5,
+            "fights_lost": 2,
+            "fights_escaped": 3
+        },
+        "shop": {
+            "stage": [],
+            "shelves": [
+                {
+                    "item": "Old Pistol",
+                    "biome": "village",
+                    "sold": false
+                },
+                {
+                    "item": "Leather Chestplate",
+                    "biome": "village",
+                    "sold": false
+                }
+            ],
+            "used": 0,
+            "greeted": []
+        },
+        "bestiary": {
+            "seen": [
+                "slime_big",
+                "slime_small",
+                "shooter",
+                "prism",
+                "frost_golem",
+                "night_bloom",
+                "milo",
+                "void_boss",
+                "rainbow_slime",
+                "rainbow_guard",
+                "flower_spitter"
+            ],
+            "kills": {
+                "slime_big": 106,
+                "slime_small": 299,
+                "shooter": 91,
+                "prism": 1,
+                "frost_golem": 1,
+                "night_bloom": 1,
+                "milo": 1,
+                "void_boss": 1,
+                "rainbow_slime": 126,
+                "rainbow_guard": 108,
+                "flower_spitter": 133
+            },
+            "drops": {
+                "slime_big": [],
+                "slime_small": [
+                    "Toy Rifle"
+                ],
+                "shooter": [],
+                "prism": [],
+                "frost_golem": [],
+                "night_bloom": [],
+                "rainbow_slime": [
+                    "Normal Blaster"
+                ],
+                "rainbow_guard": [
+                    "Rifle A2"
+                ],
+                "flower_spitter": [
+                    "Rose"
+                ]
+            }
+        },
+        "biome_wins": {
+            "village": 130,
+            "rainbow_fields": 149
+        }
+    },
+    "game": {
+        "difficulty": "normal",
+        "hard_mode": false,
+        "name": "Test"
+    }
+}

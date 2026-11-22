@@ -1,13 +1,13 @@
-Inne rzeczy w walce
-===================
-(pełny opis: SPRITES.md w folderze gry)
+Inne rzeczy w walce - pixel art 1:4 (gra x4)
+=============================================
+(pełny opis: SPRITES.md w folderze gry; na razie gra wczytuje tylko ice_wall)
 
-ice_wall.png  - Lodowa ściana Frost Golema (prostokąt, pęka po 5 trafieniach: można dać ice_wall_cracked.png).
-crate.png  - Skrzynka-osłona (niszczalna).
-belt.png  - Taśmociąg w walce z Assembly Line (powtarzalny kawałek, strzałki).
-light_seed.png  - Nasiono światła w walce z Night Bloom (zbierane, świeci).
-lantern.png  - Rzucany lampion Night Bloom.
-void_turret.png  - Wieżyczka wyrastająca z wyspy w F5 Voida.
-lost_weapon.png  - Wytrącona broń leżąca na wyspie Voida.
-disarm_shot.png  - Pocisk Voida, który wytrąca broń.
-milo_mine.png  - Mina Milo (Core), mruga przed wybuchem.
+ice_wall.png (16x16)            - powtarzalny kafel lodowej ściany Frost Golema; pęknięta: ice_wall_cracked.png
+belt.png (20x27)                - sama taśma BEZ strzałek, powtarzalna w poziomie (gra ją przesuwa)
+belt_arrow.png (8x12)           - strzałka osobno, w prawo, przezroczyste tło (gra przesuwa i odbija)
+belt_arrow_warn.png (8x12)      - (opcjonalnie) pomarańczowa, miga przed zmianą kierunku
+belt_nozzle.png + _hot (7x11)   - dysza w bocznej ścianie (lewa; prawą gra odbije)
+belt_vent.png + _hot (13x6)     - kratka w dolnej krawędzi (klej)
+light_seed.png (7x7 / 8x8)      - nasiono światła Night Bloom (pierścień rysuje gra)
+void_turret.png (13x13)         - wieżyczka Voida F5 (wynurzanie robi gra)
+milo_mine.png + _blink (8x8)    - mina Milo, 2 klatki mrugania

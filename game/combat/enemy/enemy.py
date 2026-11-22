@@ -17,6 +17,10 @@ RETURN_LIFE_MS = 6000          # (12.11) a returning spore lives this long after
 THROW_MARGIN = 120             # (12.11) a throw "anywhere" lands at least this far inside the arena
 SHADOW_COLOUR = (12, 22, 16)
 THINNED = ("bullets", "streams")   # (12.11) easy: these counts x DIFF.EASY_BULLETS
+JUMP_CYCLE = 100               # (21.11) a jumper ("..._jump" movement): frames per rest + jump
+JUMP_REST = 60                 # of them standing still, then the jump
+JUMP_WINDUP = 18               # (21.11) the last frames of the rest show its <name>_jump picture (crouching to jump)
+JUMP_LAUNCH = 6                # (21.11) ...and the first frames of the jump too; then <name>_fly until it lands
 HARD_KEYS = ("hard", "hard_tweaks", "hard_arena", "hard_set")   # boss_info / a phase: what hard mode changes
 
 # ATTACK TYPES (the key in the enemy's attack dict decides what it does):
@@ -306,6 +310,16 @@ class Enemy:
         return [True]
 
 
+    def jump_pose(self):
+        """(21.11) A jumper's picture: "jump" (crouching) from JUMP_WINDUP frames before the jump to JUMP_LAUNCH
+        frames into it, "fly" for the rest of the jump, None while it stands (its normal picture)."""
+        if "jump" not in self.movement_type:
+            return None
+        cycle = self.movement_timer % JUMP_CYCLE
+        if JUMP_REST - JUMP_WINDUP <= cycle < JUMP_REST + JUMP_LAUNCH:
+            return "jump"
+        return "fly" if cycle >= JUMP_REST + JUMP_LAUNCH else None
+
     def move(self, target_x, target_y, screen):
         self.screen_size = screen.get_size()
         if abs(target_x - self.x) > 2:
@@ -352,8 +366,8 @@ class Enemy:
 
         if "jump" in self.movement_type:
             
-            cycle_duration = 100  
-            rest_duration = 60   
+            cycle_duration = JUMP_CYCLE
+            rest_duration = JUMP_REST
             jump_duration = cycle_duration - rest_duration  
             cycle = self.movement_timer % cycle_duration
             
