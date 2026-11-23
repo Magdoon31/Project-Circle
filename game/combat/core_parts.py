@@ -6,6 +6,7 @@ import random
 import pygame
 
 from game.lib import voicelines as VOICES
+from game.combat import sprites as FIGHT_SPRITES
 
 
 # --- the heart -----------------------------------------------------------------------------------------------
@@ -68,6 +69,11 @@ class Mine:
     def draw(self, screen, beat):
         left = self.goes_off - beat
         blink = int(left * 4) % 2 == 0 or left < 1
+        picture = FIGHT_SPRITES.object_pixel("milo_mine_blink" if blink else "milo_mine") \
+            or FIGHT_SPRITES.object_pixel("milo_mine")                 # (23.11) the mine's pictures, if drawn
+        if picture:
+            screen.blit(picture, (int(self.pos[0] - picture.get_width() / 2), int(self.pos[1] - picture.get_height() / 2)))
+            return
         colour = (255, 70, 70) if blink else (120, 40, 40)
         pygame.draw.circle(screen, colour, (int(self.pos[0]), int(self.pos[1])), MINE_RADIUS)
         pygame.draw.circle(screen, (30, 20, 20), (int(self.pos[0]), int(self.pos[1])), MINE_RADIUS, 3)

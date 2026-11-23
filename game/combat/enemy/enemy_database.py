@@ -159,7 +159,7 @@ class EnemyDB:
 
             # --- SILVERPINE TUNDRA ---
 
-            "frost_wolf": [0,0,650,26,"enemy",3.4,420,30,25,"animal","to_player_normal",{}],
+            "frost_wolf": [0,0,650,30,"enemy",3.4,420,30,25,"animal","to_player_normal",{}],
 
             "ice_shooter": [0,0,810,26,"enemy",1.1,210,32,0,"human","away_player_normal",
                 {"basic": {"telegraph": 30, "damage": 220, "cooldown": 1.4, "last_used": 0, "width": 12, "speed": 30, "range": 4500, "effects": {"slow":[45,0.55]}, "type":["arrow_blue"]}}],
@@ -175,6 +175,7 @@ class EnemyDB:
 
             # --- UNDERGROUND GARDEN ---
 
+            # (23.11, Filip) pixies: width = the glowing ball (drawn round its middle - sprites.CENTRED)
             "pixie": [0,0,1940,20,"enemy",2.8,950,70,25,"mystical","random_jump",
                 {"minigun": {"damage": 300,"cooldown": 1.5,"last_used": 0,"width": 18,"speed": 10,"burst_count": 0,"burst_max": 10,"burst_delay": 0.05,"last_shot": 0,"is_bursting": False, "spread": 360, "range": 3000, "effects" : {"confusion":[120,0.75],"slow":[180,0.25]},"type":["normal_yellow"]}}],
 
@@ -182,18 +183,18 @@ class EnemyDB:
                               {"death_spiral": {"damage": 950, "cooldown": 0, "last_used": 0, "width": 18, "speed": 10, "range": 3000, "bullets": 18, "effects": {"confusion":[120,0.75],"slow":[180,0.25]}, "type":["normal_yellow","normal_green","normal_blue","normal_red"]},
                               "death_spawn": {"amount": 2, "enemy_name":"pixie"}}],
 
-            "poison_skeleton": [0,0,5470,28,"enemy",3.1,950,85,0,"undead","away_player_normal",
+            "poison_skeleton": [0,0,5470,30,"enemy",3.1,950,85,0,"undead","away_player_normal",
                                 {"basic": {"telegraph": 30, "damage": 950, "cooldown": 1.8, "last_used": 0, "width": 22, "speed": 32, "range": 3800, "effects": {"poison":[240,143]}, "type":["arrow_red"]}}],
 
-            "inferno_flower": [0,0,1940,26,"enemy",0.6,950,85,25,"mystical","random_normal",
+            "inferno_flower": [0,0,1940,28,"enemy",0.6,950,85,25,"mystical","random_normal",
                                {"shotgun":{"damage": 600, "cooldown": 3.0, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "recoil": 40, "bullets": 4, "repeat": [2, 0.35], "effects": {"burn":[120,71]}, "type":["flower_orange"]},
                                 "basic": {"damage": 720, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.5],"burn":[120,71]}, "type":["flower_orange"]}}],
 
-            "frost_flower": [0,0,1940,26,"enemy",0.6,950,85,25,"mystical","random_normal",
+            "frost_flower": [0,0,1940,28,"enemy",0.6,950,85,25,"mystical","random_normal",
                                {"pulse":{"damage": 600, "cooldown": 2.8, "last_used": 0, "width": 12, "speed": 9, "range": 8000, "bullets": 10, "pulse": [45, 15], "effects": {"slow":[120,0.33],"weakness":[160,0.5]}, "type":["flower_blue"]},
                                 "basic": {"damage": 720, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"slow":[120,0.33],"weakness":[160,0.5]}, "type":["flower_blue"]}}],
 
-            "toxic_flower": [0,0,1940,26,"enemy",0.6,950,85,25,"mystical","random_normal",
+            "toxic_flower": [0,0,1940,28,"enemy",0.6,950,85,25,"mystical","random_normal",
                                {"split":{"damage": 600, "cooldown": 2.5, "last_used": 0, "width": 18, "speed": 7, "range": 3000, "effects": {"acid":[120,0.33],"poison":[180,191]}, "type":["flower_green"],
                                          "split": {"after": 50, "bullets": 6, "speed": 7, "damage": 360, "width": 10}},
                                 "basic": {"damage": 720, "cooldown": 1.9, "last_used": 0, "width": 12, "speed": 12, "range": 2100, "effects": {"homing":[0.8],"acid":[120,0.33],"poison":[180,191]}, "type":["flower_green"]}}],
@@ -201,7 +202,7 @@ class EnemyDB:
 
             # Firefly Queen (7.11): like the sun in ETG - glows, 3 dashes at you, then a full ring of light;
             # when she dies she bursts: pushes everyone away (no damage to enemies), the player takes a hit
-            "firefly_queen": [0,0,1940,26,"enemy",2.6,950,85,25,"animal","random_normal",
+            "firefly_queen": [0,0,1940,28,"enemy",2.6,950,85,25,"animal","random_normal",
                 {"dash": {"cooldown": 3.0, "last_used": 0, "dashes": 3, "windup": 24, "distance": 300, "dash_frames": 12, "type": ["normal_yellow"],
                           "spiral": {"bullets": 16, "damage": 600, "speed": 8, "width": 13, "range": 3500, "effects": {}}},
                  "death_blast": {"radius": 180, "damage": 810, "push": 140}}],
@@ -218,12 +219,12 @@ class EnemyDB:
 
             # --- THE CORE ---
 
-            "liche": [0,0,10940,26,"enemy",2.5,840,120,50,"undead","random_normal",
+            "liche": [0,0,10940,28,"enemy",2.5,840,120,50,"undead","random_normal",
                 {"basic": {"damage": 4180, "cooldown": 1.0, "last_used": 0, "width": 18, "speed": 12, "range": 3400, "effects": {"poison":[300,501],"confusion":[80,0.5]}, "type":["ghost_bullet"]},
                 "sprinkler": {"damage": 2510, "cooldown": 2.4, "last_used": 0, "width": 14, "speed": 8, "range": 2600, "streams": 3, "duration": 1.8, "every": 8, "turn": 9, "effects": {"weakness":[300,0.3],"confusion":[80,0.5]}, "type":["ghost_bullet"]},
                 "shotgun":{"damage": 2510, "cooldown": 2.6, "last_used": 0, "width": 14, "speed": 10, "range": 2200, "recoil": 30, "bullets": 5, "effects": {"glued":[300,0.3],"confusion":[80,0.5]}, "type":["ghost_bullet"]}}],
 
-            "skeleton": [0,0,2330,21,"enemy",4.2,2510,30,25,"undead","to_player_normal",
+            "skeleton": [0,0,2330,23,"enemy",4.2,2510,30,25,"undead","to_player_normal",
                       {}],
 
             "mecha-skeleton": [0,0,3000,35,"boss",2.5,100,400,8,"undead","random_normal",
@@ -238,7 +239,7 @@ class EnemyDB:
             "fly": [0,0,1940,18,"enemy",4.8,2510,30,50,"animal","to_player_normal",
                       {"death_spiral": {"damage": 1670, "cooldown": 0, "last_used": 0, "width": 15, "speed": 12, "range": 1600, "bullets": 8, "effects": {"poison":[180,835]}, "type":["spore"]}}],
 
-            "generator": [0,0,4860,26,"enemy",0,840,120,50,"mechanical","random_normal",
+            "generator": [0,0,4860,28,"enemy",0,840,120,50,"mechanical","random_normal",
                       {"wall": {"damage": 2920, "cooldown": 1.8, "last_used": 0, "width": 13, "speed": 6, "range": 4500, "bullets": 11, "spacing": 34, "gap": 3, "effects": {"glued":[100,0.33]}, "type":["normal_yellow"]},
                        "death_spiral": {"damage": 2920, "cooldown": 0, "last_used": 0, "width": 13, "speed": 8, "range": 4000, "bullets": 24, "effects": {"glued":[160,0.33]}, "type":["normal_yellow"]}}],
 

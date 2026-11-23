@@ -9,9 +9,16 @@
 #
 # Combat asks plan(enemy, target, walls, arena size, timer) -> a Plan: where to go and how.
 # Only geometry lives here - no drawing, no fight state.
+#
+# (23.11) A wall's rect is the box round its drawn pixels (rooms.give_shape), so an enemy - or you - may stand inside
+# that (grown) box right next to a round pillar. Such boxes used to be dropped from the way finding, and the enemy
+# then walked straight into the pillar and stuck there. Now a line that starts or ends inside a box is checked
+# against the real shape (rooms.touches), and every other line keeps the quick box test.
 
 import math
 from dataclasses import dataclass
+
+from game.combat import rooms as ROOMS
 
 STEER_MARGIN = 8           # px an enemy keeps from a wall's corner when it walks round it
 REPLAN_FRAMES = 10         # a vantage / cover point is chosen again only this often
@@ -22,6 +29,8 @@ VANTAGE_RANGE = (320, 900) # px from you a shooter likes to shoot from
 COVER_RINGS = (120, 220, 340, 480)  # px from itself where a thrower looks for cover
 COVER_RANGE = (260, 950)   # px from you a hiding thrower must still be (its bombs have to reach)
 EDGE = 60                  # px kept from the arena's edge
+EXACT_STEP = 6             # (23.11) px between the checks along a line tested against a wall's real shape
+EXACT_SLACK = 3            # (23.11) px a body may graze a shape on such a line (it slides along it anyway)
 
 
 @dataclass
@@ -37,31 +46,53 @@ def sees(a, b, walls):
     return not any(w["rect"].clipline(a, b) for w in walls)
 
 
+class Bodies(list):
+    """[(grown rect, wall)] - the walls grown by an enemy's size (a hair smaller, so one pressed against a wall isn't
+    'inside' it) - and that enemy's radius, for the exact checks."""
+    def __init__(self, items, radius):
+        super().__init__(items)
+        self.radius = radius
+
+
 def bodies_for(enemy, walls):
-    """The walls grown by the enemy's size (a hair smaller, so one pressed against a wall isn't 'inside' it)."""
     grow = enemy.width * 2 - 4
-    here = (enemy.x, enemy.y)
-    return [r for r in (w["rect"].inflate(grow, grow) for w in walls) if not r.collidepoint(here)]
+    return Bodies([(w["rect"].inflate(grow, grow), w) for w in walls], enemy.width)
 
 
 def free_line(a, b, bodies):
-    return not any(r.clipline(a, b) for r in bodies)
+    """A body of bodies.radius can go straight from a to b."""
+    for rect, wall in bodies:
+        if not rect.clipline(a, b):
+            continue
+        if (rect.collidepoint(a) or rect.collidepoint(b)) and exact_clear(wall, a, b, bodies.radius):
+            continue                                  # (23.11) an end inside the box: the real shape lets it pass
+        return False
+    return True
 
 
-def inside_arena(point, size):
-    return EDGE < point[0] < size[0] - EDGE and EDGE < point[1] < size[1] - EDGE
+def exact_clear(wall, a, b, radius):
+    """(23.11) A body of `radius` doesn't touch the wall's real shape anywhere on the line a-b."""
+    length = math.dist(a, b)
+    steps = max(1, int(length / EXACT_STEP))
+    r = max(1, radius - EXACT_SLACK)
+    return not any(ROOMS.touches(wall, a[0] + (b[0] - a[0]) * k / steps, a[1] + (b[1] - a[1]) * k / steps, r)
+                   for k in range(steps + 1))
+
+
+def inside_arena(point, size, edge=EDGE):
+    return edge < point[0] < size[0] - edge and edge < point[1] < size[1] - edge
 
 
 def standable(point, bodies, size):
-    return inside_arena(point, size) and not any(r.collidepoint(point) for r in bodies)
+    return inside_arena(point, size) and not any(r.collidepoint(point) for r, _ in bodies)
 
 
 # --- the way round the walls ---------------------------------------------------------------------------------
-def first_step(start, goal, bodies):
+def first_step(start, goal, bodies, size=None):
     """The next corner on the shortest way from start to goal round the walls (visibility graph + Dijkstra)."""
     if free_line(start, goal, bodies):
         return goal
-    nodes = [start, goal] + corners(bodies)
+    nodes = [start, goal] + corners(bodies, size)
     dist, prev, todo = {0: 0.0}, {}, set(range(len(nodes)))
     while todo:
         u = min((n for n in todo if n in dist), key=dist.get, default=None)
@@ -81,24 +112,27 @@ def first_step(start, goal, bodies):
     return nodes[v]
 
 
-def corners(bodies):
+def corners(bodies, size=None):
+    """The corners to walk round: outside every box and (23.11) inside the room - one out of it led into its edge."""
     out = []
-    for r in bodies:
+    for r, _ in bodies:
         grown = r.inflate(STEER_MARGIN * 2, STEER_MARGIN * 2)
         for c in (grown.topleft, grown.topright, grown.bottomleft, grown.bottomright):
-            if not any(o.collidepoint(c) for o in bodies):
+            if size and not inside_arena(c, size, bodies.radius):
+                continue
+            if not any(o.collidepoint(c) for o, _ in bodies):
                 out.append(c)
     return out
 
 
-def step_towards(enemy, goal, bodies, timer):
+def step_towards(enemy, goal, bodies, timer, size=None):
     """first_step, but found again only every WAY_FRAMES (kept on the enemy)."""
     here = (enemy.x, enemy.y)
     cached = enemy.__dict__.get("_way")
     if cached and timer - cached[0] < WAY_FRAMES and cached[2] == goal \
             and math.dist(here, cached[1]) > enemy.width and free_line(here, cached[1], bodies):
         return cached[1]
-    step = first_step(here, goal, bodies)
+    step = first_step(here, goal, bodies, size)
     enemy._way = (timer, step, goal)
     return step
 
@@ -162,7 +196,7 @@ def plan(enemy, target, walls, size, timer):
         return Plan(there)
     bodies = bodies_for(enemy, walls)
     if is_chaser(enemy):
-        step = step_towards(enemy, there, bodies, timer)
+        step = step_towards(enemy, there, bodies, timer, size)
         # (11.11) going round a wall, "keep a distance" movers (gum goblin) must not stop at the corner: their
         # distance check would measure the corner, not you - they walk straight to it instead
         return Plan(step, chase=step != there and "distance" in enemy.movement_type)
@@ -171,11 +205,11 @@ def plan(enemy, target, walls, size, timer):
         if not in_sight:
             return Plan(there, keep="cover")
         spot = remembered(enemy, "_cover", timer, lambda: cover_point(enemy, target, walls, bodies, size))
-        return Plan(step_towards(enemy, spot, bodies, timer), chase=True) if spot else Plan(there)
+        return Plan(step_towards(enemy, spot, bodies, timer, size), chase=True) if spot else Plan(there)
     if in_sight:
         return Plan(there, keep="sight")
     spot = remembered(enemy, "_vantage", timer, lambda: vantage_point(enemy, target, walls, bodies, size))
-    return Plan(step_towards(enemy, spot or there, bodies, timer), chase=True)
+    return Plan(step_towards(enemy, spot or there, bodies, timer, size), chase=True)
 
 
 def step_breaks_rule(plan_, enemy, before, target, walls):

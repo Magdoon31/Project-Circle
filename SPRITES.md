@@ -6,7 +6,7 @@ Każdy folder ma też plik `_README.txt` z tą samą listą. Brakujący plik = g
 
 **Widok w walce: od góry po skosie (3/4)** – widać przód postaci. Postać stoi stopami na dole swojego koła (hitboxu), głowa może wystawać ponad nie. Przeciwnika gra sama odbija lewo/prawo, w stronę, w którą idzie (rysuj go patrzącego w prawo). Filar/ściana: kolizja to podstawa, górna część może wystawać w górę. Pociski i podłogi – czysto z góry.
 
-**Styl:** walka = pixel art (rysuj w skali **1:4**, gra powiększy ×4 bez wygładzania; 19.11). **W walce wszystko (oprócz pocisków) ma piksele tej samej wielkości: 1 piksel pliku = 4 px na ekranie**, tak jak podłogi i `village_wall_h`. Gra niczego nie rozciąga do rozmiaru przeszkody – rozmiar pliku = rozmiar na ekranie ÷ 4, mapa = rysowany (gra zmniejsza z wygładzaniem). Wszystko PNG z przezroczystym tłem (oprócz podłóg i kafli ziemi).
+**Styl:** walka = pixel art (rysuj w skali **1:4**, gra powiększy ×4 bez wygładzania; 19.11). **W walce wszystko (oprócz pocisków) ma piksele tej samej wielkości: 1 piksel pliku = 4 px na ekranie**, tak jak podłogi i `village_wall_h`. Gra niczego nie rozciąga do rozmiaru przeszkody – rozmiar pliku = rozmiar na ekranie ÷ 4. **Kontur (23.11, dla wszystkich nowych sprite'ów):** bardzo ciemny odcień koloru samego obiektu (np. prawie czarna czerwień przy lasce cukrowej, prawie czarny brąz przy pierniku), nie czysta czerń; cień pod obiektem = czarny półprzezroczysty, w prawo w dół, mapa = rysowany (gra zmniejsza z wygładzaniem). Wszystko PNG z przezroczystym tłem (oprócz podłóg i kafli ziemi). **Filary stoją na ziemi (23.11):** zamiast samego przesuniętego cienia mają cień rzucony na podłogę (w prawo w dół, tym dłuższy, im wyższy obiekt – świerk kładzie długi stożek), ciemniejszy cień styku tuż pod podstawą i 1–2 grudki śniegu/ziemi przy podstawie; plik ma przez to kilka pustych kolumn po bokach i parę wierszy pod spodem (przykład: `tools/make_tundra_obstacles.py`, funkcja `ground`).
 
 ## WALKA – `assets/img/combat/`
 
@@ -14,11 +14,15 @@ Rozmiar „na ekranie” = średnica hitboxa w 1080p. Plik pixel art = **ćwier�
 
 ### Gracz – `combat/player/`  (pixel art, 8 kierunków)
 
-Na ekranie ~50×50 px → plik **13×13** (albo 16×16 z marginesem). Pliki: `n.png`, `ne.png`, `e.png`, `se.png`, `s.png`, `sw.png`, `w.png`, `nw.png` – kierunek, w którym gracz idzie (n = w górę ekranu). Opcjonalnie animacja chodu: `<kierunek>_1.png`, `<kierunek>_2.png`…
+Na ekranie ~50×50 px → plik **13×13** (albo 16×16 z marginesem). Pliki: `n.png`, `ne.png`, `e.png`, `se.png`, `s.png`, `sw.png`, `w.png`, `nw.png` – kierunek, w którym gracz idzie (n = w górę ekranu). Opcjonalnie animacja chodu: `<kierunek>_1.png`, `<kierunek>_2.png`… **(23.11)** Gracz jest rysowany **×3** (trochę mniejszy niż reszta). Przez 0,35 s po strzale gracz patrzy w stronę strzału.
 
 ### Przeciwnicy – `combat/enemies/<id>.png`  (pixel art)
 
 Skoczkowie (slimy, pixie…): opcjonalnie `<id>_jump.png` (przykucnięty: ~0,3 s przed skokiem i ~0,1 s po wybiciu) i `<id>_fly.png` (w locie, do lądowania); po zatrzymaniu wraca zwykły (21.11). Rysuj w tym samym rozmiarze co zwykły sprite, gra stawia go tak samo (na dole kółka).
+
+**Rozmiar (23.11, Filip):** gdy przeciwnika trudno narysować w danym rozmiarze, wolno go powiększyć: width w `enemy_database.py` (= połowa rozmiaru na ekranie) i rozmiar pliku tutaj.
+
+**Pozy (23.11, opcjonalne, każdy przeciwnik):** `<id>_shoot.png` pokazuje się na chwilę (ok. 0,2 s) po strzale, a `<id>_walk1.png` i `<id>_walk2.png` na zmianę, gdy idzie (krok co ok. 14 px). Ten sam rozmiar co zwykły; patrzy w prawo, w lewo gra odbija. `<id>_spin1.png`, `_spin2.png`… pokazują się w pętli, dopóki trwa seria (np. zraszacz Candy Shroom). Narysowane: `flower_spitter` (+ `_shoot`), `rainbow_guard` (+ `_walk1`, `_walk2`) – `tools/make_rainbow_enemies.py`; Sugarwood Grove (23.11): `gum_goblin` (+ walk, shoot), `candy_shroom` (+ walk, spin1–3), `toffee_runner` (+ walk), `sugar_caster` (+ shoot), `shroom_guard` (+ shoot) – `tools/make_sugarwood_enemies.py`. `<id>_idle1.png`, `_idle2.png`… lecą w pętli cały czas, gdy nie ma innej pozy (np. lont Bomb Crate). Toy Factory (23.11): `toy_soldier` (+ walk, shoot), `scrap_beetle` (+ walk1/2 = lot, machanie skrzydłami), `line_soldier`, `line_beetle`, `belt_turret`, `bomb_crate` (+ idle1–3), `robo-tesla`, `robo-bomber`, `portable_factory` (+ shoot), `assembly_machine_1/2/3` – `tools/make_factory_enemies.py`. `<id>_aim.png` pokazuje się, gdy przeciwnik celuje (linia przed strzałem), a `_walk` może mieć dowolną liczbę klatek (`_walk1`, `_walk2`, `_walk3`…). Silverpine Tundra (23.11): `frost_wolf` (15×15, + walk1–3, galop), `ice_shooter` (+ aim, shoot), `frozen_orb` (+ idle1–5, krążące kryształki), `tundra_watcher` (+ walk1–2) – `tools/make_tundra_enemies.py`. Underground Garden (23.11): `pixie` (27×21) i `rainbow_pixie` (33×21, dłuższe tęczowe skrzydło, kula zmienia kolor) (+ idle1–4: świecąca kula ze skrzydełkiem jak pixie z Terrarii – wg rysunku Filipa, skrzydło macha; kula na środku obrazka – gra rysuje pixie środkiem na hitboxie, `sprites.CENTRED`, width 20), `inferno_flower`, `frost_flower`, `toxic_flower` (+ shoot, walk1–2 na korzonkach), `poison_skeleton` (17×16, ciemne kości, łuk; + aim, shoot), `firefly_queen` (+ idle1–4: skrzydła, pulsujący odwłok) – `tools/make_garden_enemies.py`. Skoczek bez narysowanego `_jump`/`_fly` zachowuje inne pozy (pixie macha skrzydłami w locie).
 
 | plik | gdzie | na ekranie | plik (1:4) | jak ma wyglądać |
 |---|---|---|---|---|
@@ -42,23 +46,23 @@ Skoczkowie (slimy, pixie…): opcjonalnie `<id>_jump.png` (przykucnięty: ~0,3 s
 | `line_beetle.png` | Toy Factory | 24×24 | 6×6 | Niedokończony żuk z taśmy: brakuje części pancerza, widać druty. |
 | `belt_turret.png` | Toy Factory | 48×48 | 12×12 | Ciemnoszara wieżyczka na podstawce jadąca po taśmie (rysowana jako kwadrat). |
 | `bomb_crate.png` | Toy Factory | 44×44 | 11×11 | Drewniana skrzynka z napisem FRAGILE i lontem (rysowana jako kwadrat). |
-| `frost_wolf.png` | Silverpine Tundra | 52×52 | 13×13 | Biały wilk ze szronem na sierści, lodowe oczy. |
+| `frost_wolf.png` | Silverpine Tundra | 60×60 | 15×15 | Biały wilk ze szronem na sierści, lodowe oczy. |
 | `ice_shooter.png` | Silverpine Tundra | 52×52 | 13×13 | Postać w futrze z lodową kuszą. |
 | `frozen_orb.png` | Silverpine Tundra | 56×56 | 14×14 | Pulsująca kula lodu z kryształkami, lekko świeci. |
 | `tundra_watcher.png` | Silverpine Tundra | 70×70 | 18×18 | Wysoka postać w kapturze/wieżyczka obserwacyjna z jednym wielkim okiem. |
-| `pixie.png` | Underground Garden | 40×40 | 10×10 | Mała wróżka ze świecącymi skrzydełkami. |
-| `rainbow_pixie.png` | Underground Garden | 40×40 | 10×10 | Wróżka w tęczowych kolorach, trochę większe skrzydła. |
-| `poison_skeleton.png` | Underground Garden | 56×56 | 14×14 | Szkielet z zielonymi, trującymi plamami i kapiącą trucizną. |
-| `inferno_flower.png` | Underground Garden | 52×52 | 13×13 | Kwiat w kolorach ognia (czerwień/pomarańcz), płatki jak płomienie. |
-| `frost_flower.png` | Underground Garden | 52×52 | 13×13 | Kwiat z lodowymi płatkami (biel/błękit). |
-| `toxic_flower.png` | Underground Garden | 52×52 | 13×13 | Kwiat trujący (zieleń/fiolet), kapiący kwas. |
-| `firefly_queen.png` | Underground Garden | 52×52 | 13×13 | Duży świetlik z koroną, świecący odwłok (rzadka). |
-| `skeleton.png` | The Core | 42×42 | 11×11 | Zwykły szkielet, idzie prosto na gracza. |
+| `pixie.png` | Underground Garden | 108×84 | 27×21 | Świecąca kula ze skrzydełkiem (jak pixie z Terrarii). |
+| `rainbow_pixie.png` | Underground Garden | 132×84 | 33×21 | Jak pixie, kula zmienia kolory tęczy, dłuższe skrzydło. |
+| `poison_skeleton.png` | Underground Garden | 68×64 | 17×16 | Ciemny szkielet ze świecącymi, trującymi plamami, z łukiem (czerwone strzały). |
+| `inferno_flower.png` | Underground Garden | 60×60 | 15×15 | Kwiat w kolorach ognia (czerwień/pomarańcz), płatki jak płomienie. |
+| `frost_flower.png` | Underground Garden | 60×60 | 15×15 | Kwiat z lodowymi płatkami (biel/błękit). |
+| `toxic_flower.png` | Underground Garden | 60×60 | 15×15 | Raflezja: grube ciemnoczerwone płatki w kropki wokół bulgoczącego kwasu. |
+| `firefly_queen.png` | Underground Garden | 60×60 | 15×15 | Duży świetlik z koroną, świecący odwłok (rzadka). |
+| `skeleton.png` | The Core | 52×52 | 13×13 | Zwykły szkielet, idzie prosto na gracza. |
 | `mecha-skeleton.png` | The Core | 70×70 | 18×18 | Szkielet z mechanicznymi częściami (ramię-działo, płyty pancerza). |
-| `liche.png` | The Core | 52×52 | 13×13 | Liczowaty mag-szkielet w szacie, z laską i fioletową poświatą. |
+| `liche.png` | The Core | 60×60 | 15×15 | Liczowaty mag-szkielet w szacie, z laską i fioletową poświatą. |
 | `guard.png` | The Core | 44×44 | 11×11 | Ciężki strażnik Core w pełnej zbroi, wolny i wytrzymały. |
 | `fly.png` | The Core | 36×36 | 9×9 | Duża mucha z trującym, zielonkawym odwłokiem. |
-| `generator.png` | The Core | 52×52 | 13×13 | Generator/akumulator z kablami, świecący rdzeń, kapiący klej. |
+| `generator.png` | The Core | 60×60 | 15×15 | Generator/akumulator z kablami, świecący rdzeń, kapiący klej. |
 | `voidling.png` | The Void | 28×28 | 7×7 | Mały stworek z czarnej pustki z fioletowymi oczami. |
 | `red_crystal.png` | The Void | 50×50 | 13×13 | Czerwony kryształ unoszący się w powietrzu, płonące krawędzie. |
 | `purple_crystal.png` | The Void | 50×50 | 13×13 | Fioletowy kryształ, pęknięty (rozpada się na mniejsze). |
@@ -121,6 +125,8 @@ To **całe obrazki**, nie kafle. Pixel art w skali 1:4 (gra ×4, bez rozciągani
 | `void_bridge_long.png` | 848×120 px | 212×30 px | długi most (2 mosty, w lewo i w prawo od środka) |
 | `void_belt_short/medium/long.png` | ×190 px | ×48 px | F3: szerokie taśmociągi (te same długości); strzałki gra rysuje sama |
 
+**Stan 23.11:** wszystkie powyższe są narysowane (`tools/make_void_arena.py`), razem z wersjami `_pale`. Wyspy są wyższe niż szerokie, bo pod okręgiem rozsypują się w piksele. Rozpad to **osobna warstwa** pod mostami i wyspami: `<wyspa>_crumble.png` + `_crumble_frame2.png` … `_frame10.png` (dla bieli `<wyspa>_pale_crumble…`). Ma ten sam rozmiar i miejsce co obrazek wyspy, a gra pokazuje klatki w pętli co 0,1 s. Same wyspy są statyczne. Mosty to lewitujące płytki bez konturu.
+
 - **Wyspa:** szerokość obrazka = średnica wyspy. Góra obrazka = góra koła, po którym się chodzi. Wszystko, co jest niżej niż koło (skała pod wyspą, widok 3/4), wisi w dół.
 - **Most:** rysuj **poziomo** (z lewej na prawą). Gra obraca go w stronę, w którą biegnie; mosty w lewo odbija lustrzanie, więc bok mostu zostaje na dole. Na obu końcach 24 px chowa się pod wyspami.
 - Mosty o podobnej długości mają jeden wspólny obrazek (np. 230 i 239 px → `short`), krótszy chowa resztę pod wyspami.
@@ -144,7 +150,7 @@ Przeszkody w grze mają różne rozmiary (filary 70–150 px, ściany grube 40�
 | `<biom>_wall_thick_h_end.png` | | 6×22 px | koniec grubej ściany poziomej (lewy; prawy = odbicie) |
 | `<biom>_wall_thick_v_top.png`, `_wall_thick_v.png`, `_wall_thick_v_end.png` | grubość ~85 px | 22×6, 22×16, 22×6 px | (opcjonalnie) gruba ściana pionowa: góra + środek + dół; bez nich gra użyje `wall_v` |
 
-Warianty: filary (`<biom>_pillar_medium_2.png`) i środki ścian (`<biom>_wall_h_2.png`, `_wall_v_2`, `_wall_thick_h_2`…) – gra losuje je kawałek po kawałku. Filary małe i średnie stoją w losowych miejscach i mają losowy rozmiar (19.11), nie lustrzanie. Styl na biom:
+Warianty: filary (`<biom>_pillar_medium_2.png`) i środki ścian (`<biom>_wall_h_2.png`, `_wall_v_2`, `_wall_thick_h_2`…) – gra losuje je kawałek po kawałku (filary: po miejscu filaru, 23.11; klawisz T pokazuje każdy wariant filaru, najwyżej 3). **Animacja (23.11):** każdy kawałek przeszkody może mieć klatki `<nazwa>_frame2.png`, `<nazwa>_frame3.png`… – gra pokazuje je w pętli co 0,3 s (np. `the_void_wall_thick_h_frame2.png`). Kształt (nieprzezroczyste piksele) ma być taki sam we wszystkich klatkach – kolizja bierze go z pierwszej. Filary małe i średnie stoją w losowych miejscach i mają losowy rozmiar (19.11), nie lustrzanie. Styl na biom:
 
 | biom | styl |
 |---|---|
@@ -152,14 +158,14 @@ Warianty: filary (`<biom>_pillar_medium_2.png`) i środki ścian (`<biom>_wall_h
 | `rainbow_fields` | kryształy |
 | `sugarwood_grove` | cukierkowe laski/paski |
 | `toy_factory` | metalowe bloki |
-| `silverpine_tundra` | lodowe skały |
-| `underground_garden` | omszałe kamienie |
-| `the_core` | metal z czerwonymi światłami |
-| `the_void` | fioletowe kryształy |
+| `silverpine_tundra` | bałwany / bryły lodu / ośnieżone świerki (filary), zaspy (cienkie), mur z bloków śniegu (grube) – 23.11 |
+| `underground_garden` | świecące kwiaty / wielkie grzyby / drzewa jaskiniowe (filary), splątane korzenie (cienkie), stary mur ogrodu z mchem i pnączami (grube); świecące akcenty – 23.11 |
+| `the_core` | rury-żyły / komory serca w metalu / kolumny z kabli jak mięśnie (filary), wiązki kabli (cienkie), metalowe panele z kratkami i lampkami (grube); czerwone świecące akcenty – 23.11 |
+| `the_void` | planety (filary), galaktyki – pasmo gwiazd ze spiralą na każdym końcu, **animowane** (grube), pasy asteroid (cienkie); bez cienia, delikatna poświata – 23.11 |
 
 ### Inne rzeczy w walce – `combat/objects/`
 
-Pixel art 1:4 jak reszta walki (gra ×4). Wymiary wzięte z kodu (22.11). **Gra wczytuje na razie tylko `ice_wall`** – resztę podepnę, gdy pliki się pojawią (do tego czasu zostają stare kształty). Rzeczy, które się ruszają albo migają, rysuj jako osobne pliki – animację robi gra.
+Pixel art 1:4 jak reszta walki (gra ×4). Wymiary wzięte z kodu (22.11). **Gra wczytuje wszystkie poniższe (23.11)**; brak pliku = stary kształt. Pierwsze wersje (23.11) wygenerował `tools/make_combat_objects.py`. Rzeczy, które się ruszają albo migają, rysuj jako osobne pliki – animację robi gra.
 
 | plik | na ekranie | plik (1:4) | co to i jak rysować |
 |---|---|---|---|
@@ -170,7 +176,10 @@ Pixel art 1:4 jak reszta walki (gra ×4). Wymiary wzięte z kodu (22.11). **Gra 
 | `belt_nozzle.png` + `_hot.png` | 26×44 | 7×11 | Dysza w bocznej ścianie na początku każdej taśmy (lewa; prawą gra odbije). `_hot` = rozgrzana, chwilę przed strzałem. |
 | `belt_vent.png` + `_hot.png` | 52×24 | 13×6 | Kratka w dolnej krawędzi (fazy 2–3, strzela klejem). `_hot` = przed strzałem. |
 | `light_seed.png` | Ø 28 | 7×7 (albo 8×8) | Nasiono światła u Night Bloom: mała świecąca kulka/pestka. Pulsujący pierścień dookoła rysuje gra. |
-| `void_turret.png` | 52×52 | 13×13 | Wieżyczka wyrastająca z wyspy w F5 Voida (widok 3/4, może wystawać w górę). Wynurzanie i chowanie robi gra. |
+| `void_turret.png` | 52×52 | 13×13 | Wieżyczka wyrastająca z wyspy w F5 Voida: kryształ z okiem **bez źrenicy** (oko na środku pliku, x 6, y 6–7). Wynurzanie (od dołu) i chowanie robi gra. |
+| `void_turret_pupil.png` | 8×8 | 2×2 | (23.11) Źrenica – gra przesuwa ją w stronę strzału. |
+| `hp_bar.png` + `hp_bar_fill.png`, `_fill_mid`, `_fill_low`, `hp_bar_lost.png` | 46×10 | 23×5 | (23.11) Pasek HP gracza nad jego spritem, **pokazywany ×2** (mniejsze piksele): ramka (bez serduszka) i wypełnienia tej samej wielkości (zielone / żółte poniżej 50% / czerwone poniżej 25%; `lost` = jasna część, która po trafieniu powoli maleje). Wypełnienie stoi w kolumnach 1–21 pliku (gra je przycina). |
+| `effect_<efekt>.png` (slow, weakness, glued, confusion, binded, acid, poison, burn, speed, strength, boost, focus) | 14×14 | 7×7 | (23.11) Ikonki efektów na graczu, w rzędzie nad paskiem HP, ×2; migają, gdy efekt się kończy. Bez pliku = stare kółka. |
 | `milo_mine.png` + `_blink.png` | Ø 32 | 8×8 | Mina Milo (Core). `_blink` = druga klatka mrugania (np. zapalona lampka); gra przełącza je coraz szybciej przed wybuchem. |
 
 **Nie trzeba rysować:**

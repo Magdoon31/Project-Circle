@@ -60,6 +60,7 @@ PRODUCT_LIMITS = {"belt_turret": 2}   # (8.11) Assembly Line: at most this many 
 BELT_BULLETS = 1.0             # (8.11) enemy bullets on a conveyor belt move this share of the belt's speed
 BELT_COLOR, BELT_EDGE, BELT_ARROW = (74, 72, 80), (42, 40, 46), (112, 110, 120)
 NOZZLE_COLOR, NOZZLE_HOT = (90, 88, 96), (255, 120, 60)
+BELT_ARROW_STEP = 80           # px between two arrows on a belt
 PHASE_FLASH = 18              # frames of the white flash when a boss changes phase
 SONG_SFX_VOLUME = {"laser": 0.35, "circle": 0.8, "square": 1.0}   # (10.11) the Mascot's sounds, only on the beat
 FLAWLESS_GOLD = 1.2           # no damage taken in a normal fight: x1.2 gold (not in hard mode)     # bosses are only fought on purpose (you walk into them)
@@ -173,6 +174,16 @@ class Combat:
         for _ in range(3):
             for e in self.enemies:
                 self.push_out_of_walls(e)
+        self.follow_camera(instant=True)
+
+    def setup_test_room(self, biome):
+        """(23.11, test only) The test room: every obstacle kind of the biome, the enemies on a grid (rooms.py)."""
+        w, h = ROOMS.test_room_size(self.view.get_size())
+        self.screen = pygame.Surface((w, h))
+        self.walls, start = ROOMS.test_obstacles(biome, (w, h))
+        self.player.x, self.player.y = start
+        for e, (x, y) in zip(self.enemies, ROOMS.test_spots(len(self.enemies), (w, h), self.walls, start)):
+            e.x, e.y = x, y
         self.follow_camera(instant=True)
 
     def follow_camera(self, instant=False):
@@ -704,6 +715,8 @@ class Combat:
         walls = getattr(self, "walls", [])
         plan = TACTICS.plan(enemy, target, walls, self.screen.get_size(), self.timer)
         before = (enemy.x, enemy.y)
+        round_a_wall = plan.goal != (target.x, target.y)            # (23.11) a jump to a corner stops at it
+        enemy.jump_limit = math.dist(before, plan.goal) if round_a_wall else None
         if plan.chase:
             self.walk_straight(enemy, plan.goal)
         else:
@@ -882,6 +895,8 @@ class Combat:
         lanes = self.belt_lanes()
         if not lanes:
             return
+        if self.draw_belt_sprites(lanes):                       # (23.11) the belt's pictures (combat/objects/belt*)
+            return
         w = self.screen.get_width()
         belts = self.arena["belts"]
         speed = belts["speed"]
@@ -916,6 +931,58 @@ class Combat:
                 pygame.draw.rect(self.screen, NOZZLE_HOT if hot and (self.timer // 4) % 2 == 0 else NOZZLE_COLOR,
                                  (n_x, cy - 22, 26, 44), 0, 4)
                 pygame.draw.rect(self.screen, BELT_EDGE, (n_x, cy - 22, 26, 44), 3, 4)
+
+    def belt_warning(self):
+        """Is the belt about to turn round (its arrows blink)?"""
+        rev = self.arena["belts"].get("reverse")
+        if not rev or getattr(self, "belt_since", None) is None:
+            return False
+        t = (self.timer - self.belt_since) % rev[0]
+        return t >= rev[0] - rev[1] and (self.timer // 8) % 2 == 0
+
+    def draw_belt_sprites(self, lanes):
+        """(23.11) The conveyor belts from their pictures: the belt tile scrolls along, an arrow every BELT_ARROW_STEP px
+        moves with it, the nozzles in the side walls and the vents in the bottom edge (hot = about to shoot).
+        False = no belt picture (the old shapes are drawn)."""
+        tile = FIGHT_SPRITES.object_pixel("belt")
+        if tile is None:
+            return False
+        w = self.screen.get_width()
+        speed = self.arena["belts"]["speed"]
+        warn = self.belt_warning()
+        for top, bottom, d in lanes:
+            show = -d if warn else d
+            arrow = FIGHT_SPRITES.object_pixel("belt_arrow_warn" if warn else "belt_arrow", flip=show < 0) \
+                or FIGHT_SPRITES.object_pixel("belt_arrow", flip=show < 0)
+            y = int(top + (bottom - top - tile.get_height()) / 2)
+            tw = tile.get_width()
+            off = int(self.timer * speed * d) % tw
+            for x in range(off - tw, w, tw):
+                self.screen.blit(tile, (x, y))
+            if arrow:
+                off = (self.timer * speed * d) % BELT_ARROW_STEP
+                cy = (top + bottom) / 2
+                for x in range(-BELT_ARROW_STEP, w + BELT_ARROW_STEP, BELT_ARROW_STEP):
+                    self.screen.blit(arrow, (int(x + off - arrow.get_width() / 2), int(cy - arrow.get_height() / 2)))
+        blink = (self.timer // 4) % 2 == 0
+        for n in getattr(self, "nozzles", []):                 # the vents in the bottom edge
+            if n.get("vent"):
+                hot = n["warn"] > 0 and blink or n["warn"] <= 0
+                vent = FIGHT_SPRITES.object_pixel("belt_vent_hot" if hot else "belt_vent") \
+                    or FIGHT_SPRITES.object_pixel("belt_vent")
+                if vent:
+                    self.screen.blit(vent, (int(n["x"] - vent.get_width() / 2), int(n["y"] - 10)))
+        for top, bottom, d in lanes:                           # the nozzles in the side walls (start of every belt)
+            cy = (top + bottom) / 2
+            for left in (True, False):
+                hot = blink and any(not n.get("vent") and n["top"] == top and (n["dir"] > 0) == left
+                                    for n in getattr(self, "nozzles", []))
+                nozzle = FIGHT_SPRITES.object_pixel("belt_nozzle_hot" if hot else "belt_nozzle", flip=not left) \
+                    or FIGHT_SPRITES.object_pixel("belt_nozzle", flip=not left)
+                if nozzle:
+                    x = 0 if left else w - nozzle.get_width()
+                    self.screen.blit(nozzle, (x, int(cy - nozzle.get_height() / 2)))
+        return True
 
     def add_crack(self, crack, sound=True):
         """A ground crack starts (Frost Golem; 10.11 also Milo's heart): {x, y, angle, speed, max, every, start, bullets}."""
@@ -993,13 +1060,20 @@ class Combat:
 
     def wall_at(self, x, y):
         for wall in getattr(self, "walls", []):
-            if wall["rect"].collidepoint(x, y):
+            if ROOMS.solid_at(wall, x, y):              # (23.11) a sprite obstacle: its drawn pixels
                 return wall
         return None
 
     def push_out_of_walls(self, body):
         """Keeps a round body (the player, an enemy) out of the ice walls."""
         for wall in getattr(self, "walls", []):
+            if wall.get("mask") is not None:                # (23.11) a sprite obstacle: slide round its pixels
+                moved = ROOMS.push_out(wall, body.x, body.y, body.width)
+                if moved:
+                    body.x, body.y = moved
+                    if hasattr(body, "slide_x"):
+                        body.slide_x = body.slide_y = 0.0
+                continue
             r = wall["rect"]
             cx, cy = min(max(body.x, r.left), r.right), min(max(body.y, r.top), r.bottom)
             dx, dy = body.x - cx, body.y - cy

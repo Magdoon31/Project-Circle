@@ -1,10 +1,10 @@
 {
     "player": {
-        "x": 5174.086388381922,
-        "y": 10124.578390946353,
-        "money": 11926,
-        "playtime": 3448.966666682971,
-        "biome": "rainbow_fields"
+        "x": 15889.070201652117,
+        "y": 9353.941829522382,
+        "money": 210528,
+        "playtime": 6933.499999983252,
+        "biome": "underground_garden"
     },
     "inventory": {
         "active_items": [
@@ -25,13 +25,17 @@
             "Rose",
             "Peace Gun",
             "Normal Blaster",
-            "Rifle A2"
+            "Rifle A2",
+            "Blaster 2.0",
+            "Ice Mix",
+            "Golden Chestplate",
+            "Magic Dust"
         ]
     },
     "map": {
         "seed": 326670453,
         "seed_text": "",
-        "level": "surface",
+        "level": "cellar",
         "levels": {
             "surface": {
                 "collected": [],
@@ -39,6 +43,10 @@
                     [
                         52,
                         179
+                    ],
+                    [
+                        105,
+                        146
                     ],
                     [
                         173,
@@ -51,6 +59,10 @@
             "cellar": {
                 "collected": [],
                 "defeated": [
+                    [
+                        112,
+                        141
+                    ],
                     [
                         144,
                         192
@@ -93,22 +105,39 @@
                 ],
                 "away": [],
                 "explored": "eNrtwQEJAAAAwyDWv/RzHNQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAgD8DCxlbaQ=="
+            },
+            "lunapark": {
+                "collected": [
+                    [
+                        33,
+                        12
+                    ]
+                ],
+                "defeated": [],
+                "away": [],
+                "explored": "eNpjYBjOgBEXGDVi1IhRIwaPEYyjRowaMWrEqBFYAACtbQL/"
             }
         },
         "flags": [
             "arrived:garden_tundra",
+            "boss:candy",
             "boss:core",
+            "boss:factory",
             "boss:garden",
             "boss:rainbow_fields",
             "boss:tundra",
             "boss:void",
             "ending:extra",
+            "ending:main",
             "open:garden_backroom",
             "path:tundra",
             "talked:milo_core_fight",
             "talked:milo_village",
+            "visited:candy",
             "visited:core",
+            "visited:factory",
             "visited:garden",
+            "visited:lunapark",
             "visited:separated",
             "visited:void",
             "visited:void_shrine",
@@ -139,35 +168,36 @@
             "void_shrine"
         ],
         "ach": {
-            "surface_steps": 51,
+            "surface_steps": 76,
             "talks": {
-                "milo": 3
+                "milo": 4
             },
             "shop_visits_empty": 1,
             "explored": {
                 "surface": 1.0,
-                "cellar": 0.008451900615842004,
+                "cellar": 1.0,
                 "core": 1.0,
-                "void": 1.0
+                "void": 1.0,
+                "lunapark": 0.2876712328767123
             },
-            "kills": 866,
+            "kills": 1453,
             "boss_losses": {
                 "frost_golem": 1,
                 "night_bloom": 1
             },
-            "falls": 3,
-            "escapes": 3
+            "falls": 4,
+            "escapes": 27
         },
         "stats": {
-            "steps": 71,
-            "items_found": 12,
-            "hits_taken": 84,
-            "shots_fired": 3713,
-            "fights_won": 284,
-            "gold_earned": 11926,
-            "bosses_beaten": 5,
-            "fights_lost": 2,
-            "fights_escaped": 3
+            "steps": 154,
+            "items_found": 22,
+            "hits_taken": 545,
+            "shots_fired": 7191,
+            "fights_won": 364,
+            "gold_earned": 210528,
+            "bosses_beaten": 17,
+            "fights_lost": 4,
+            "fights_escaped": 27
         },
         "shop": {
             "stage": [],
@@ -198,20 +228,96 @@
                 "void_boss",
                 "rainbow_slime",
                 "rainbow_guard",
-                "flower_spitter"
+                "flower_spitter",
+                "pixie",
+                "frost_flower",
+                "candy_shroom",
+                "poison_skeleton",
+                "gum_goblin",
+                "firefly_queen",
+                "inferno_flower",
+                "toxic_flower",
+                "voidling",
+                "robo-bomber",
+                "portable_factory",
+                "frost_wolf",
+                "scrap_beetle",
+                "tundra_watcher",
+                "toffee_runner",
+                "ice_shooter",
+                "toy_soldier",
+                "generator",
+                "fly",
+                "sugar_caster",
+                "frozen_orb",
+                "robo-tesla",
+                "skeleton",
+                "liche",
+                "guard",
+                "rainbow_pixie",
+                "shroom_guard",
+                "shroom_mother",
+                "blue_crystal",
+                "purple_crystal",
+                "red_crystal",
+                "line_soldier",
+                "bomb_crate",
+                "line_beetle",
+                "assembly_line",
+                "belt_turret",
+                "void_soldier",
+                "void_beetle"
             ],
             "kills": {
-                "slime_big": 106,
-                "slime_small": 299,
-                "shooter": 91,
+                "slime_big": 110,
+                "slime_small": 310,
+                "shooter": 94,
                 "prism": 1,
-                "frost_golem": 1,
-                "night_bloom": 1,
-                "milo": 1,
-                "void_boss": 1,
-                "rainbow_slime": 126,
-                "rainbow_guard": 108,
-                "flower_spitter": 133
+                "frost_golem": 4,
+                "night_bloom": 2,
+                "milo": 2,
+                "void_boss": 3,
+                "rainbow_slime": 135,
+                "rainbow_guard": 120,
+                "flower_spitter": 141,
+                "toffee_runner": 7,
+                "ice_shooter": 15,
+                "fly": 14,
+                "gum_goblin": 6,
+                "skeleton": 22,
+                "scrap_beetle": 21,
+                "portable_factory": 11,
+                "pixie": 49,
+                "robo-tesla": 12,
+                "guard": 10,
+                "frost_wolf": 17,
+                "frozen_orb": 10,
+                "toy_soldier": 37,
+                "firefly_queen": 6,
+                "rainbow_pixie": 18,
+                "inferno_flower": 13,
+                "voidling": 36,
+                "candy_shroom": 6,
+                "shroom_guard": 4,
+                "shroom_mother": 2,
+                "robo-bomber": 12,
+                "tundra_watcher": 12,
+                "liche": 12,
+                "generator": 13,
+                "frost_flower": 15,
+                "toxic_flower": 13,
+                "poison_skeleton": 19,
+                "red_crystal": 3,
+                "blue_crystal": 1,
+                "purple_crystal": 2,
+                "line_soldier": 15,
+                "line_beetle": 10,
+                "bomb_crate": 47,
+                "assembly_line": 3,
+                "belt_turret": 4,
+                "void_soldier": 3,
+                "void_beetle": 3,
+                "sugar_caster": 4
             },
             "drops": {
                 "slime_big": [],
@@ -230,12 +336,76 @@
                 ],
                 "flower_spitter": [
                     "Rose"
-                ]
+                ],
+                "toffee_runner": [],
+                "ice_shooter": [
+                    "Ice Mix",
+                    "Golden Chestplate",
+                    "Frozen Ring"
+                ],
+                "fly": [],
+                "gum_goblin": [
+                    "Tape"
+                ],
+                "skeleton": [
+                    "Samurai God"
+                ],
+                "scrap_beetle": [],
+                "portable_factory": [
+                    "Rifle A4"
+                ],
+                "pixie": [
+                    "Magic Dust"
+                ],
+                "robo-tesla": [],
+                "guard": [],
+                "frost_wolf": [],
+                "frozen_orb": [],
+                "toy_soldier": [
+                    "Blaster 2.0"
+                ],
+                "firefly_queen": [],
+                "rainbow_pixie": [],
+                "inferno_flower": [],
+                "voidling": [],
+                "candy_shroom": [],
+                "shroom_guard": [],
+                "shroom_mother": [],
+                "robo-bomber": [
+                    "G-Launcher"
+                ],
+                "tundra_watcher": [],
+                "liche": [],
+                "generator": [],
+                "frost_flower": [],
+                "toxic_flower": [],
+                "poison_skeleton": [
+                    "Plate Armor"
+                ],
+                "red_crystal": [
+                    "Fallen knight armor"
+                ],
+                "blue_crystal": [],
+                "purple_crystal": [],
+                "line_soldier": [],
+                "line_beetle": [],
+                "bomb_crate": [],
+                "assembly_line": [],
+                "belt_turret": [],
+                "void_soldier": [],
+                "void_beetle": [],
+                "sugar_caster": []
             }
         },
         "biome_wins": {
-            "village": 130,
-            "rainbow_fields": 149
+            "village": 132,
+            "rainbow_fields": 157,
+            "toy_factory": 11,
+            "silverpine_tundra": 10,
+            "the_core": 12,
+            "underground_garden": 18,
+            "the_void": 2,
+            "sugarwood_grove": 5
         }
     },
     "game": {

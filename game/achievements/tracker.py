@@ -23,6 +23,7 @@ LORE_ITEMS = ("Broken Bulb", "Cassette Tape", "Old Note")
 RICH = 50000
 STARTER_WEAPONS = ("Simple Blaster", "Simple Pistol")             # (Old Faithful)
 CLOSE_SHAVE = 0.05
+EFFECTS_AT_ONCE = 6                      # (23.11) Side Effects May Vary
 SPONGE_HITS = 50
 MEMORY_SECONDS_LEFT = 16
 PEARL_VALUE, SMALL_FISH_VALUE = 250, 1
@@ -122,6 +123,8 @@ class AchievementTracker:
     def on_fight_end(self, combat, won):
         player = combat.player
         self.add("kills", sum(row.count for row in combat.defeated.values()))
+        if getattr(player, "most_effects", 0) >= EFFECTS_AT_ONCE:
+            BOOK.unlock("side_effects")
         if combat.void:
             self.add("falls", combat.void.falls)
         if combat.core and combat.core.rewinds >= REWINDS:

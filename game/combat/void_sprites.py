@@ -8,6 +8,9 @@
 #   void_bridge_<short/medium/long>     a bridge lying left-right; the game turns it to where it goes
 #   void_belt_<short/medium/long>       F3's wide conveyor bridges; the moving arrows are still drawn over them
 #   <any of these>_pale                 (optional) the Pale phase's look; without it that phase keeps its white shapes
+#   <island>_crumble (+ _frame2 ...)    (23.11, optional) the island's rock falling apart below it - its own layer,
+#                                       drawn UNDER the bridges and islands (void_arena.py), the same size and place as
+#                                       the island's picture; its frames loop every FRAME_MS (pale: <island>_pale_crumble)
 # (19.11, Filip) Shown at ART_SCALE like every fight picture - same-sized pixels, nothing stretched. An island file is
 # as wide as its island / ART_SCALE; its top is the island's top, and what is under the circle (the rock below, 3/4
 # view) hangs down past it. Only while an island grows or shrinks (F5) is the nearest file scaled for a moment.
@@ -30,6 +33,9 @@ ISLAND_FILES = {                                  # kind -> (the radius the file
 SIZE_STEP = 4                    # px: sizes rounded to this, so a growing island / bridge isn't scaled anew every frame
 FAR_SHADE = (150, 150, 175)      # F5: the outer islands out of reach are darker (multiplied)
 CACHE_LIMIT = 400                # pictures kept; more = forget them all and start again
+CRUMBLE = "_crumble"
+FRAME_MS = 100                   # (23.11) ms per frame of the crumbling under the islands (10 frames = 1 s)
+MAX_FRAMES = 16                  # (23.11) the most frames looked for
 FLIP_BELOW = -1e-6               # a bridge going left is mirrored (not turned upside down)
 
 _cache = {}
@@ -52,11 +58,44 @@ def draw_island(screen, kind, island, pale=False, far=False):
     return True
 
 
-def _island_picture(kind, radius, pale, far):
+def draw_island_crumble(screen, kind, island, pale=False, far=False):
+    """(23.11) The rock falling apart under an island (<island>_crumble, animated) - drawn before the bridges and
+    islands, so it stays under them. False = no picture."""
+    x, y, r = island
+    radius = _rounded(r)
+    drawn = _island_file(kind, radius, pale)
+    if drawn is None or SPR.load(drawn[1] + CRUMBLE) is None:
+        return False
+    frames = _frame_count(drawn[1] + CRUMBLE)
+    frame = pygame.time.get_ticks() // FRAME_MS % frames + 1
+    picture = _remember(("crumble", kind, radius, pale, far, frame),
+                        lambda: _island_picture(kind, radius, pale, far, frame, CRUMBLE))
+    if picture is None:
+        return False
+    half = picture.get_width() / 2
+    screen.blit(picture, (round(x - half), round(y - half)))
+    return True
+
+
+def _frame_count(name):
+    """How many frames a picture has: itself + <name>_frame2, _frame3 ... in a row."""
+    k = 1
+    while k < MAX_FRAMES and SPR.load(f"{name}_frame{k + 1}") is not None:
+        k += 1
+    return k
+
+
+def _island_picture(kind, radius, pale, far, frame=1, part=""):
+    """The island's picture (part "") or its crumbling layer (part CRUMBLE, in this frame) at this radius."""
     drawn = _island_file(kind, radius, pale)
     if drawn is None:
         return None
     made_for, name = drawn
+    name += part
+    if frame > 1:
+        name = f"{name}_frame{frame}"
+    if SPR.load(name) is None:
+        return None
     if abs(made_for - radius) <= SIZE_STEP:
         picture = SPR.pixel(name, FIGHT_SPRITES.ART_SCALE)                  # its own size: pixels x4
     else:                                                                   # growing / shrinking: scaled for now

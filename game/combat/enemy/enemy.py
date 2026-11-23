@@ -17,10 +17,12 @@ RETURN_LIFE_MS = 6000          # (12.11) a returning spore lives this long after
 THROW_MARGIN = 120             # (12.11) a throw "anywhere" lands at least this far inside the arena
 SHADOW_COLOUR = (12, 22, 16)
 THINNED = ("bullets", "streams")   # (12.11) easy: these counts x DIFF.EASY_BULLETS
+FACE_TURN_STEP = 0.3           # (23.11) px a wanderer must move sideways in a frame to turn that way
 JUMP_CYCLE = 100               # (21.11) a jumper ("..._jump" movement): frames per rest + jump
 JUMP_REST = 60                 # of them standing still, then the jump
 JUMP_WINDUP = 18               # (21.11) the last frames of the rest show its <name>_jump picture (crouching to jump)
 JUMP_LAUNCH = 6                # (21.11) ...and the first frames of the jump too; then <name>_fly until it lands
+JUMP_POWER = 3.5               # a jump's top speed = speed x this
 HARD_KEYS = ("hard", "hard_tweaks", "hard_arena", "hard_set")   # boss_info / a phase: what hard mode changes
 
 # ATTACK TYPES (the key in the enemy's attack dict decides what it does):
@@ -310,6 +312,14 @@ class Enemy:
         return [True]
 
 
+    def jump_scale_for(self, limit, jump_duration):
+        """(23.11) A jump towards a corner on the way round a wall (combat sets jump_limit = how far it is) ends at
+        that corner: a full jump used to fly past it, and the next jump came back - for ever. Towards you: full."""
+        if not limit:
+            return 1.0
+        full = self.speed * JUMP_POWER * sum(math.sin(math.pi * k / jump_duration) for k in range(1, jump_duration))
+        return min(1.0, limit / full) if full > 0 else 1.0
+
     def jump_pose(self):
         """(21.11) A jumper's picture: "jump" (crouching) from JUMP_WINDUP frames before the jump to JUMP_LAUNCH
         frames into it, "fly" for the rest of the jump, None while it stands (its normal picture)."""
@@ -322,8 +332,8 @@ class Enemy:
 
     def move(self, target_x, target_y, screen):
         self.screen_size = screen.get_size()
-        if abs(target_x - self.x) > 2:
-            self.face_left = target_x < self.x                # (13.11) its sprite looks where it goes
+        if abs(target_x - self.x) > 2 and "random" not in self.movement_type:
+            self.face_left = target_x < self.x                # (13.11) its sprite looks at you (wanderers: below)
         if self.guard_chase and self.shielded():
             d = math.hypot(target_x - self.x, target_y - self.y)       # shielded: walks straight at you
             if d > 1:
@@ -376,11 +386,11 @@ class Enemy:
             elif cycle == rest_duration:
                 self.jump_dx = dx
                 self.jump_dy = dy
+                self.jump_scale = self.jump_scale_for(getattr(self, "jump_limit", None), jump_duration)
             else:
                 jump_progress = (cycle - rest_duration) / jump_duration
                 smooth_modifier = math.sin(jump_progress * math.pi)
-                max_jump_multiplier = 3.5
-                current_speed = self.speed * smooth_modifier * max_jump_multiplier
+                current_speed = self.speed * smooth_modifier * JUMP_POWER * getattr(self, "jump_scale", 1.0)
 
         if self.is_stopped_by_attack():
             current_speed = 0
@@ -406,6 +416,8 @@ class Enemy:
             step_x, step_y = self.slide(step_x, step_y)       # (10.11) wanderers slide like the player
         self.x += step_x
         self.y += step_y
+        if "random" in self.movement_type and abs(step_x) > FACE_TURN_STEP:
+            self.face_left = step_x < 0                       # (23.11, Filip) a wanderer looks where it goes
 
         if self.x < 0 + self.width:
             self.x = 0 + self.width
@@ -538,7 +550,9 @@ class Enemy:
                 d = math.dist((self.x, self.y), (player.x, player.y)) or 1
                 player.x += (player.x - self.x) / d * CONTACT_KNOCKBACK
                 player.y += (player.y - self.y) / d * CONTACT_KNOCKBACK
-                
+
+        if projectiles:
+            self.shot_at = self.attack_timer             # (23.11) its _shoot picture shows for a moment (sprites.py)
         return projectiles, enemies
 
 

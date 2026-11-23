@@ -12,6 +12,7 @@ from game.menu import fancy_text as FANCY
 from game.menu.sprite_button import SpriteButton, load, scaled
 from game.lib import sprites as SPRITES
 
+MEDALLION_RIM = 16              # (23.11) px of the medallion's edge kept free round its picture
 PICTURES = "assets/img/bestiary/{}.png"   # (13.11) else its fight sprite (combat/bosses, combat/enemies)
 TITLE_Y = 0.075
 LIST = (0.05, 0.16, 0.30, 0.74)             # the list panel: x, y, width, height (shares of the screen)
@@ -221,7 +222,8 @@ class BestiaryScreen:
             pygame.draw.circle(glow, colour + (alpha,), glow.get_rect().center, r)
         self.screen.blit(glow, glow.get_rect(center=rect.center))
         pygame.draw.circle(self.screen, (28, 20, 40), rect.center, rect.width // 2)
-        picture = self.picture(entry_id, rect.width - 24, colour) if known else None
+        inside = int((rect.width - MEDALLION_RIM) / math.sqrt(2))      # (23.11) a square that fits inside the circle
+        picture = self.picture(entry_id, inside, colour) if known else None
         if picture:
             self.screen.blit(picture, picture.get_rect(center=rect.center))
         else:
@@ -334,12 +336,20 @@ def numbers(db, entry_id):
 
 
 def fit_picture(name, size):
-    """(13.11) A Bestiary picture inside a size x size square, its shape kept; pixel art (the fight sprites) hard."""
+    """(13.11) A Bestiary picture inside a size x size square, its shape kept; pixel art (the fight sprites) hard.
+    (23.11) Only its drawn part counts (the empty edges cut off); pixel art grows by a whole number, so its pixels
+    stay even - and it always fits (the square fits inside the medallion's circle)."""
     raw = SPRITES.load(name)
-    w, h = raw.get_size()
-    k = size / max(w, h)
     pixel_art = not name.startswith("bestiary/")
-    return SPRITES.to_size(name, (w * k, h * k), smooth=not pixel_art)
+    box = raw.get_bounding_rect(min_alpha=1)
+    if box.width and box.height:
+        raw = raw.subsurface(box).copy()
+    w, h = raw.get_size()
+    if pixel_art:
+        k = max(1, int(size // max(w, h)))
+        return pygame.transform.scale(raw, (w * k, h * k))
+    k = size / max(w, h)
+    return pygame.transform.smoothscale(raw, (max(1, round(w * k)), max(1, round(h * k))))
 
 
 def defence_text(defence):

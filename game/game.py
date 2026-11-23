@@ -130,6 +130,9 @@ SIGIL_POPUP_FRAMES = 180    # "New Sigil" on the screen for 3 s
 MINIGAME_FADE_MS = 800      # the music fades out this long before a minigame's countdown (then the minigame music)
 # TEST ONLY: key F starts a normal fight right away (enemies of the biome you stand in)
 DEBUG_FIGHT_KEY = pygame.K_f
+# (23.11) TEST ONLY: key T = a test fight with one enemy of every kind of the biome you stand in and every obstacle
+# kind of it; Shift+T = every normal enemy of the whole game (the obstacles of your biome)
+DEBUG_TEST_ROOM_KEY = pygame.K_t
 FULL_INVENTORY_MESSAGE = "Inventory full - make room to pick it up"   # (14.11) items on the ground wait for you
 RELOAD_SPRITES_KEY = pygame.K_F5        # (13.11) read the sprites again (new files show up without a restart)
 DEBUG_NEXT_PHASE_KEY = pygame.K_F9      # (11.11, test) in a boss fight: the boss loses just enough HP for its next phase
@@ -454,9 +457,12 @@ class Game:
                         self.sigils.give(sigil)
                     self.counters["sigils"] = self.sigils.to_dict()
                     self.map_ui.show_message("TEST: story items + all sigils", 120)
-                elif event.type == pygame.KEYDOWN and event.key == DEBUG_FIGHT_KEY and not self.dialogue:
+                elif event.type == pygame.KEYDOWN and event.key in (DEBUG_FIGHT_KEY, DEBUG_TEST_ROOM_KEY) and not self.dialogue:
                     if self.player.biome in SPAWNS and self.map.level not in NO_FIGHT_LEVELS and not PALE.is_pale(self.map.level):
-                        self.start_fight()
+                        if event.key == DEBUG_FIGHT_KEY:
+                            self.start_fight()
+                        else:
+                            self.start_test_fight(every_biome=bool(event.mod & pygame.KMOD_SHIFT))
                         return
                     self.map_ui.show_message("TEST: no fights here", 90)
 
@@ -1334,6 +1340,31 @@ class Game:
                        self.bullet_type_info, self.sigils.active_set())
 
     def start_fight(self):
+        self.new_normal_combat()
+        enemies, money = self.enemy_db.provoke_enemies(self.player.biome, self.difficulty, self.screen)
+        self.combat.enemies.extend(enemies)
+        self.combat.money = money
+        self.prepare_reward()
+        self.combat.setup_room(self.player.biome)                        # (8.11) bigger rooms, rare obstacles
+        self.enter_normal_fight()
+
+    def start_test_fight(self, every_biome=False):
+        """(23.11, TEST ONLY - key T) One enemy of every kind (of your biome, or of the whole game) and every
+        obstacle kind of your biome. No money for it."""
+        biomes = list(SPAWNS) if every_biome else [self.player.biome]
+        kinds = list(dict.fromkeys(name for b in biomes for name in SPAWNS[b][1]))
+        self.new_normal_combat()
+        for name in kinds:
+            enemy = self.enemy_db.get_enemy(name)
+            enemy.color = (random.randint(100, 200), random.randint(100, 200), random.randint(100, 200))
+            self.combat.enemies.append(enemy)
+        self.combat.money = 0
+        self.prepare_reward()
+        self.combat.setup_test_room(self.player.biome)
+        self.enter_normal_fight()
+
+    def new_normal_combat(self):
+        """A normal fight's Combat, still without enemies (start_fight, start_test_fight)."""
         self.player.vx = self.player.vy = 0.0   # no sliding after the fight
         self.boss_music = []                    # (8.11) normal fights: the usual music
         self.map.respawn_bosses()               # beaten bosses come back (their gates stay open)
@@ -1348,11 +1379,8 @@ class Game:
         self.combat = Combat(self.screen, self.player_in_combat, [], self.enemy_db, self.difficulty, self.sfx, assets=self.combat_assets)
         self.combat.floor = self.map.floor_color(self.player.biome)
         self.combat.floor_biome = self.player.biome                      # (13.11) combat/floors/<biome>.png     # (8.11) the fight floor = the biome's ground
-        enemies, money = self.enemy_db.provoke_enemies(self.player.biome, self.difficulty, self.screen)
-        self.combat.enemies.extend(enemies)
-        self.combat.money = money
-        self.prepare_reward()
-        self.combat.setup_room(self.player.biome)                        # (8.11) bigger rooms, rare obstacles
+
+    def enter_normal_fight(self):
         self.state = GameState.COMBAT
         self.music.stop()
         self.music.play(f"boss_fight{random.randint(1,2)}")

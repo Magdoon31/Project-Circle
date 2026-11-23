@@ -12,6 +12,8 @@ HARD_ICE_GRIP = (0.065, 0.042)     # (12.11) hard mode: the ice is more slippery
 REGEN_CALM_FRAMES = 180         # (10.11) armour regen only starts after 3 s without being hit
 INFINITE_FRAMES = 60 * 60 * 60     # "never wears off" in a fight (1 hour) - Toxic Gas
 
+HP_LOST_FALL = 0.006           # (23.11) share of max HP the bar's "lost" part falls per frame after a hit
+
 class Shooter :
     def __init__(self, x, y, active_items, sfx, bullet_type_info, sigils=()):
         self.sigils = set(sigils)          # ids of the active sigils (game/inventory/sigils.py)
@@ -31,6 +33,7 @@ class Shooter :
         self.ice_grip = ICE_GRIP           # (12.11) ... how slippery (hard mode: HARD_ICE_GRIP)
         self.hits_taken = 0                # (13.11) for the achievements: hits in this fight ...
         self.shots_fired = 0               # ... and shots
+        self.most_effects = 0              # (23.11) ... and the most effects shown on you at once
         self.hurt_mult = 1.0               # (12.11) every hit on you x this (hard mode: Combat sets HARD_ENEMY_DAMAGE)
         self.slide_x = self.slide_y = 0.0  # your sliding speed (a little everywhere, a lot on ice)
         self.rate_of_fire = (active_items["weapon"].rate_of_fire if active_items["weapon"] else 99999)
@@ -229,6 +232,12 @@ class Shooter :
             "focus":        (255, 255, 255)   # white
         }
 
+        left = getattr(self, "sprite_right", self.x + self.width) + FIGHT_SPRITES.EFFECT_GAP   # (23.11) on its right
+        top = getattr(self, "sprite_top", self.y - self.width)
+        shown = {name: value for name, value in self.effects.items() if name in EFFECT_COLORS}
+        self.most_effects = max(self.most_effects, len(shown))
+        if FIGHT_SPRITES.draw_effect_icons(screen, left, top, shown):
+            return
         for i, effect in enumerate(self.effects.keys()):
             if effect in EFFECT_COLORS:
                 radius = self.width + (i+1) * 6
@@ -239,8 +248,8 @@ class Shooter :
         if self.imm_frames <= 0 or (self.imm_frames//5)%2 == 0:          # blinking after a hit
             if not FIGHT_SPRITES.draw_player(screen, self):                 # (13.11) the sprite, if drawn
                 pygame.draw.circle(screen, (200, 50, 50), (self.x, self.y), self.width)
+        self.hp_bar(screen)                                             # (23.11) first: the effects stand on it
         self.draw_effects(screen)
-        self.hp_bar(screen)
         die = self.handle_effects()[1]
         self.imm_frames -= 1
         self.nodmg_time +=1
@@ -564,6 +573,8 @@ class Shooter :
         cam = getattr(self, "cam", (0, 0))           # (8.11) big fight rooms: the screen shows a part of the room
         mouse_x, mouse_y = mouse_x + cam[0], mouse_y + cam[1]
         base = math.atan2(mouse_y - self.y, mouse_x - self.x)
+        self.aim_facing = FIGHT_SPRITES.direction(math.cos(base), math.sin(base), self.facing)   # (23.11) turns
+        self.aim_until = pygame.time.get_ticks() + FIGHT_SPRITES.AIM_FACE_MS                    # that way a moment
         angles = []
         if "shotgun" not in self.weapon_effect:
             angles = [base + math.radians(random.uniform(-self.recoil / 2, self.recoil / 2))]
@@ -587,10 +598,18 @@ class Shooter :
 
     def hp_bar(self, screen):
         if not self.show_hp_bar:                    # (10.11) not in a song fight (you can't die there)
+            self.hp_bar_top = None
+            return
+        share = min(1.0, max(0.0, self.hp / self.max_hp))
+        shown = getattr(self, "hp_shown", share)                    # (23.11) the "lost" part falls slowly
+        self.hp_shown = share if share >= shown else max(share, shown - HP_LOST_FALL)
+        top = getattr(self, "sprite_top", self.y - self.width)
+        self.hp_bar_top = FIGHT_SPRITES.draw_hp_bar(screen, self.x, top, share, self.hp_shown)   # (23.11) pictures
+        if self.hp_bar_top is not None:
             return
         bar_width = 50
         bar_height = 5
-        fill_width = int(bar_width * min(1.0, max(0.0, self.hp / self.max_hp)))
+        fill_width = int(bar_width * share)
         pygame.draw.rect(screen, (255, 0, 0), (self.x - bar_width // 2, self.y - self.width - 10, bar_width, bar_height))
         pygame.draw.rect(screen, (0, 255, 0), (self.x - bar_width // 2, self.y - self.width - 10, fill_width, bar_height))
     

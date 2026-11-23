@@ -11,6 +11,7 @@
 #     walls     2 or 4 long walls, mirrored
 #     room      a small room in the middle (doors on opposite sides) - you start inside
 #     corridor  two parallel walls round the middle line, gaps mirrored - you start in it
+#   + (23.11) a room with walls (walls / room / corridor) sometimes gets 1-3 loose pillars too (PILLARS_WITH_WALLS)
 #   + (until 11.11) sometimes covers: pairs of crates that break from your shots (COVER_HITS) - off now (COVER_CHANCE 0).
 #   Walls and pillars can't be broken; they stop you, the enemies and all bullets (thrown bombs fly over).
 #   The look depends on the biome (THEMES): hedges in the village, candy in the grove, ice rocks in the tundra...
@@ -38,12 +39,24 @@ PAIR_PILLARS = 0.6            # "pair": how often it is loose pillars (else 2 mi
 SCATTER = {"pair": (2, 3), "quad": (3, 5)}      # (19.11) how many loose pillars (fewest, most)
 LOOSE_PILLAR = (70, 129)      # (19.11) px: a loose pillar's size - small (under 100) or medium (sprites.PILLAR_SIZES)
 SCATTER_TRIES = 60            # tries to find a free spot for one loose pillar
+SOLID_ALPHA = 128             # (23.11) a sprite pixel this opaque or more is solid (the half-transparent shadow isn't)
+OBSTACLE_FRAME_MS = 300       # (23.11) ms per frame of an animated obstacle (sprites.obstacle_frames)
+PUSH_STEPS = 8                # (23.11) halvings when finding how far to push a body out of a sprite's pixels
 
-OBSTACLE_CHANCE = {
-    "village": 0.25, "lunapark": 0.30, "rainbow_fields": 0.30, "sugarwood_grove": 0.35,
-    "toy_factory": 0.40, "silverpine_tundra": 0.40, "underground_garden": 0.45, "the_core": 0.50, "the_void": 0.55,
+OBSTACLE_CHANCE = {          # (23.11, Filip) more everywhere (+0.15 in all); the garden and the core: nearly always
+    "village": 0.40, "lunapark": 0.45, "rainbow_fields": 0.45, "sugarwood_grove": 0.50,
+    "toy_factory": 0.55, "silverpine_tundra": 0.55, "underground_garden": 0.85, "the_core": 0.90, "the_void": 0.70,
 }
 LAYOUTS = {"center": 5, "pair": 5, "quad": 3, "walls": 2, "room": 1, "corridor": 1}      # weights: mostly small
+BIOME_LAYOUTS = {            # (23.11) biomes with their own weights (else LAYOUTS): the garden - mostly walls (roots)
+    "underground_garden": {"center": 2, "pair": 4, "quad": 2, "walls": 6, "room": 1, "corridor": 2},
+}
+THIN_WALL = (40, 50)          # px: a wall's thickness - thin (drawn with <biom>_wall_h / _wall_v) ...
+THICK_SIZE = (80, 95)         # (23.11) ... or thick (over sprites.THICK_WALL: <biom>_wall_thick_h / _thick_v)
+THICK_CHANCE = {"underground_garden": 0.5, "the_void": 0.5}   # (23.11) how often a wall is thick (the Void: a galaxy)
+DEFAULT_THICK = 0.15
+PILLARS_WITH_WALLS = 0.4      # (23.11, Filip) a room with walls also gets a few loose pillars this often ...
+EXTRA_PILLARS = (1, 3)        # ... this many (fewest, most) - each still GAP away from everything
 MIRRORS = ["x", "y", "xy"]    # left-right, up-down, turned round the middle (point)
 
 # how the obstacles of a biome look: fill, edge, detail colour, style; crate fill, crate edge
@@ -85,14 +98,20 @@ def make_obstacles(biome, room, rng=random, chance=None):
     w, h = room
     if rng.random() >= (OBSTACLE_CHANCE.get(biome, 0.3) if chance is None else chance):
         return [], (w / 2, h / 2)
-    layout = rng.choices(list(LAYOUTS), weights=list(LAYOUTS.values()))[0]
+    weights = BIOME_LAYOUTS.get(biome, LAYOUTS)
+    layout = rng.choices(list(weights), weights=list(weights.values()))[0]
     how = rng.choice(MIRRORS)                                # one symmetry for the whole room
-    rects = LAYOUT_MAKERS[layout](w, h, rng, how)
+    thick = THICK_CHANCE.get(biome, DEFAULT_THICK)
+    rects = LAYOUT_MAKERS[layout](w, h, rng, how, thick)
+    if layout in ("walls", "room", "corridor") and rng.random() < PILLARS_WITH_WALLS:
+        rects += _scatter(w, h, rng, *EXTRA_PILLARS, placed=rects)       # (23.11) pillars among the walls
     if rects and rng.random() < COVER_CHANCE:
         rects_c = _mirrored(w, h, rng, lambda: _square(w, h, rng, 58, 76), rects, how)
     else:
         rects_c = []
     walls = [_wall(r, biome) for r in rects] + [_wall(r, biome, cover=True) for r in rects_c]
+    for wall in walls:
+        give_shape(wall)
     return walls, start_spot(w, h, [x["rect"] for x in walls])
 
 
@@ -117,6 +136,96 @@ def _wall(rect, biome, cover=False):
     if cover:
         return {"rect": rect, "hits": COVER_HITS, "max": COVER_HITS, "life": FOREVER, "cover": True, "theme": theme}
     return {"rect": rect, "hits": FOREVER, "max": 0, "life": FOREVER, "solid": True, "theme": theme}
+
+
+# --- (23.11) collision with the drawn pixels ----------------------------------------------------------------------
+# An obstacle with a sprite is solid only where its picture is (pygame mask): bullets stop at its pixels, round bodies
+# (you, the enemies) slide round its outline. Its "rect" shrinks to the box round those pixels - the enemies' path
+# finding and line of sight still use that box. Without a sprite (or an ice wall) the rect itself is solid, as before.
+def give_shape(wall):
+    """Gives a room obstacle its sprite's solid pixels: wall["mask"] at wall["mask_at"] (top-left, room px)."""
+    if wall.get("cover"):
+        return
+    frames = FIGHT_SPRITES.obstacle_frames(wall["theme"], wall["rect"], wall.get("variant"))
+    if not frames:
+        return
+    picture, (ox, oy) = frames[0]
+    if len(frames) > 1:                                       # (23.11) animated (the Void's galaxies)
+        wall["frames"] = [p for p, _ in frames]
+    mask = pygame.mask.from_surface(picture, SOLID_ALPHA - 1)
+    boxes = mask.get_bounding_rects()
+    if not boxes:
+        return
+    box = boxes[0].unionall(boxes[1:])
+    art_x, art_y = wall["rect"].x + ox, wall["rect"].y + oy
+    wall["rect"] = pygame.Rect(art_x + box.x, art_y + box.y, box.w, box.h)
+    wall.update(mask=mask, mask_at=(art_x, art_y), img=picture, img_hits=wall["hits"],
+                img_offset=(art_x - wall["rect"].x, art_y - wall["rect"].y))   # drawn where it was
+
+
+def solid_at(wall, x, y):
+    """Is this room point inside the obstacle (its pixels, or its rect without a sprite)?"""
+    if not wall["rect"].collidepoint(x, y):
+        return False
+    mask = wall.get("mask")
+    if mask is None:
+        return True
+    mx, my = wall["mask_at"]
+    return bool(mask.get_at((int(x - mx), int(y - my))))
+
+
+_circles = {}
+
+
+def _circle_mask(radius):
+    r = max(1, int(radius))
+    if r not in _circles:
+        surf = pygame.Surface((2 * r + 1, 2 * r + 1), pygame.SRCALPHA)
+        pygame.draw.circle(surf, (255, 255, 255, 255), (r, r), r)
+        _circles[r] = pygame.mask.from_surface(surf)
+    return _circles[r]
+
+
+def touches(wall, x, y, radius):
+    """(23.11) Does a round body at (x, y) touch the obstacle (its pixels, or its rect without a sprite)?"""
+    r = max(1, int(radius))
+    rect = wall["rect"]
+    if not rect.colliderect(pygame.Rect(x - r, y - r, 2 * r + 1, 2 * r + 1)):
+        return False
+    mask = wall.get("mask")
+    if mask is None:
+        nx, ny = min(max(x, rect.left), rect.right), min(max(y, rect.top), rect.bottom)
+        return math.hypot(x - nx, y - ny) < r
+    mx, my = wall["mask_at"]
+    return mask.overlap(_circle_mask(r), (int(round(x - r - mx)), int(round(y - r - my)))) is not None
+
+
+def push_out(wall, x, y, radius):
+    """Where a round body at (x, y) must move to stop touching the obstacle's pixels; None = it doesn't touch them.
+    It goes away from the middle of the touching part, just as far as needed (found by halving)."""
+    r = max(1, int(radius))
+    if not wall["rect"].colliderect(pygame.Rect(x - r, y - r, 2 * r + 1, 2 * r + 1)):
+        return None
+    mask, (mx, my), circle = wall["mask"], wall["mask_at"], _circle_mask(r)
+
+    def touches(px, py):
+        return mask.overlap(circle, (int(round(px - r - mx)), int(round(py - r - my)))) is not None
+    if not touches(x, y):
+        return None
+    cx, cy = mask.overlap_mask(circle, (int(round(x - r - mx)), int(round(y - r - my)))).centroid()
+    dx, dy = x - (mx + cx), y - (my + cy)
+    d = math.hypot(dx, dy)
+    ux, uy = (dx / d, dy / d) if d > 1e-6 else (0.0, -1.0)
+    lo, hi = 0.0, 2.0 * r
+    while touches(x + ux * hi, y + uy * hi) and hi < 4 * r + max(mask.get_size()):
+        lo, hi = hi, hi * 2
+    for _ in range(PUSH_STEPS):
+        mid = (lo + hi) / 2
+        if touches(x + ux * mid, y + uy * mid):
+            lo = mid
+        else:
+            hi = mid
+    return x + ux * hi, y + uy * hi
 
 
 def _mirror(r, w, h, how):
@@ -150,7 +259,12 @@ def _square(w, h, rng, lo, hi):
     return pygame.Rect(rng.randint(90, w - 90 - s), rng.randint(90, h - 90 - s), s, s)
 
 
-def _center(w, h, rng, how):
+def _thickness(rng, thick):
+    """(23.11) A wall's thickness: thick with the chance `thick`, else thin."""
+    return rng.randint(*THICK_SIZE) if rng.random() < thick else rng.randint(*THIN_WALL)
+
+
+def _center(w, h, rng, how, thick=0):
     s = rng.randint(90, 150)
     if rng.random() < 0.3:                                    # sometimes a short thick wall instead of a square
         ww, hh = (s * 2, s // 2 + 10) if rng.random() < 0.5 else (s // 2 + 10, s * 2)
@@ -159,44 +273,45 @@ def _center(w, h, rng, how):
     return [pygame.Rect(round(w / 2 - ww / 2), round(h / 2 - hh / 2), ww, hh)]
 
 
-def _pair(w, h, rng, how):
+def _pair(w, h, rng, how, thick=0):
     if rng.random() < PAIR_PILLARS:
         return _scatter(w, h, rng, *SCATTER["pair"])
+    t = _thickness(rng, thick)                                # both walls of the pair alike
     def one():
-        long, thick = rng.randint(180, 320), rng.randint(40, 50)
-        ww, hh = (long, thick) if rng.random() < 0.5 else (thick, long)
+        long = rng.randint(180, 320)
+        ww, hh = (long, t) if rng.random() < 0.5 else (t, long)
         return pygame.Rect(rng.randint(90, max(91, w - 90 - ww)), rng.randint(90, max(91, h - 90 - hh)), ww, hh)
     return _mirrored(w, h, rng, one, hows=how)
 
 
-def _quad(w, h, rng, how):
+def _quad(w, h, rng, how, thick=0):
     return _scatter(w, h, rng, *SCATTER["quad"])
 
 
-def _scatter(w, h, rng, fewest, most):
+def _scatter(w, h, rng, fewest, most, placed=()):
     """(19.11, Filip) Loose pillars: each at a random spot with its own random size (small / medium), not mirrored;
     still GAP apart, so you always fit between them. A pillar with no free spot is left out."""
-    placed = []
+    others, new = list(placed), []                            # (23.11) placed: obstacles already in the room
     for _pillar in range(rng.randint(fewest, most)):
         for _try in range(SCATTER_TRIES):
             r = _square(w, h, rng, *LOOSE_PILLAR)
-            if _apart([r], placed):
-                placed.append(r)
+            if _apart([r], others + new):
+                new.append(r)
                 break
-    return placed
+    return new
 
 
-def _walls(w, h, rng, how):
+def _walls(w, h, rng, how, thick=0):
     def one():
-        long, thick = rng.randint(260, 480), rng.randint(40, 50)
-        ww, hh = (long, thick) if rng.random() < 0.5 else (thick, long)
+        long, t = rng.randint(260, 480), _thickness(rng, thick)
+        ww, hh = (long, t) if rng.random() < 0.5 else (t, long)
         return pygame.Rect(rng.randint(90, max(91, w - 90 - ww)), rng.randint(90, max(91, h - 90 - hh)), ww, hh)
     return _mirrored(w, h, rng, one, hows=how)
 
 
-def _inner_room(w, h, rng, how):
+def _inner_room(w, h, rng, how, thick=0):
     """A small room in the middle: 4 walls; doors in the middle of 2 opposite sides (or all 4)."""
-    t = 40
+    t = THICK_SIZE[0] if rng.random() < thick else 40           # (23.11) sometimes thick walls
     rw, rh = rng.randint(480, 640), rng.randint(380, 460)
     x, y = round(w / 2 - rw / 2), round(h / 2 - rh / 2)
     doors = rng.choice([("left", "right"), ("top", "bottom"), ("top", "bottom", "left", "right")])
@@ -218,9 +333,9 @@ def _inner_room(w, h, rng, how):
     return out
 
 
-def _corridor(w, h, rng, how):
+def _corridor(w, h, rng, how, thick=0):
     """Two long walls, mirrored round the middle line; their gaps mirrored too. You start in the corridor."""
-    t, width = 42, rng.randint(240, 290)
+    t, width = (THICK_SIZE[0] if rng.random() < thick else 42), rng.randint(240, 290)      # (23.11) or thick
     horizontal = rng.random() < 0.5
     L = (w if horizontal else h)
     length = int(L * rng.uniform(0.5, 0.7))
@@ -247,10 +362,13 @@ def draw_obstacle(screen, wall):
     img = wall.get("img")
     hits = wall["hits"]
     if img is None or wall.get("img_hits") != hits:
-        drawn = None if wall.get("cover") else FIGHT_SPRITES.obstacle_picture(wall["theme"], wall["rect"])   # (13.11)
+        drawn = None if wall.get("cover") else FIGHT_SPRITES.obstacle_picture(wall["theme"], wall["rect"], wall.get("variant"))   # (13.11)
         img, wall["img_offset"] = drawn or (_render(wall), (0, 0))
         wall["img"] = img
         wall["img_hits"] = hits
+    frames = wall.get("frames")
+    if frames:                                                # (23.11) an animated obstacle: its frames in a loop
+        img = frames[pygame.time.get_ticks() // OBSTACLE_FRAME_MS % len(frames)]
     offset = wall.get("img_offset", (0, 0))
     screen.blit(img, (wall["rect"].x + offset[0], wall["rect"].y + offset[1]))
 
@@ -298,3 +416,54 @@ def _render(wall):
             pygame.draw.ellipse(surf, th["detail"], (rnd.randint(0, box.w - 16), rnd.randint(0, box.h - 10), rnd.randint(14, 30), rnd.randint(8, 14)))
     pygame.draw.rect(surf, th["edge"], box, 4, radius)
     return surf
+
+
+# --- TEST ROOM (23.11, test only: key T on the map) --------------------------------------------------------------
+# One obstacle of every kind of the biome (3 pillar sizes - each in all its variants, 23.11 -, thin / thick walls
+# lying and standing) along the top and the left of a bigger room; the enemies stand on a grid in the rest of it.
+TEST_ROOM = 1.6               # the test room = the screen x this (width and height)
+TEST_BASE = (3072, 1728)      # the room TEST_OBSTACLES are placed for (1080p x TEST_ROOM); other sizes: moved, not resized
+TEST_OBSTACLES = [            # (x, y, w, h) px from the room's top-left corner
+    (1150, 220, 380, 45), (1750, 200, 320, 80),                            # thin and thick wall, lying
+    (300, 800, 45, 360), (620, 800, 80, 320),                              # thin and thick wall, standing (23.11: lower)
+]
+TEST_PILLARS = [              # (23.11) (x, y, size, px down to the next variant): every variant of each pillar size,
+    (300, 200, 85, 160), (540, 185, 115, 170), (810, 170, 140, 180),       # one under another: small, medium, large
+]
+TEST_VARIANTS = 3             # (23.11) the most variants of one pillar size shown (more would reach the walls)
+TEST_GRID = 220               # px between the enemies' spots (in TEST_BASE; smaller rooms: closer, at least TEST_GRID_MIN)
+TEST_GRID_MIN = 140
+TEST_KEEP_OFF = 180           # px an enemy's spot keeps from the obstacles and from where you start
+
+
+def test_room_size(screen_size):
+    return round(screen_size[0] * TEST_ROOM), round(screen_size[1] * TEST_ROOM)
+
+
+def test_obstacles(biome, room):
+    """Every obstacle kind of the biome once: (walls, where you start = the middle)."""
+    kx, ky = room[0] / TEST_BASE[0], room[1] / TEST_BASE[1]
+    walls = [_wall(pygame.Rect(round(x * kx), round(y * ky), w, h), biome) for x, y, w, h in TEST_OBSTACLES]
+    for x, y, size, step in TEST_PILLARS:                    # (23.11) every pillar variant
+        theme = _wall(pygame.Rect(0, 0, size, size), biome)["theme"]
+        found = len(FIGHT_SPRITES.pillar_variants(theme, FIGHT_SPRITES.pillar_size(size, size)))
+        for variant in range(max(1, min(found, TEST_VARIANTS))):
+            pillar = _wall(pygame.Rect(round(x * kx), round((y + variant * step) * ky), size, size), biome)
+            pillar["variant"] = variant
+            walls.append(pillar)
+    for wall in walls:
+        give_shape(wall)
+    return walls, (room[0] / 2, room[1] / 2)
+
+
+def test_spots(n, room, walls, start):
+    """n spots for the enemies on a grid, away from the obstacles, from you and from the room's edges."""
+    w, h = room
+    step = max(TEST_GRID_MIN, round(TEST_GRID * w / TEST_BASE[0]))
+    def free(x, y):
+        return math.dist((x, y), start) >= TEST_KEEP_OFF and \
+            not any(wall["rect"].inflate(TEST_KEEP_OFF, TEST_KEEP_OFF).collidepoint(x, y) for wall in walls)
+    spots = [(x, y) for y in range(step, h - step // 2, step)
+             for x in range(step, w - step // 2, step) if free(x, y)]
+    spots.sort(key=lambda p: math.dist(p, start))          # the nearest first: you see them all soon
+    return spots[:n]

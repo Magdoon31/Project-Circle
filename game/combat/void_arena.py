@@ -246,6 +246,11 @@ class VoidArena:
         if not VOID_SPRITES.draw_abyss(screen, pale):           # (19.11) its picture
             screen.fill(c("abyss"))
         blink = self.warning and (timer // 8) % 2 == 0          # F5: about to fall
+        far = not self.outer_solid
+        for x, y, r in self.outer_islands():                    # (23.11) the rock crumbling under the islands: the
+            if r >= 1:                                          # lowest layer, under the bridges and islands
+                VOID_SPRITES.draw_island_crumble(screen, "outer", (x, y, r), pale, far)
+        VOID_SPRITES.draw_island_crumble(screen, "middle", (*self.centre, self.centre_r), pale)
         for key, grow in self.bridges.items():
             self.draw_standing_bridge(screen, key, 1 - grow / CHANGE_FRAMES, pale, blink, c("bridge"))
             if self.belts and not grow:
@@ -253,7 +258,6 @@ class VoidArena:
         for key, left in self.leaving.items():
             if (timer // 6) % 2 == 0 and not self.draw_bridge_picture(screen, key, 1.0, pale):   # crumbling: it blinks
                 self.draw_bridge(screen, key, 1.0, c("edge"))
-        far = not self.outer_solid
         for x, y, r in self.outer_islands():
             if r >= 1:
                 self.draw_island(screen, "outer", (x, y, r), pale, far, c("far_island" if far else "island"),

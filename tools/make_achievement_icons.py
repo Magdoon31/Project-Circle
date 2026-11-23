@@ -681,6 +681,15 @@ def book(d, k):
         line(d, k, [(110, y + 4), (146, y - 6)], 4, fill=0)
 
 
+def flask(d, k):
+    """A round potion flask with 6 bubbles in it (Side Effects May Vary - 23.11)."""
+    box(d, k, 70, 24, 122, 38, 6)
+    box(d, k, 80, 34, 112, 76)
+    circle(d, k, C, 118, 50)
+    for x, y, r in ((74, 112, 9), (100, 100, 7), (120, 122, 10), (88, 138, 8), (110, 148, 6), (70, 140, 5)):
+        circle(d, k, x, y, r, fill=0)
+
+
 SYMBOLS = {
     "new_in_town": house, "royal_flush": crown, "shattered_expectations": prism, "mother_knows_less": mushroom,
     "chill_out": snowflake, "quality_control": gear, "lights_out": flower, "showtime": note, "every_beat": heart,
@@ -693,7 +702,7 @@ SYMBOLS = {
     "sudoku_addict": starred(small_grid), "encore": starred(note, cx=150, cy=150, r=24),
     "untouchable": shield, "close_shave": heart_outline, "pest_control": skull,
     "is_this_your_job_now": number_plate("10K"), "dragon_hoard": banknote, "know_thy_enemy": book, "shopaholic": bag, "pacifist": no_gun,
-    "old_faithful": pistol,
+    "old_faithful": pistol, "side_effects": flask,
     "slippery": crown, "light_footed": prism, "allergy_free": mushroom, "ice_skater": snowflake,
     "zero_defects": gear, "sixth_sense": flower, "perfect_pitch": note, "heartless": broken_heart,
     "nothing_left_to_lose": three_hearts, "untouched_by_the_void": eclipse,

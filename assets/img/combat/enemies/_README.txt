@@ -23,23 +23,23 @@ line_soldier.png  (8x8)  Toy Factory: Świeży żołnierzyk z taśmy Assembly Li
 line_beetle.png  (6x6)  Toy Factory: Niedokończony żuk z taśmy: brakuje części pancerza, widać druty.
 belt_turret.png  (12x12)  Toy Factory: Ciemnoszara wieżyczka na podstawce jadąca po taśmie (rysowana jako kwadrat).
 bomb_crate.png  (11x11)  Toy Factory: Drewniana skrzynka z napisem FRAGILE i lontem (rysowana jako kwadrat).
-frost_wolf.png  (13x13)  Silverpine Tundra: Biały wilk ze szronem na sierści, lodowe oczy.
+frost_wolf.png  (15x15)  Silverpine Tundra: Biały wilk ze szronem na sierści, lodowe oczy.
 ice_shooter.png  (13x13)  Silverpine Tundra: Postać w futrze z lodową kuszą.
 frozen_orb.png  (14x14)  Silverpine Tundra: Pulsująca kula lodu z kryształkami, lekko świeci.
 tundra_watcher.png  (18x18)  Silverpine Tundra: Wysoka postać w kapturze/wieżyczka obserwacyjna z jednym wielkim okiem.
-pixie.png  (10x10)  Underground Garden: Mała wróżka ze świecącymi skrzydełkami.
-rainbow_pixie.png  (10x10)  Underground Garden: Wróżka w tęczowych kolorach, trochę większe skrzydła.
-poison_skeleton.png  (14x14)  Underground Garden: Szkielet z zielonymi, trującymi plamami i kapiącą trucizną.
-inferno_flower.png  (13x13)  Underground Garden: Kwiat w kolorach ognia (czerwień/pomarańcz), płatki jak płomienie.
-frost_flower.png  (13x13)  Underground Garden: Kwiat z lodowymi płatkami (biel/błękit).
-toxic_flower.png  (13x13)  Underground Garden: Kwiat trujący (zieleń/fiolet), kapiący kwas.
-firefly_queen.png  (13x13)  Underground Garden: Duży świetlik z koroną, świecący odwłok (rzadka).
-skeleton.png  (11x11)  The Core: Zwykły szkielet, idzie prosto na gracza.
+pixie.png  (27x21)  Underground Garden: Świecąca kula ze skrzydełkiem (jak pixie z Terrarii).
+rainbow_pixie.png  (33x21)  Underground Garden: Jak pixie, kula zmienia kolory tęczy, dłuższe skrzydło.
+poison_skeleton.png  (17x16)  Underground Garden: Ciemny szkielet ze świecącymi, trującymi plamami, z łukiem (czerwone strzały).
+inferno_flower.png  (15x15)  Underground Garden: Kwiat w kolorach ognia (czerwień/pomarańcz), płatki jak płomienie.
+frost_flower.png  (15x15)  Underground Garden: Kwiat z lodowymi płatkami (biel/błękit).
+toxic_flower.png  (15x15)  Underground Garden: Raflezja: grube ciemnoczerwone płatki w kropki wokół bulgoczącego kwasu.
+firefly_queen.png  (15x15)  Underground Garden: Duży świetlik z koroną, świecący odwłok (rzadka).
+skeleton.png  (13x13)  The Core: Zwykły szkielet, idzie prosto na gracza.
 mecha-skeleton.png  (18x18)  The Core: Szkielet z mechanicznymi częściami (ramię-działo, płyty pancerza).
-liche.png  (13x13)  The Core: Liczowaty mag-szkielet w szacie, z laską i fioletową poświatą.
+liche.png  (15x15)  The Core: Liczowaty mag-szkielet w szacie, z laską i fioletową poświatą.
 guard.png  (11x11)  The Core: Ciężki strażnik Core w pełnej zbroi, wolny i wytrzymały.
 fly.png  (9x9)  The Core: Duża mucha z trującym, zielonkawym odwłokiem.
-generator.png  (13x13)  The Core: Generator/akumulator z kablami, świecący rdzeń, kapiący klej.
+generator.png  (15x15)  The Core: Generator/akumulator z kablami, świecący rdzeń, kapiący klej.
 voidling.png  (7x7)  The Void: Mały stworek z czarnej pustki z fioletowymi oczami.
 red_crystal.png  (13x13)  The Void: Czerwony kryształ unoszący się w powietrzu, płonące krawędzie.
 purple_crystal.png  (13x13)  The Void: Fioletowy kryształ, pęknięty (rozpada się na mniejsze).

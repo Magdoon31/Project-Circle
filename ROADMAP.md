@@ -54,7 +54,7 @@ Szczegóły zrobionych rzeczy i decyzje: `DECISIONS.md` (w projekcie), modowanie
 - [ ] **[P3] Tooltip broni** — „Fire Rate: 0.25” to cooldown. Pokazać strzały/s albo bazowy DPS.
 - [ ] **[P3] Opis Eyeballs** — dopisać, że pomagają pamiętać Void (efekt `map_memory` już działa).
 - [ ] **[P3] Niezaimplementowane efekty z danych:** `luck`, `angler`, `reveal_secret`, `pale_world`, lore itemy.
-- [ ] **Przed wydaniem:** wyłączyć klawisze testowe (`DEBUG_BIOME_KEYS`, `DEBUG_STORY_ITEMS_KEY` w `game.py`, `DEBUG_REVEAL_KEY` i `DEBUG_CLICK_TELEPORT` w `world_map.py`).
+- [ ] **Przed wydaniem:** wyłączyć klawisze testowe (`DEBUG_BIOME_KEYS`, `DEBUG_STORY_ITEMS_KEY` w `game.py`, `DEBUG_REVEAL_KEY` i `DEBUG_CLICK_TELEPORT` w `world_map.py`). Pełna lista: `RELEASE_CHECKLIST.md` (23.11).
 
 ---
 

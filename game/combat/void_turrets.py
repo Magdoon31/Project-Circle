@@ -9,12 +9,15 @@ import pygame
 
 from game.combat.song.emitters import bullet
 from game import difficulty as DIFF
+from game.combat import sprites as FIGHT_SPRITES
 
 EVERY = 150                       # frames between two turrets coming up
 HARD_EVERY = 100                  # (12.11) hard mode: more of them
 RISE = 36                         # frames it comes up (you see it coming) ...
 HIDE = 24                         # ... and goes down after its shot
 SIZE = 26                         # px: half its width
+PUPIL_REACH = 4                   # (23.11) px the pupil moves from the eye's middle towards where it shoots
+EYE_AT = (26, 28)                 # (23.11) px: the eye's middle in void_turret.png (x4), from its top-left
 COLOUR, EDGE, BARREL = (120, 96, 170), (40, 28, 60), (230, 210, 255)
 DAMAGE = 5000
 
@@ -65,6 +68,8 @@ class Turret:
                        info, arena_size, DAMAGE, None) for i in range(p["arms"])]
 
     def draw(self, screen):
+        if self.draw_sprite(screen):
+            return
         k = self.height()
         half = max(1, int(SIZE * k))
         box = pygame.Rect(0, 0, half * 2, half * 2)
@@ -74,6 +79,26 @@ class Turret:
         if k > 0.5:
             end = (self.x + math.cos(self.angle) * half * 1.6, self.y + math.sin(self.angle) * half * 1.6)
             pygame.draw.line(screen, BARREL, (self.x, self.y), end, 6)
+
+
+    def draw_sprite(self, screen):
+        """(23.11) The crystal with an eye (combat/objects/void_turret): it comes up out of its island (shown from the
+        bottom up), its pupil looks where it shoots. False = no picture."""
+        body = FIGHT_SPRITES.object_pixel("void_turret")
+        if body is None:
+            return False
+        w, h = body.get_size()
+        shown = max(1, int(h * self.height()))
+        left, bottom = int(self.x - w / 2), int(self.y + h / 2)
+        screen.blit(body, (left, bottom - shown), pygame.Rect(0, 0, w, shown))
+        pupil = FIGHT_SPRITES.object_pixel("void_turret_pupil")
+        if pupil and self.height() > 0.5:
+            ex = left + EYE_AT[0] + math.cos(self.angle) * PUPIL_REACH
+            ey = bottom - shown + EYE_AT[1] + math.sin(self.angle) * PUPIL_REACH
+            step = FIGHT_SPRITES.ART_SCALE                              # on the pixel grid
+            screen.blit(pupil, (left + round((ex - left - pupil.get_width() / 2) / step) * step,
+                                bottom - shown + round((ey - bottom + shown - pupil.get_height() / 2) / step) * step))
+        return True
 
 
 class Turrets:

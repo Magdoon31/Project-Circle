@@ -62,6 +62,8 @@ ACHIEVEMENTS = [
     {"id": "pacifist", "name": "Pacifist (Mostly)", "group": "combat", "text": "Win a fight without firing a shot."},
     {"id": "know_thy_enemy", "name": "Know Thy Enemy", "group": "combat",
      "text": "Fill the whole Bestiary (everything about every enemy and boss)."},
+    {"id": "side_effects", "name": "Side Effects May Vary", "group": "combat",
+     "text": "Have 6 effects on you at once."},
     {"id": "old_faithful", "name": "Old Faithful", "group": "combat", "text": "Defeat the Prism with the Simple Blaster or the Simple Pistol."},
     # --- no hit, hard mode -----------------------------------------------------------------------------------
     {"id": "slippery", "name": "Slippery", "group": "nohit", "text": "Defeat the Slime King on Hard without being hit."},

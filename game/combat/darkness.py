@@ -21,6 +21,7 @@ import random
 import pygame
 
 from game.menu import options as OPT
+from game.combat import sprites as FIGHT_SPRITES
 
 FOG = (6, 8, 14)              # the colour of the dark
 FOG_ALPHA = 252               # how dark (255 = nothing at all)
@@ -164,4 +165,8 @@ class Darkness:
         x, y, left = self.seed
         pulse = 1 + 0.2 * math.sin(left * 0.15)
         pygame.draw.circle(screen, (255, 210, 90), (int(x), int(y)), int(SEED_RADIUS * 2.2 * pulse), 2)
-        pygame.draw.circle(screen, SEED_GLOW, (int(x), int(y)), SEED_RADIUS)
+        picture = FIGHT_SPRITES.object_pixel("light_seed")          # (23.11) the seed's picture, if drawn
+        if picture:
+            screen.blit(picture, (int(x - picture.get_width() / 2), int(y - picture.get_height() / 2)))
+        else:
+            pygame.draw.circle(screen, SEED_GLOW, (int(x), int(y)), SEED_RADIUS)
